@@ -18,12 +18,14 @@ enum IAPrompts {
         group: Int,
         outputLanguage: String = "auto"
     ) -> String {
-        let template = Self.iaTemplate(group: group)
+        let template = Self.iaTemplate(group: group, english: ["en", "es", "fr", "de", "pt", "it", "nl"].contains(outputLanguage))
 
         let languageInstruction: String
         switch outputLanguage {
         case "auto":
-            languageInstruction = "与讲座语言一致"
+            languageInstruction = ["en", "es", "fr", "de", "pt", "it", "nl"].contains(outputLanguage)
+                ? "Language: Match the lecture language."
+                : "与讲座语言一致"
         default:
             let languageName: String
             switch outputLanguage {
@@ -41,27 +43,53 @@ enum IAPrompts {
             case "it": languageName = "Italian (Italiano)"
             default: languageName = outputLanguage
             }
-            languageInstruction = "所有内容必须使用 \(languageName) 输出"
+            let useEnglish = ["en", "es", "fr", "de", "pt", "it", "nl"].contains(outputLanguage)
+            languageInstruction = useEnglish
+                ? "Language: All content MUST be output in \(languageName)."
+                : "所有内容必须使用 \(languageName) 输出"
         }
 
-        return """
-        你是一位 IB 内部评估（Internal Assessment）指导专家。
+        let useEnglish = ["en", "es", "fr", "de", "pt", "it", "nl"].contains(outputLanguage)
 
-        科目：\(subject)（第 \(group) 组）
+        if useEnglish {
+            return """
+            You are an IB Internal Assessment (IA) guidance expert.
 
-        模板结构：
-        \(template)
+            Subject: \(subject) (Group \(group))
 
-        你帮助：
-        1. 规划 IA 结构
-        2. 发展探索/调查问题
-        3. 撰写个人参与反思
-        4. 评估分析和结论质量
-        5. 确保符合 IB 评分标准
+            Template structure:
+            \(template)
 
-        提供具体、可操作的建议，引用 IB 标准和评分描述。
-        语言要求：\(languageInstruction)。
-        """
+            You help with:
+            1. Planning IA structure
+            2. Developing exploration/investigation questions
+            3. Writing personal engagement reflections
+            4. Evaluating analysis and conclusion quality
+            5. Ensuring alignment with IB marking criteria
+
+            Provide specific, actionable advice referencing IB standards and mark descriptors.
+            \(languageInstruction).
+            """
+        } else {
+            return """
+            你是一位 IB 内部评估（Internal Assessment）指导专家。
+
+            科目：\(subject)（第 \(group) 组）
+
+            模板结构：
+            \(template)
+
+            你帮助：
+            1. 规划 IA 结构
+            2. 发展探索/调查问题
+            3. 撰写个人参与反思
+            4. 评估分析和结论质量
+            5. 确保符合 IB 评分标准
+
+            提供具体、可操作的建议，引用 IB 标准和评分描述。
+            语言要求：\(languageInstruction)。
+            """
+        }
     }
 
     /// Builds the user prompt for IA feedback.
@@ -69,21 +97,40 @@ enum IAPrompts {
     /// - Parameter content: The student's IA draft, notes, or outline.
     /// - Returns: A user prompt string.
     static func userPrompt(
-        content: String
+        content: String,
+        outputLanguage: String = "auto"
     ) -> String {
-        """
-        审阅以下内部评估内容，提供建设性反馈：
+        let useEnglish = ["en", "es", "fr", "de", "pt", "it", "nl"].contains(outputLanguage)
 
-        具体任务：
-        1. 评估当前结构的完整性和逻辑性
-        2. 检查分析是否充分（个人参与、探索深度）
-        3. 标注需要改进的部分
-        4. 建议额外的分析方法或资料来源
-        5. 评估是否符合 IB 评分标准
+        if useEnglish {
+            return """
+            Review the following Internal Assessment content and provide constructive feedback:
 
-        IA 内容：
-        \(content)
-        """
+            Specific tasks:
+            1. Evaluate the completeness and logical flow of the current structure
+            2. Check whether analysis is thorough (personal engagement, depth of exploration)
+            3. Highlight sections needing improvement
+            4. Suggest additional analytical methods or sources
+            5. Assess alignment with IB marking criteria
+
+            IA content:
+            \(content)
+            """
+        } else {
+            return """
+            审阅以下内部评估内容，提供建设性反馈：
+
+            具体任务：
+            1. 评估当前结构的完整性和逻辑性
+            2. 检查分析是否充分（个人参与、探索深度）
+            3. 标注需要改进的部分
+            4. 建议额外的分析方法或资料来源
+            5. 评估是否符合 IB 评分标准
+
+            IA 内容：
+            \(content)
+            """
+        }
     }
 
     // MARK: - Group-Specific IA Templates
@@ -92,9 +139,30 @@ enum IAPrompts {
     ///
     /// - Parameter group: The IB subject group number (1-6).
     /// - Returns: A formatted template string.
-    static func iaTemplate(group: Int) -> String {
+    static func iaTemplate(group: Int, english: Bool = false) -> String {
         switch group {
         case 4: // Group 4: Sciences (Biology, Chemistry, Physics, etc.)
+            if english {
+                return """
+                1. Personal Engagement & Exploration
+                   - Reason for choosing this research question
+                   - Background information and research context
+                   - Research Question (RQ)
+                2. Exploration & Analysis
+                   - Variable definitions (independent, dependent, controlled)
+                   - Methodology description
+                   - Data collection and processing
+                   - Uncertainty analysis
+                   - Graphs and statistical analysis
+                3. Evaluation
+                   - Methodology limitations
+                   - Data reliability
+                   - Improvement suggestions
+                4. Conclusion
+                   - Research question response
+                   - Comparison with scientific theories
+                """
+            }
             return """
             1. 个人参与与探索（Personal Engagement & Exploration）
                - 选择该研究问题的原因
@@ -116,6 +184,26 @@ enum IAPrompts {
             """
 
         case 5: // Group 5: Mathematics
+            if english {
+                return """
+                1. Introduction & Motivation
+                   - Reason for choosing this topic
+                   - Goals and plan
+                2. Mathematical Exploration
+                   - Notation and terminology definitions
+                   - Mathematical derivation and calculation
+                   - Graphs and visualisations
+                   - Use of technological tools
+                3. Generalisation & Verification
+                   - Generalisation of results
+                   - Testing edge cases
+                   - Comparison with known mathematical results
+                4. Conclusion
+                   - Summary of findings
+                   - Reflection on the mathematical process
+                   - Directions for future exploration
+                """
+            }
             return """
             1. 引言与动机（Introduction & Motivation）
                - 选择主题的原因
@@ -136,6 +224,24 @@ enum IAPrompts {
             """
 
         case 1: // Group 1: Studies in Language and Literature
+            if english {
+                return """
+                1. Work Selection & Rationale
+                   - Selected works and rationale
+                   - Literary background and context
+                2. Textual Analysis
+                   - Themes and motifs
+                   - Literary devices and techniques
+                   - Language and style analysis
+                3. Argument & Evidence
+                   - Main arguments
+                   - Textual evidence support
+                   - Counter-arguments
+                4. Conclusion
+                   - Argument summary
+                   - Broader significance
+                """
+            }
             return """
             1. 作品选择与理由
                - 选定作品及理由
@@ -154,6 +260,26 @@ enum IAPrompts {
             """
 
         case 3: // Group 3: Individuals and Societies
+            if english {
+                return """
+                1. Research Question & Scope
+                   - Research Question (RQ)
+                   - Geographic/temporal scope
+                   - Key concept definitions
+                2. Investigation Methods
+                   - Research method selection
+                   - Data sources (primary/secondary)
+                   - Methodology limitations
+                3. Analysis & Discussion
+                   - Key findings
+                   - Different perspectives and interpretations
+                   - Theoretical framework integration
+                4. Conclusion
+                   - Research question response
+                   - Policy/practice recommendations
+                   - Directions for future research
+                """
+            }
             return """
             1. 研究问题与范围
                - 研究问题 (RQ)
@@ -174,6 +300,20 @@ enum IAPrompts {
             """
 
         case 2: // Group 2: Language Acquisition
+            if english {
+                return """
+                1. Introduction
+                   - Selected topic and rationale
+                   - Target culture/language background
+                2. Description & Analysis
+                   - Cultural product analysis
+                   - Language feature analysis
+                   - Comparison/contrast
+                3. Conclusion
+                   - Key findings
+                   - Cultural insights
+                """
+            }
             return """
             1. 引言
                - 选定主题及理由
@@ -188,6 +328,23 @@ enum IAPrompts {
             """
 
         case 6: // Group 6: The Arts
+            if english {
+                return """
+                1. Introduction
+                   - Artwork/performance selection
+                   - Research focus
+                2. Analysis
+                   - Form and structure
+                   - Techniques and materials
+                   - Context and influence
+                3. Comparison/Contrast
+                   - Different works/artists
+                   - Common themes
+                4. Conclusion
+                   - Artistic evaluation
+                   - Personal reflection
+                """
+            }
             return """
             1. 引言
                - 艺术作品/表演选择
@@ -205,6 +362,18 @@ enum IAPrompts {
             """
 
         default:
+            if english {
+                return """
+                1. Introduction
+                   - Topic selection and research scope
+                2. Exploration/Investigation
+                   - Research methodology and analysis
+                3. Analysis
+                   - Findings and discussion
+                4. Conclusion
+                   - Summary and reflection
+                """
+            }
             return """
             1. 引言
                - 主题选择与研究范围

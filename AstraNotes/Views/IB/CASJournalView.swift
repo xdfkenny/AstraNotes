@@ -61,7 +61,7 @@ struct CASJournalView: View {
             let query = searchText.lowercased()
             result = result.filter {
                 $0.title.lowercased().contains(query) ||
-                $0.description.lowercased().contains(query) ||
+                $0.activityDescription.lowercased().contains(query) ||
                 $0.supervisor?.lowercased().contains(query) == true ||
                 $0.tags.contains { $0.lowercased().contains(query) }
             }
@@ -224,7 +224,7 @@ struct CASJournalView: View {
 
             // Total Activities
             VStack(spacing: 12) {
-                Text(entries.count)
+                Text("(entries.count)")
                     .font(.system(size: 36, weight: .bold, design: .rounded))
                     .foregroundColor(Color.accent)
 
@@ -592,7 +592,7 @@ struct CASJournalView: View {
                     .foregroundColor(Color.accent)
                     .tracking(0.08)
 
-                Text(entry.description)
+                Text(entry.activityDescription)
                     .font(.system(size: 14))
                     .foregroundColor(Color.textPrimary)
                     .lineSpacing(4)

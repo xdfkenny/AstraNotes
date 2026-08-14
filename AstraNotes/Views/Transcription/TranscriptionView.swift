@@ -51,7 +51,7 @@ struct TranscriptionView: View {
                 }
             }
             .padding(Spacing.xxl)
-            .frame(maxWidth: Layout.contentMaxWidth + 240, alignment: .leading)
+            .frame(maxWidth: LayoutTokens.contentMaxWidth + 240, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .top)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

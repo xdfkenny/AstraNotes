@@ -1,7 +1,7 @@
 // MarkdownRenderer.swift — AstraNotes
 // Preview renderer using WKWebView for displaying markdown content.
 // Supports Mermaid diagrams, LaTeX math, and HTML rendering with the
-// Astra theme. Includes print/export support.
+// Soft Cryo ice crystal aesthetic. Includes print/export support.
 
 import SwiftUI
 import WebKit
@@ -150,21 +150,26 @@ final class MarkdownRenderer: NSObject {
     }
 
     private func convertBlockquotes(_ html: String) -> String {
-        var result = html
         // Multi-line blockquotes: collapse consecutive > lines
-        result = result.replacingOccurrences(
-            of: #"((?:^> .*$(?:\n|\z))+)"#,
-            with: { match in
-                let lines = match.output
-                    .components(separatedBy: .newlines)
-                    .map { $0.replacingOccurrences(of: "> ", with: "") }
-                    .filter { !$0.isEmpty }
-                let inner = lines.joined(separator: "<br>")
-                return "<blockquote>\(inner)</blockquote>"
-            },
-            options: .regularExpression
-        )
-        // Single-line blockquotes
+        var lines = html.components(separatedBy: .newlines)
+        var output: [String] = []
+        var i = 0
+        while i < lines.count {
+            if lines[i].hasPrefix("> ") {
+                var blockquoteLines: [String] = []
+                while i < lines.count && lines[i].hasPrefix("> ") {
+                    blockquoteLines.append(String(lines[i].dropFirst(2)))
+                    i += 1
+                }
+                let inner = blockquoteLines.joined(separator: "<br>")
+                output.append("<blockquote>\(inner)</blockquote>")
+            } else {
+                output.append(lines[i])
+                i += 1
+            }
+        }
+        var result = output.joined(separator: "\n")
+        // Single-line blockquotes that weren't caught above
         result = result.replacingOccurrences(
             of: #"^> (.*$)"#,
             with: "<blockquote>$1</blockquote>",
@@ -190,17 +195,31 @@ final class MarkdownRenderer: NSObject {
             options: .regularExpression
         )
 
-        // Wrap consecutive <li> items in <ul>
-        result = result.replacingOccurrences(
-            of: #"((?:<li>.*</li>\n?)+)"#,
-            with: { match in
-                let items = match.output.trimmingCharacters(in: .whitespacesAndNewlines)
-                return "<ul>\n\(items)\n</ul>"
-            },
-            options: .regularExpression
-        )
-
-        return result
+        // Wrap consecutive <li> items in <ul> using line-by-line processing
+        var lines = result.components(separatedBy: .newlines)
+        var output: [String] = []
+        var inList = false
+        for line in lines {
+            if line.contains("<li>") {
+                if !inList {
+                    output.append("<ul>")
+                    inList = true
+                }
+                output.append(line)
+            } else {
+                if inList {
+                    output.append("</ul>")
+                    inList = false
+                }
+                if !line.isEmpty {
+                    output.append(line)
+                }
+            }
+        }
+        if inList {
+            output.append("</ul>")
+        }
+        return output.joined(separator: "\n")
     }
 
     private func convertTables(_ html: String) -> String {
@@ -372,7 +391,7 @@ final class MarkdownRenderer: NSObject {
                 * { margin: 0; padding: 0; box-sizing: border-box; }
 
                 body {
-                    font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', BlinkMacSystemFont, sans-serif;
+                    font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, sans-serif;
                     font-size: 16px;
                     line-height: 1.7;
                     color: var(--text);
@@ -512,9 +531,9 @@ final class MarkdownRenderer: NSObject {
                     startOnLoad: true,
                     theme: '\(isDark ? "dark" : "default")',
                     themeVariables: {
-                        primaryColor: '\(accentColor)',
+                        primaryColor: '#7EC8E3',
                         primaryTextColor: '\(textColor)',
-                        lineColor: '\(accentColor)',
+                        lineColor: '#4A9ECF',
                         background: '\(cardBg)'
                     }
                 });
@@ -562,7 +581,7 @@ final class MarkdownRenderer: NSObject {
 
 // MARK: - Markdown Preview (SwiftUI Wrapper)
 
-/// A SwiftUI view that wraps WKWebView for rendering markdown with the Astra theme.
+/// A SwiftUI view that wraps WKWebView for rendering markdown with the Cryo theme.
 #if os(macOS)
 struct MarkdownPreview: NSViewRepresentable {
 
@@ -701,13 +720,13 @@ struct MarkdownPreviewWithExport: View {
                 Button {
                     exportToPDF()
                 } label: {
-                    Label { Text("Export PDF") } icon: { AstraIconView(.download, size: 12) }
+                    Label("Export PDF", systemImage: "square.and.arrow.down")
                 }
 
                 Button {
                     printContent()
                 } label: {
-                    Label { Text("Print") } icon: { AstraIconView(.print, size: 12) }
+                    Label("Print", systemImage: "printer")
                 }
             }
         }
@@ -727,11 +746,10 @@ struct MarkdownPreviewWithExport: View {
         panel.allowedContentTypes = [.pdf]
 
         if panel.runModal() == .OK, let url = panel.url {
-            let pdfData = webView.dataForPDF()
-            do {
-                try pdfData?.write(to: url)
-            } catch {
-                print("Failed to export PDF: \(error)")
+            webView.createPDF(configuration: WKPDFConfiguration()) { result in
+                if case .success(let data) = result {
+                    try? data.write(to: url)
+                }
             }
         }
         #else
@@ -755,14 +773,23 @@ struct MarkdownPreviewWithExport: View {
 
     private func printContent() {
         #if os(macOS)
-        webView?.print(nil)
+        if let webView = webView {
+            let printOperation = NSPrintOperation(view: webView)
+            printOperation.run()
+        }
         #else
+        guard let webView = webView else { return }
         let printInfo = UIPrintInfo(dictionary: nil)
         printInfo.jobName = "AstraNotes"
         let printController = UIPrintInteractionController.shared
         printController.printInfo = printInfo
-        printController.printingItem = webView?.snapshot()
-        printController.present(animated: true)
+        let config = WKSnapshotConfiguration()
+        Task { @MainActor in
+            if let image = try? await webView.takeSnapshot(configuration: config) {
+                printController.printingItem = image
+                printController.present(animated: true)
+            }
+        }
         #endif
     }
 }

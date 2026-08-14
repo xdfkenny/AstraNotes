@@ -61,6 +61,18 @@ extension Color {
     }
 }
 
+// MARK: - ShapeStyle Color Members
+// Lets `.foregroundStyle(.textSecondary)` resolve: SwiftUI looks for static
+// members on `ShapeStyle`, so mirror the semantic text colors there.
+
+extension ShapeStyle where Self == Color {
+    static var textPrimary: Color { .textPrimary }
+    static var textSecondary: Color { .textSecondary }
+    static var textTertiary: Color { .textTertiary }
+    static var accent: Color { .accent }
+    static var hairline: Color { .hairline }
+}
+
 // MARK: - Typography Tokens
 
 extension Font {
@@ -117,7 +129,9 @@ enum Radius {
 
 // MARK: - Layout Tokens
 
-enum Layout {
+/// Named `LayoutTokens` (not `Layout`) to avoid shadowing SwiftUI's `Layout` protocol,
+/// which is required by custom `Layout` conformances (e.g. FlowLayout in CASJournalView).
+enum LayoutTokens {
     static let sidebarWidth: CGFloat = 240
     static let inspectorWidth: CGFloat = 300
     static let contentMaxWidth: CGFloat = 640

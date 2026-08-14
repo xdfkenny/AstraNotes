@@ -51,30 +51,17 @@ struct AstraIconView: View {
 }
 
 // MARK: - Preview
+// Deliberately simple: a complex ForEach grid trips the Swift type checker.
 
 #Preview("Astra Icon Set") {
-    ScrollView {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 60))], spacing: Spacing.md) {
-            ForEach(AstraIcon.allCases) { icon in
-                VStack(spacing: 4) {
-                    AstraIconView(icon, size: 22)
-                        .foregroundStyle(Color.accent)
-                    Text(icon.rawValue)
-                        .font(.astraMono(8))
-                        .foregroundStyle(.textTertiary)
-                        .lineLimit(1)
-                }
-                .padding(8)
-                .background(Color.surface)
-                .clipShape(RoundedRectangle(cornerRadius: Radius.card))
-                .overlay(
-                    RoundedRectangle(cornerRadius: Radius.card)
-                        .stroke(Color.hairline, lineWidth: 1)
-                )
-            }
-        }
-        .padding(Spacing.lg)
+    HStack(spacing: 12) {
+        AstraIconView(.mic, size: 22)
+        AstraIconView(.school, size: 22)
+        AstraIconView(.psychology, size: 22)
+        AstraIconView(.science, size: 22)
+        AstraIconView(.autoAwesome, size: 22)
     }
+    .padding(24)
     .background(Color.surfaceBackground)
-    .frame(width: 640, height: 480)
+    .frame(width: 320, height: 120)
 }

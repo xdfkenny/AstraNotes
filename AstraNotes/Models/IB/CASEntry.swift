@@ -5,7 +5,7 @@ import SwiftData
 final class CASEntry {
     var id: UUID
     var title: String
-    var description: String
+    var activityDescription: String
     var casCategory: CASCategory // Creativity, Activity, Service
 
     // Activity details
@@ -63,7 +63,7 @@ final class CASEntry {
     ) {
         self.id = UUID()
         self.title = title
-        self.description = description
+        self.activityDescription = description
         self.casCategory = casCategory
         self.startDate = startDate
         self.endDate = endDate

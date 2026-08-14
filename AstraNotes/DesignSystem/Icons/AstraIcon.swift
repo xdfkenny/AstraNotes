@@ -187,7 +187,7 @@ enum AstraIcon: String, CaseIterable, Identifiable {
     /// SF Symbols: "globe"
     case globe = ""
     /// SF Symbols: "globe.americas"
-    case public = ""
+    case `public` = ""
     /// SF Symbols: "target"
     case target = ""
 }
@@ -303,7 +303,7 @@ extension AstraIcon {
         case "hourglass": return .hourglassEmpty
         case "chart.line.uptrend.xyaxis": return .showChart
         case "globe": return .globe
-        case "globe.americas": return .public
+        case "globe.americas": return .`public`
         case "target": return .target
         case "text.alignleft": return .notes
         default: return nil

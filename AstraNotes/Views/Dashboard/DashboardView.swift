@@ -296,7 +296,7 @@ struct DashboardView: View {
             }
             ProgressHairline(progress: progress)
         }
-        .padding(Layout.cardPadding)
+        .padding(LayoutTokens.cardPadding)
         .background(Color.surface)
         .clipShape(RoundedRectangle(cornerRadius: Radius.card))
         .overlay(

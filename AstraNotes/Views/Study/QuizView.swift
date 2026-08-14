@@ -102,215 +102,231 @@ struct QuizView: View {
         }
     }
 
-    private var configurationSection: some View {
+    
+    // MARK: - Setup Sub-Sections (extracted to keep expressions type-checkable)
+
+    private var subjectSelector: some View {
+        // Subject selector
+        VStack(alignment: .leading, spacing: 8) {
+        Text(String(localized: "quiz.subject"))
+        .font(.system(size: 11, weight: .semibold, design: .monospaced))
+        .foregroundColor(Color.accent)
+        .tracking(0.08)
+
+        ScrollView(.horizontal, showsIndicators: false) {
+        HStack(spacing: 8) {
+        ForEach(subjects, id: \.self) { subject in
+        Button {
+        withAnimation(.easeOut(duration: 0.2)) {
+        selectedSubject = subject
+        }
+        } label: {
+        Text(subject)
+        .font(.system(size: 12, weight: .medium))
+        .foregroundColor(selectedSubject == subject ? .white : Color.textPrimary)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 7)
+        .background(
+        selectedSubject == subject
+        ? LinearGradient(
+        colors: [Color.accent, Color.accent],
+        startPoint: .leading,
+        endPoint: .trailing
+        )
+        : Color.surface
+        )
+        .clipShape(Capsule())
+        .overlay(
+        Capsule().stroke(
+        selectedSubject == subject ? Color.accent : Color.hairline,
+        lineWidth: 1
+        )
+        )
+        }
+        .buttonStyle(.plain)
+        }
+        }
+        }
+        }
+    }
+
+    private var difficultySelector: some View {
+        // Difficulty selector
+        VStack(alignment: .leading, spacing: 8) {
+        Text(String(localized: "quiz.difficulty"))
+        .font(.system(size: 11, weight: .semibold, design: .monospaced))
+        .foregroundColor(Color.accent)
+        .tracking(0.08)
+
+        HStack(spacing: 8) {
+        ForEach(QuestionDifficulty.allCases, id: \.self) { difficulty in
+        Button {
+        withAnimation(.easeOut(duration: 0.2)) {
+        selectedDifficulty = difficulty
+        }
+        } label: {
+        Text(difficulty.rawValue)
+        .font(.system(size: 13, weight: .bold, design: .monospaced))
+        .foregroundColor(selectedDifficulty == difficulty ? .white : Color.textPrimary)
+        .padding(.horizontal, 18)
+        .padding(.vertical, 8)
+        .background(
+        selectedDifficulty == difficulty
+        ? LinearGradient(
+        colors: [Color.accent, Color.accent],
+        startPoint: .leading,
+        endPoint: .trailing
+        )
+        : Color.surface
+        )
+        .clipShape(Capsule())
+        .overlay(
+        Capsule().stroke(
+        selectedDifficulty == difficulty ? Color.accent : Color.hairline,
+        lineWidth: 1
+        )
+        )
+        }
+        .buttonStyle(.plain)
+        }
+        }
+        }
+    }
+
+    private var questionTypeSelector: some View {
+        // Question type selector
+        VStack(alignment: .leading, spacing: 8) {
+        Text(String(localized: "quiz.questionType"))
+        .font(.system(size: 11, weight: .semibold, design: .monospaced))
+        .foregroundColor(Color.accent)
+        .tracking(0.08)
+
+        HStack(spacing: 8) {
+        Button {
+        withAnimation(.easeOut(duration: 0.2)) {
+        selectedType = nil
+        }
+        } label: {
+        Text(String(localized: "quiz.allTypes"))
+        .font(.system(size: 12, weight: .medium))
+        .foregroundColor(selectedType == nil ? .white : Color.textPrimary)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(
+        selectedType == nil
+        ? Color.accent
+        : Color.surface
+        )
+        .clipShape(Capsule())
+        .overlay(Capsule().stroke(selectedType == nil ? Color.accent : Color.hairline, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+
+        ForEach(QuestionType.allCases, id: \.self) { type in
+        Button {
+        withAnimation(.easeOut(duration: 0.2)) {
+        selectedType = type
+        }
+        } label: {
+        Text(type.displayName)
+        .font(.system(size: 12, weight: .medium))
+        .foregroundColor(selectedType == type ? .white : Color.textPrimary)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(
+        selectedType == type
+        ? Color.accent
+        : Color.surface
+        )
+        .clipShape(Capsule())
+        .overlay(Capsule().stroke(selectedType == type ? Color.accent : Color.hairline, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+        }
+        }
+        }
+    }
+
+    private var countAndTimerRow: some View {
+        // Question count & timer row
+        HStack(spacing: 16) {
+        // Question count
+        VStack(alignment: .leading, spacing: 8) {
+        Text(String(localized: "quiz.questions"))
+        .font(.system(size: 11, weight: .semibold, design: .monospaced))
+        .foregroundColor(Color.accent)
+        .tracking(0.08)
+
+        HStack(spacing: 12) {
+        ForEach([5, 10, 15, 20], id: \.self) { count in
+        Button {
+        withAnimation(.easeOut(duration: 0.2)) {
+        questionCount = count
+        }
+        } label: {
+        Text("\(count)")
+        .font(.system(size: 14, weight: .bold, design: .monospaced))
+        .foregroundColor(questionCount == count ? .white : Color.textPrimary)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 7)
+        .background(
+        questionCount == count
+        ? LinearGradient(
+        colors: [Color.accent, Color.accent],
+        startPoint: .leading,
+        endPoint: .trailing
+        )
+        : Color.surface
+        )
+        .clipShape(Capsule())
+        .overlay(
+        Capsule().stroke(
+        questionCount == count ? Color.accent : Color.hairline,
+        lineWidth: 1
+        )
+        )
+        }
+        .buttonStyle(.plain)
+        }
+        }
+        }
+
+        // Timer toggle
+        VStack(alignment: .leading, spacing: 8) {
+        Text(String(localized: "quiz.timer"))
+        .font(.system(size: 11, weight: .semibold, design: .monospaced))
+        .foregroundColor(Color.accent)
+        .tracking(0.08)
+
+        HStack(spacing: 10) {
+        Toggle(String(localized: "quiz.timed"), isOn: $isTimed)
+        .toggleStyle(.switch)
+        .tint(Color.accent)
+
+        if isTimed {
+        Picker("", selection: $timeLimit) {
+        Text("15s").tag(15)
+        Text("30s").tag(30)
+        Text("45s").tag(45)
+        Text("60s").tag(60)
+        }
+        .labelsHidden()
+        .pickerStyle(.segmented)
+        .frame(width: 160)
+        }
+        }
+        }
+        }
+    }
+
+private var configurationSection: some View {
         HStack(spacing: 20) {
             // Left column: filters
             VStack(alignment: .leading, spacing: 20) {
-                // Subject selector
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(String(localized: "quiz.subject"))
-                        .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                        .foregroundColor(Color.accent)
-                        .tracking(0.08)
-
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(subjects, id: \.self) { subject in
-                                Button {
-                                    withAnimation(.easeOut(duration: 0.2)) {
-                                        selectedSubject = subject
-                                    }
-                                } label: {
-                                    Text(subject)
-                                        .font(.system(size: 12, weight: .medium))
-                                        .foregroundColor(selectedSubject == subject ? .white : Color.textPrimary)
-                                        .padding(.horizontal, 14)
-                                        .padding(.vertical, 7)
-                                        .background(
-                                            selectedSubject == subject
-                                                ? LinearGradient(
-                                                    colors: [Color.accent, Color.accent],
-                                                    startPoint: .leading,
-                                                    endPoint: .trailing
-                                                )
-                                                : Color.surface
-                                        )
-                                        .clipShape(Capsule())
-                                        .overlay(
-                                            Capsule().stroke(
-                                                selectedSubject == subject ? Color.accent : Color.hairline,
-                                                lineWidth: 1
-                                            )
-                                        )
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        }
-                    }
-                }
-
-                // Difficulty selector
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(String(localized: "quiz.difficulty"))
-                        .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                        .foregroundColor(Color.accent)
-                        .tracking(0.08)
-
-                    HStack(spacing: 8) {
-                        ForEach(QuestionDifficulty.allCases, id: \.self) { difficulty in
-                            Button {
-                                withAnimation(.easeOut(duration: 0.2)) {
-                                    selectedDifficulty = difficulty
-                                }
-                            } label: {
-                                Text(difficulty.rawValue)
-                                    .font(.system(size: 13, weight: .bold, design: .monospaced))
-                                    .foregroundColor(selectedDifficulty == difficulty ? .white : Color.textPrimary)
-                                    .padding(.horizontal, 18)
-                                    .padding(.vertical, 8)
-                                    .background(
-                                        selectedDifficulty == difficulty
-                                            ? LinearGradient(
-                                                colors: [Color.accent, Color.accent],
-                                                startPoint: .leading,
-                                                endPoint: .trailing
-                                            )
-                                            : Color.surface
-                                    )
-                                    .clipShape(Capsule())
-                                    .overlay(
-                                        Capsule().stroke(
-                                            selectedDifficulty == difficulty ? Color.accent : Color.hairline,
-                                            lineWidth: 1
-                                        )
-                                    )
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                }
-
-                // Question type selector
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(String(localized: "quiz.questionType"))
-                        .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                        .foregroundColor(Color.accent)
-                        .tracking(0.08)
-
-                    HStack(spacing: 8) {
-                        Button {
-                            withAnimation(.easeOut(duration: 0.2)) {
-                                selectedType = nil
-                            }
-                        } label: {
-                            Text(String(localized: "quiz.allTypes"))
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundColor(selectedType == nil ? .white : Color.textPrimary)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(
-                                    selectedType == nil
-                                        ? Color.accent
-                                        : Color.surface
-                                )
-                                .clipShape(Capsule())
-                                .overlay(Capsule().stroke(selectedType == nil ? Color.accent : Color.hairline, lineWidth: 1))
-                        }
-                        .buttonStyle(.plain)
-
-                        ForEach(QuestionType.allCases, id: \.self) { type in
-                            Button {
-                                withAnimation(.easeOut(duration: 0.2)) {
-                                    selectedType = type
-                                }
-                            } label: {
-                                Text(type.displayName)
-                                    .font(.system(size: 12, weight: .medium))
-                                    .foregroundColor(selectedType == type ? .white : Color.textPrimary)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 6)
-                                    .background(
-                                        selectedType == type
-                                            ? Color.accent
-                                            : Color.surface
-                                    )
-                                    .clipShape(Capsule())
-                                    .overlay(Capsule().stroke(selectedType == type ? Color.accent : Color.hairline, lineWidth: 1))
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                }
-
-                // Question count & timer row
-                HStack(spacing: 16) {
-                    // Question count
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(String(localized: "quiz.questions"))
-                            .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                            .foregroundColor(Color.accent)
-                            .tracking(0.08)
-
-                        HStack(spacing: 12) {
-                            ForEach([5, 10, 15, 20], id: \.self) { count in
-                                Button {
-                                    withAnimation(.easeOut(duration: 0.2)) {
-                                        questionCount = count
-                                    }
-                                } label: {
-                                    Text("\(count)")
-                                        .font(.system(size: 14, weight: .bold, design: .monospaced))
-                                        .foregroundColor(questionCount == count ? .white : Color.textPrimary)
-                                        .padding(.horizontal, 16)
-                                        .padding(.vertical, 7)
-                                        .background(
-                                            questionCount == count
-                                                ? LinearGradient(
-                                                    colors: [Color.accent, Color.accent],
-                                                    startPoint: .leading,
-                                                    endPoint: .trailing
-                                                )
-                                                : Color.surface
-                                        )
-                                        .clipShape(Capsule())
-                                        .overlay(
-                                            Capsule().stroke(
-                                                questionCount == count ? Color.accent : Color.hairline,
-                                                lineWidth: 1
-                                            )
-                                        )
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        }
-                    }
-
-                    // Timer toggle
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(String(localized: "quiz.timer"))
-                            .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                            .foregroundColor(Color.accent)
-                            .tracking(0.08)
-
-                        HStack(spacing: 10) {
-                            Toggle(String(localized: "quiz.timed"), isOn: $isTimed)
-                                .toggleStyle(.switch)
-                                .tint(Color.accent)
-
-                            if isTimed {
-                                Picker("", selection: $timeLimit) {
-                                    Text("15s").tag(15)
-                                    Text("30s").tag(30)
-                                    Text("45s").tag(45)
-                                    Text("60s").tag(60)
-                                }
-                                .labelsHidden()
-                                .pickerStyle(.segmented)
-                                .frame(width: 160)
-                            }
-                        }
-                    }
-                }
+                subjectSelector
+                difficultySelector
+                questionTypeSelector
+                countAndTimerRow
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(24)
@@ -1285,7 +1301,7 @@ struct QuizView: View {
     private var averageAccuracy: Double {
         let reviewed = allQuestions.filter { $0.timesAnswered > 0 }
         guard !reviewed.isEmpty else { return 0 }
-        return Double(reviewed.reduce(0) { $0 + $1.correctCount }) / Double(reviewed.reduce(0) { $0 + $1.timesAnswered })
+        return Double(reviewed.reduce(0) { $0 + $1.timesCorrect }) / Double(reviewed.reduce(0) { $0 + $1.timesAnswered })
     }
 
     // MARK: - Actions

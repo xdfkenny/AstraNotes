@@ -213,6 +213,11 @@ extension String {
     var isBlank: Bool {
         trimmed.isEmpty
     }
+
+    /// Value of the first Unicode scalar, e.g. `"A".unicodeScalarValue == 65`.
+    var unicodeScalarValue: UInt32? {
+        unicodeScalars.first?.value
+    }
 }
 
 // MARK: - View Extensions

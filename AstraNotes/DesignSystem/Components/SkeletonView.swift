@@ -46,7 +46,7 @@ struct SkeletonView: View {
                     .frame(height: 64)
             }
         }
-        .frame(maxWidth: Layout.contentMaxWidth, alignment: .leading)
+        .frame(maxWidth: LayoutTokens.contentMaxWidth, alignment: .leading)
         .opacity(shimmer ? 0.45 : 1)
         .animation(
             reduceMotion

@@ -33,7 +33,7 @@ class PromptEngine {
     ) -> PromptPackage {
         let systemPrompt = NoteGenerationPrompts.systemPrompt(
             subjectName: subject?.name ?? "Unknown",
-            level: subject?.level.displayName ?? "HL",
+            level: subject?.ibLevel.displayName ?? "HL",
             teacher: teacher ?? "Unknown",
             style: style,
             outputLanguage: outputLanguage
@@ -42,7 +42,7 @@ class PromptEngine {
         let userPrompt = NoteGenerationPrompts.userPrompt(
             transcription: transcription,
             subjectName: subject?.name ?? "Unknown",
-            level: subject?.level.displayName ?? "HL",
+            level: subject?.ibLevel.displayName ?? "HL",
             duration: duration
         )
 

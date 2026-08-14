@@ -475,7 +475,9 @@ struct IAWorkbenchView: View {
 
                 // Toggle completion
                 Button {
-                    section.isComplete.toggle()
+                    if let idx = ia.sections.firstIndex(where: { $0.id == section.id }) {
+                        ia.sections[idx].isComplete.toggle()
+                    }
                 } label: {
                     AstraIconView(section.isComplete ? .verified : .radioButtonUnchecked, size: 16)
                         .foregroundColor(section.isComplete ? Color.semanticSuccess : Color.textSecondary.opacity(0.4))
@@ -689,8 +691,8 @@ struct IAWorkbenchView: View {
             title: String(format: String(localized: "ia.defaultTitle"), assessments.count + 1),
             subject: "",
             subjectGroup: 4,
-            type: selectedIAType,
-            maxWordCount: defaultMaxWords(for: selectedIAType)
+            maxWordCount: defaultMaxWords(for: selectedIAType),
+            type: selectedIAType
         )
         modelContext.insert(ia)
         selectedIA = ia

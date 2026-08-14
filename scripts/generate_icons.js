@@ -66,6 +66,19 @@ const mapping = [
 
 const toCase = (name) => name.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
 
+// Swift keywords that cannot be bare identifiers; escaped with backticks.
+const SWIFT_KEYWORDS = new Set([
+  'associatedtype', 'class', 'deinit', 'enum', 'extension', 'fileprivate', 'func',
+  'import', 'init', 'inout', 'internal', 'let', 'open', 'operator', 'private',
+  'protocol', 'public', 'rethrows', 'static', 'struct', 'subscript', 'typealias',
+  'var', 'break', 'case', 'continue', 'default', 'defer', 'do', 'else', 'fallthrough',
+  'for', 'guard', 'if', 'in', 'repeat', 'return', 'switch', 'where', 'while', 'as',
+  'Any', 'catch', 'false', 'is', 'nil', 'super', 'self', 'Self', 'throw', 'throws',
+  'true', 'try',
+]);
+
+const escapeCase = (name) => (SWIFT_KEYWORDS.has(name) ? '`' + name + '`' : name);
+
 const missing = [];
 const out = [];
 out.push('//');
@@ -95,7 +108,7 @@ for (const [sf, mat] of mapping) {
   emitted.add(caseName);
   const glyph = String.fromCharCode(parseInt(hex, 16));
   out.push('    /// SF Symbols: "' + sf + '"');
-  out.push('    case ' + caseName + ' = "' + glyph + '"');
+  out.push('    case ' + escapeCase(caseName) + ' = "' + glyph + '"');
 }
 out.push('}');
 out.push('');
@@ -106,7 +119,7 @@ out.push('        switch name {');
 for (const [sf, mat] of mapping) {
   const hex = codepoints.get(mat);
   if (!hex) continue;
-  out.push('        case "' + sf + '": return .' + toCase(mat));
+  out.push('        case "' + sf + '": return .' + escapeCase(toCase(mat)));
 }
 out.push('        default: return nil');
 out.push('        }');

@@ -15,10 +15,14 @@ enum EEPrompts {
         subject: String,
         outputLanguage: String = "auto"
     ) -> String {
+        let useEnglish = ["en", "es", "fr", "de", "pt", "it", "nl"].contains(outputLanguage)
+
         let languageInstruction: String
         switch outputLanguage {
         case "auto":
-            languageInstruction = "与讲座语言一致"
+            languageInstruction = useEnglish
+                ? "Language: Match the lecture language."
+                : "与讲座语言一致"
         default:
             let languageName: String
             switch outputLanguage {
@@ -36,39 +40,74 @@ enum EEPrompts {
             case "it": languageName = "Italian (Italiano)"
             default: languageName = outputLanguage
             }
-            languageInstruction = "所有内容必须使用 \(languageName) 输出"
+            languageInstruction = useEnglish
+                ? "Language: All content MUST be output in \(languageName)."
+                : "所有内容必须使用 \(languageName) 输出"
         }
 
-        return """
-        你是一位 IB 拓展论文（Extended Essay）指导专家。
+        if useEnglish {
+            return """
+            You are an IB Extended Essay (EE) guidance expert.
 
-        科目：\(subject)
+            Subject: \(subject)
 
-        你帮助：
-        1. 构建研究问题
-        2. 规划论文结构
-        3. 撰写反思（RPPF: 初稿、中期、终稿）
-        4. 评估论证质量
-        5. 提供导师会议建议
+            You help with:
+            1. Developing research questions
+            2. Planning essay structure
+            3. Writing reflections (RPPF: Initial, Interim, Final)
+            4. Evaluating argument quality
+            5. Providing supervisor meeting suggestions
 
-        EE 要求：
-        - 最多 4000 字
-        - 正式学术写作
-        - 引用所有来源
-        - 清晰的研究方法
-        - 个人参与反思
+            EE Requirements:
+            - Maximum 4000 words
+            - Formal academic writing
+            - Cite all sources
+            - Clear research methodology
+            - Personal engagement reflection
 
-        评估标准：
-        A: 关注点与探究 (Focus and Research Question)
-        B: 知识与理解 (Knowledge and Understanding)
-        C: 批判性思维 (Critical Thinking)
-        D: 展示 (Presentation)
-        E: 参与过程 (Engagement - RPPF)
-        F: 清晰与语言 (Subject-specific clarity)
+            Assessment Criteria:
+            A: Focus and Research Question
+            B: Knowledge and Understanding
+            C: Critical Thinking
+            D: Presentation
+            E: Engagement (RPPF)
+            F: Subject-specific clarity and language
 
-        提供具体、可操作的建议，并引用 IB 标准和评分描述。
-        语言要求：\(languageInstruction)。
-        """
+            Provide specific, actionable advice referencing IB standards and mark descriptors.
+            \(languageInstruction).
+            """
+        } else {
+            return """
+            你是一位 IB 拓展论文（Extended Essay）指导专家。
+
+            科目：\(subject)
+
+            你帮助：
+            1. 构建研究问题
+            2. 规划论文结构
+            3. 撰写反思（RPPF: 初稿、中期、终稿）
+            4. 评估论证质量
+            5. 提供导师会议建议
+
+            EE 要求：
+            - 最多 4000 字
+            - 正式学术写作
+            - 引用所有来源
+            - 清晰的研究方法
+            - 个人参与反思
+
+            评估标准：
+            A: 关注点与探究 (Focus and Research Question)
+            B: 知识与理解 (Knowledge and Understanding)
+            C: 批判性思维 (Critical Thinking)
+            D: 展示 (Presentation)
+            E: 参与过程 (Engagement - RPPF)
+            F: 清晰与语言 (Subject-specific clarity)
+
+            提供具体、可操作的建议，并引用 IB 标准和评分描述。
+            语言要求：\(languageInstruction)。
+            """
+        }
     }
 
     /// Builds the user prompt for a specific EE stage.
@@ -79,65 +118,135 @@ enum EEPrompts {
     /// - Returns: A user prompt string.
     static func userPrompt(
         content: String,
-        stage: String
+        stage: String,
+        outputLanguage: String = "auto"
     ) -> String {
+        let useEnglish = ["en", "es", "fr", "de", "pt", "it", "nl"].contains(outputLanguage)
+
         let stageInstruction: String
         switch stage {
         case "planning":
-            stageInstruction = """
-            帮助发展研究问题，建议论文结构和研究方向。
+            if useEnglish {
+                stageInstruction = """
+                Help develop the research question and suggest essay structure and research direction.
 
-            具体任务：
-            1. 评估当前研究问题的范围和可行性
-            2. 建议改进问题使其更具分析性
-            3. 推荐可能的研究方法和资料来源
-            4. 提供大纲结构建议
-            5. 标注常见的 IB EE 陷阱
-            """
+                Specific tasks:
+                1. Evaluate the scope and feasibility of the current research question
+                2. Suggest improvements to make the question more analytical
+                3. Recommend possible research methods and sources
+                4. Provide outline structure suggestions
+                5. Highlight common IB EE pitfalls
+                """
+            } else {
+                stageInstruction = """
+                帮助发展研究问题，建议论文结构和研究方向。
+
+                具体任务：
+                1. 评估当前研究问题的范围和可行性
+                2. 建议改进问题使其更具分析性
+                3. 推荐可能的研究方法和资料来源
+                4. 提供大纲结构建议
+                5. 标注常见的 IB EE 陷阱
+                """
+            }
         case "researching":
-            stageInstruction = """
-            评估研究方法，建议额外资料来源，优化论证。
+            if useEnglish {
+                stageInstruction = """
+                Evaluate the research methodology, suggest additional sources, and refine arguments.
 
-            具体任务：
-            1. 评估当前研究方法的合理性
-            2. 指出研究中的偏见或局限性
-            3. 建议额外的原始和二手资料来源
-            4. 帮助整合不同来源的证据
-            5. 确保论证符合 IB 学术诚信标准
-            """
+                Specific tasks:
+                1. Assess the validity of the current research methodology
+                2. Identify bias or limitations in the research
+                3. Suggest additional primary and secondary sources
+                4. Help integrate evidence from different sources
+                5. Ensure arguments meet IB academic integrity standards
+                """
+            } else {
+                stageInstruction = """
+                评估研究方法，建议额外资料来源，优化论证。
+
+                具体任务：
+                1. 评估当前研究方法的合理性
+                2. 指出研究中的偏见或局限性
+                3. 建议额外的原始和二手资料来源
+                4. 帮助整合不同来源的证据
+                5. 确保论证符合 IB 学术诚信标准
+                """
+            }
         case "drafting":
-            stageInstruction = """
-            审阅草稿内容，评估论证质量，提供改进建议。
+            if useEnglish {
+                stageInstruction = """
+                Review the draft content, evaluate argument quality, and provide improvement suggestions.
 
-            具体任务：
-            1. 评估论证结构和逻辑连贯性
-            2. 检查是否符合 A-F 评估标准
-            3. 标注需要加强批判性思维的部分
-            4. 检查引用和参考文献格式
-            5. 评估字数分配是否合理
-            """
+                Specific tasks:
+                1. Evaluate argument structure and logical coherence
+                2. Check alignment with A-F assessment criteria
+                3. Highlight sections needing stronger critical thinking
+                4. Check citation and reference formatting
+                5. Assess word count allocation
+                """
+            } else {
+                stageInstruction = """
+                审阅草稿内容，评估论证质量，提供改进建议。
+
+                具体任务：
+                1. 评估论证结构和逻辑连贯性
+                2. 检查是否符合 A-F 评估标准
+                3. 标注需要加强批判性思维的部分
+                4. 检查引用和参考文献格式
+                5. 评估字数分配是否合理
+                """
+            }
         case "reflecting":
-            stageInstruction = """
-            帮助撰写 RPPF 反思，关注个人参与和学习过程。
+            if useEnglish {
+                stageInstruction = """
+                Help write the RPPF reflection, focusing on personal engagement and learning process.
 
-            具体任务：
-            1. 引导反思研究过程中的关键决策
-            2. 帮助表达方法论选择背后的思考
-            3. 反思遇到的挑战和应对方式
-            4. 评估研究技能的发展
-            5. 确保反思真实、具体、有深度
-            """
+                Specific tasks:
+                1. Guide reflection on key decisions during the research process
+                2. Help articulate the thinking behind methodology choices
+                3. Reflect on challenges encountered and how they were addressed
+                4. Evaluate the development of research skills
+                5. Ensure reflections are genuine, specific, and deep
+                """
+            } else {
+                stageInstruction = """
+                帮助撰写 RPPF 反思，关注个人参与和学习过程。
+
+                具体任务：
+                1. 引导反思研究过程中的关键决策
+                2. 帮助表达方法论选择背后的思考
+                3. 反思遇到的挑战和应对方式
+                4. 评估研究技能的发展
+                5. 确保反思真实、具体、有深度
+                """
+            }
         default:
-            stageInstruction = """
-            提供建设性反馈和建议，关注 IB EE 评估标准。
-            """
+            if useEnglish {
+                stageInstruction = """
+                Provide constructive feedback and suggestions, focusing on IB EE assessment criteria.
+                """
+            } else {
+                stageInstruction = """
+                提供建设性反馈和建议，关注 IB EE 评估标准。
+                """
+            }
         }
 
-        return """
-        \(stageInstruction)
+        if useEnglish {
+            return """
+            \(stageInstruction)
 
-        论文内容/笔记：
-        \(content)
-        """
+            Essay content / notes:
+            \(content)
+            """
+        } else {
+            return """
+            \(stageInstruction)
+
+            论文内容/笔记：
+            \(content)
+            """
+        }
     }
 }

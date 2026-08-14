@@ -34,7 +34,7 @@ struct AstraCard<Content: View>: View {
 
     private var shell: some View {
         content
-            .padding(Layout.cardPadding)
+            .padding(LayoutTokens.cardPadding)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(tint == .clear ? AnyShapeStyle(Color.surface) : AnyShapeStyle(tint))
             .overlay(

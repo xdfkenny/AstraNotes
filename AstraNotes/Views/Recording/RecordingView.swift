@@ -126,7 +126,7 @@ struct RecordingView: View {
                         }
                     }
                 }
-                .padding(Layout.cardPadding)
+                .padding(LayoutTokens.cardPadding)
             }
 
             // Timer + state

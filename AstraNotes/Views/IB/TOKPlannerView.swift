@@ -259,7 +259,7 @@ struct TOKPlannerView: View {
 
     private var realWorldSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionLabel(String(localized: "tok.realWorldSituation"), icon: .public)
+            sectionLabel(String(localized: "tok.realWorldSituation"), icon: .`public`)
 
             TextEditor(text: $realWorldSituation)
                 .font(.system(size: 14))

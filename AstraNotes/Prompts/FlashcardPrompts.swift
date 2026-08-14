@@ -18,13 +18,17 @@ enum FlashcardPrompts {
         bloomLevel: Int,
         outputLanguage: String = "auto"
     ) -> String {
-        let bloomName = Self.bloomLevelName(bloomLevel)
+        let useEnglish = ["en", "es", "fr", "de", "pt", "it", "nl"].contains(outputLanguage)
+
+        let bloomName = Self.bloomLevelName(bloomLevel, english: useEnglish)
         let bloomDescription = Self.bloomLevelDescription(bloomLevel)
 
         let languageInstruction: String
         switch outputLanguage {
         case "auto":
-            languageInstruction = "与讲座语言一致"
+            languageInstruction = useEnglish
+                ? "Language: Match the lecture language."
+                : "与讲座语言一致"
         default:
             let languageName: String
             switch outputLanguage {
@@ -42,31 +46,58 @@ enum FlashcardPrompts {
             case "it": languageName = "Italian (Italiano)"
             default: languageName = outputLanguage
             }
-            languageInstruction = "所有内容必须使用 \(languageName) 输出"
+            languageInstruction = useEnglish
+                ? "Language: All content MUST be output in \(languageName)."
+                : "所有内容必须使用 \(languageName) 输出"
         }
 
-        return """
-        你是一位 IB 课程闪卡生成专家。
+        if useEnglish {
+            return """
+            You are an IB course flashcard generation expert.
 
-        从给定的学习笔记中生成闪卡。每张闪卡包含正面（问题）和背面（答案）。
+            Generate flashcards from the given study notes. Each card has a front (question) and back (answer).
 
-        要求：
-        1. 使用布鲁姆分类法第 \(bloomLevel) 级（\(bloomName)：\(bloomDescription)）来设计问题
-        2. 每张卡片格式：
-           ### Card N
-           **Front:** [问题]
-           **Back:** [答案]
-           **Hint:** [可选的上下文提示]
-           **Level:** [布鲁姆级别]
-        3. 答案应精确、简洁，适合快速复习
-        4. 包含 IB 考试相关内容
-        5. HL 专属内容用 [HL] 标注
-        6. 生成 15-25 张闪卡
-        7. 覆盖笔记中的所有关键概念
+            Requirements:
+            1. Use Bloom's taxonomy level \(bloomLevel) (\(bloomName): \(bloomDescription)) to design questions
+            2. Card format:
+               ### Card N
+               **Front:** [Question]
+               **Back:** [Answer]
+               **Hint:** [Optional context clue]
+               **Level:** [Bloom's level]
+            3. Answers should be precise and concise, suitable for quick review
+            4. Include IB exam-relevant content
+            5. Mark HL-only content with [HL]
+            6. Generate 15-25 flashcards
+            7. Cover all key concepts in the notes
 
-        科目：\(subjectName)
-        语言要求：\(languageInstruction)。
-        """
+            Subject: \(subjectName)
+            \(languageInstruction).
+            """
+        } else {
+            return """
+            你是一位 IB 课程闪卡生成专家。
+
+            从给定的学习笔记中生成闪卡。每张闪卡包含正面（问题）和背面（答案）。
+
+            要求：
+            1. 使用布鲁姆分类法第 \(bloomLevel) 级（\(bloomName)：\(bloomDescription)）来设计问题
+            2. 每张卡片格式：
+               ### Card N
+               **Front:** [问题]
+               **Back:** [答案]
+               **Hint:** [可选的上下文提示]
+               **Level:** [布鲁姆级别]
+            3. 答案应精确、简洁，适合快速复习
+            4. 包含 IB 考试相关内容
+            5. HL 专属内容用 [HL] 标注
+            6. 生成 15-25 张闪卡
+            7. 覆盖笔记中的所有关键概念
+
+            科目：\(subjectName)
+            语言要求：\(languageInstruction)。
+            """
+        }
     }
 
     /// Builds the user prompt that provides the source note content.
@@ -77,19 +108,41 @@ enum FlashcardPrompts {
     /// - Returns: A user prompt string.
     static func userPrompt(
         noteContent: String,
-        count: Int
+        count: Int,
+        outputLanguage: String = "auto"
     ) -> String {
-        """
-        从以下学习笔记生成 \(count) 张闪卡：
+        let useEnglish = ["en", "es", "fr", "de", "pt", "it", "nl"].contains(outputLanguage)
 
-        \(noteContent)
-        """
+        if useEnglish {
+            return """
+            Generate \(count) flashcards from the following study notes:
+
+            \(noteContent)
+            """
+        } else {
+            return """
+            从以下学习笔记生成 \(count) 张闪卡：
+
+            \(noteContent)
+            """
+        }
     }
 
     // MARK: - Bloom's Taxonomy Helpers
 
-    /// Returns the Chinese name for a Bloom's taxonomy level.
-    static func bloomLevelName(_ level: Int) -> String {
+    /// Returns the name for a Bloom's taxonomy level.
+    static func bloomLevelName(_ level: Int, english: Bool = false) -> String {
+        if english {
+            switch level {
+            case 1: return "Remember"
+            case 2: return "Understand"
+            case 3: return "Apply"
+            case 4: return "Analyze"
+            case 5: return "Evaluate"
+            case 6: return "Create"
+            default: return "Understand"
+            }
+        }
         switch level {
         case 1: return "记忆"
         case 2: return "理解"

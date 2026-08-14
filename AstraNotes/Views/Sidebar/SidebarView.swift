@@ -38,7 +38,7 @@ struct SidebarView: View {
 
             statusFooter
         }
-        .frame(minWidth: 200, idealWidth: Layout.sidebarWidth, maxWidth: 280)
+        .frame(minWidth: 200, idealWidth: LayoutTokens.sidebarWidth, maxWidth: 280)
         .background(Color.surfaceBackground)
         .overlay(alignment: .trailing) {
             Rectangle()
