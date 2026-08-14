@@ -386,7 +386,7 @@ struct StudyGuideView: View {
         #if os(macOS)
         .onHover { isHovered in
             withAnimation(.easeOut(duration: 0.2)) {
-                expandedSectionIDs.insert(note.id)
+                _ = expandedSectionIDs.insert(note.id)
             }
         }
         #endif
@@ -851,7 +851,7 @@ struct StudyGuideView: View {
 
             for line in conceptLines {
                 let cleaned = line.trimmed
-                    .replacingOccurrences(of: "^[-*]\s+", with: "", options: .regularExpression)
+                    .replacingOccurrences(of: "^[-*]\\s+", with: "", options: .regularExpression)
                     .replacingOccurrences(of: #"[\*_]{1,2}"#, with: "", options: .regularExpression)
 
                 if !formulas.contains(where: { $0.content == cleaned }) && !cleaned.isBlank {
