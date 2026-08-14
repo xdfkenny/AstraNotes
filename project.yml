@@ -1,0 +1,75 @@
+# project.yml — XcodeGen 项目配置
+# 用命令行从源码生成 AstraNotes.xcodeproj（无需在 Mac 上手动建项目）
+#
+# 本地生成:  brew install xcodegen && xcodegen generate
+# CI 自动生成: .github/workflows/build.yml 中已配置
+#
+# 文档: BUILD.md
+
+name: AstraNotes
+
+options:
+  bundleIdPrefix: com.astranotes
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    CODE_SIGN_STYLE: Manual
+    CODE_SIGN_IDENTITY: "-"
+    DEVELOPMENT_TEAM: ""
+    PRODUCT_NAME: AstraNotes
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    ENABLE_HARDENED_RUNTIME: NO
+    # 本地 Whisper 模型较大，无需位码
+    ENABLE_BITCODE: NO
+
+packages:
+  WhisperKit:
+    url: https://github.com/argmaxinc/WhisperKit
+    from: "1.1.0"
+
+targets:
+  AstraNotes:
+    type: application
+    platform: macOS
+    sources:
+      # 源码根目录（App/Models/Services/Prompts/Views/DesignSystem/Theme/Utilities/Resources）
+      - path: AstraNotes
+        excludes:
+          - Resources/Fonts        # 字体单独加入 resources（见下）
+          - Resources/Info.plist   # 由 XcodeGen 生成
+    resources:
+      # Google Material Symbols 字体 → Copy Bundle Resources
+      - path: AstraNotes/Resources/Fonts
+        excludes:
+          - "*.codepoints"         # 仅打包 TTF，不需要 codepoints 映射文件
+    dependencies:
+      - package: WhisperKit
+    info:
+      path: AstraNotes/Resources/Info.plist
+      properties:
+        CFBundleDisplayName: AstraNotes
+        CFBundleName: AstraNotes
+        CFBundleShortVersionString: "1.0.0"
+        CFBundleVersion: "1"
+        LSMinimumSystemVersion: "14.0"
+        # 录音权限说明（AVFoundation 必须）
+        NSMicrophoneUsageDescription: "AstraNotes records lecture audio for local transcription with Whisper."
+        NSHumanReadableCopyright: "AstraNotes for IB students"
+        LSApplicationCategoryType: "public.app-category.education"
+
+schemes:
+  AstraNotes:
+    build:
+      targets:
+        AstraNotes: all
+    run:
+      config: Debug
+    archive:
+      config: Release

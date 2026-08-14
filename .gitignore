@@ -39,3 +39,10 @@ Thumbs.db
 # Files that might contain secrets
 *.pem
 *.key
+
+# XcodeGen generated
+AstraNotes.xcodeproj/
+AstraNotes/Resources/Info.plist
+
+# CI build artifacts
+*.zip

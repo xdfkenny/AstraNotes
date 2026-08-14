@@ -38,28 +38,27 @@ enum NavigationDestination: String, CaseIterable, Identifiable {
         }
     }
 
-    var icon: String {
+    var astraIcon: AstraIcon {
         switch self {
-        case .dashboard:     return "square.grid.2x2"
-        case .recording:     return "mic.circle"
-        case .transcription: return "text.document"
-        case .notes:         return "doc.text"
-        case .flashcards:    return "square.stack"
-        case .quiz:          return "questionmark.circle"
-        case .studyGuide:    return "book"
-        case .tok:           return "brain"
-        case .ee:            return "graduationcap"
-        case .ia:            return "chart.bar"
-        case .cas:           return "heart.circle"
-        case .settings:      return "gearshape"
+        case .dashboard:     return .gridView
+        case .recording:     return .mic
+        case .transcription: return .description
+        case .notes:         return .description
+        case .flashcards:    return .style
+        case .quiz:          return .help
+        case .studyGuide:    return .menuBook
+        case .tok:           return .psychology
+        case .ee:            return .school
+        case .ia:            return .barChart
+        case .cas:           return .favorite
+        case .settings:      return .settings
         }
     }
 }
 
 // MARK: - Content View
-// Root view that provides a NavigationSplitView with a sidebar on the
-// left and a detail area on the right. The detail area switches between
-// views based on the currently selected NavigationDestination.
+// Root view with NavigationSplitView: sidebar on the left, detail on the
+// right. The detail area switches based on the selected destination.
 
 struct ContentView: View {
     @Environment(\.themeManager) private var themeManager
@@ -69,21 +68,21 @@ struct ContentView: View {
         NavigationSplitView {
             SidebarView(selectedDestination: $selectedDestination)
                 .navigationTitle(String(localized: "app.name"))
-                .background(CryoColors.backgroundWarm(themeManager))
+                .background(Color.surfaceBackground)
         } detail: {
-            ZStack {
-                // Base background
-                CryoColors.background(themeManager)
-                    .ignoresSafeArea()
-
-                // Subtle frost noise overlay for the cryo aesthetic
-                Rectangle()
-                    .fill(.ultraThinMaterial)
-                    .opacity(0.03)
-                    .ignoresSafeArea()
-
-                detailContent
-            }
+            detailContent
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.surfaceBackground)
+                .toolbar {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button {
+                            selectedDestination = .settings
+                        } label: {
+                            AstraIconView(.settings, size: 14)
+                        }
+                        .help(String(localized: "nav.settings"))
+                    }
+                }
         }
     }
 
@@ -92,7 +91,7 @@ struct ContentView: View {
     private var detailContent: some View {
         switch selectedDestination {
         case .dashboard:
-            DashboardView()
+            DashboardView(onNavigate: { selectedDestination = $0 })
         case .recording:
             RecordingView()
         case .transcription:

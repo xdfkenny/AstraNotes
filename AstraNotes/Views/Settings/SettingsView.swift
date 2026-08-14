@@ -2,197 +2,214 @@ import SwiftUI
 import SwiftData
 
 // MARK: - SettingsView
-// The application settings screen organized into card groups:
-// Appearance (theme picker), AI & Services (API key, vault path),
-// Transcription (language, auto-transcribe), Note Generation (style,
-// quiz difficulty), and an About section. All inputs and toggles use
-// the Soft Cryo styling through CryoCard, CryoButton, and CryoInput.
+// Settings organized into grouped cards: Appearance (theme), AI & Services
+// (DeepSeek key, Obsidian vault), Transcription, Note Generation,
+// App Language, Note Output Language, and About. Values persist to the
+// AppSettings model; the theme picker drives ThemeManager.
 
 struct SettingsView: View {
     @Environment(\.themeManager) private var tm
+    @Environment(\.modelContext) private var modelContext
     @Query private var settings: [AppSettings]
-    @State private var deepSeekKey: String = ""
-    @State private var obsidianPath: String = ""
-    @State private var whisperLanguage: String = "auto"
-    @State private var autoTranscribe: Bool = true
-    @State private var noteStyle: String = "detailed"
-    @State private var quizDifficulty: String = "mixed"
-    @State private var selectedTheme: ThemeMode = .system
+
+    @State private var obsidianService = ObsidianService()
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 24) {
-                // Header
+            VStack(alignment: .leading, spacing: Spacing.xl) {
                 settingsHeader
 
-                // Appearance
                 settingsCard(String(localized: "settings.appearance")) {
-                    VStack(spacing: 16) {
-                        themePicker
-
-                        // Theme preview chips
-                        HStack(spacing: 12) {
-                            themePreviewChip(String(localized: "settings.light"), mode: .light)
-                            themePreviewChip(String(localized: "settings.dark"), mode: .dark)
-                            themePreviewChip(String(localized: "settings.system"), mode: .system)
-                        }
-                    }
+                    themePicker
                 }
 
-                // API Keys & Services
                 settingsCard(String(localized: "settings.aiServices")) {
-                    VStack(spacing: 16) {
-                        settingsRow(String(localized: "settings.deepSeekKey")) {
-                            SecureField("sk-...", text: $deepSeekKey)
+                    VStack(spacing: Spacing.lg) {
+                        // DeepSeek API key
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            Text(String(localized: "settings.deepSeekKey"))
+                                .font(TypeScale.caption)
+                                .foregroundStyle(.textSecondary)
+                            SecureField("sk-...", text: apiKeyBinding)
                                 .textFieldStyle(.plain)
-                                .font(.system(size: 14, design: .monospaced))
-                                .foregroundColor(CryoColors.foreground(tm))
+                                .font(.astraMono(13))
+                                .foregroundStyle(.textPrimary)
+                                .padding(.horizontal, Spacing.md)
+                                .frame(height: 32)
+                                .background(Color.surface)
+                                .clipShape(RoundedRectangle(cornerRadius: Radius.control))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: Radius.control)
+                                        .stroke(Color.hairline, lineWidth: 1)
+                                )
                         }
 
-                        settingsRow(String(localized: "settings.obsidianVault")) {
-                            HStack {
-                                Text(obsidianPath.isEmpty ? String(localized: "settings.notSelected") : obsidianPath)
-                                    .font(.system(size: 14))
-                                    .foregroundColor(CryoColors.foreground(tm))
+                        // Obsidian vault
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            Text(String(localized: "settings.obsidianVault"))
+                                .font(TypeScale.caption)
+                                .foregroundStyle(.textSecondary)
+                            HStack(spacing: Spacing.md) {
+                                Text(obsidianService.vaultPath.isEmpty
+                                     ? String(localized: "settings.notSelected")
+                                     : obsidianService.vaultPath)
+                                    .font(.astraMono(12))
+                                    .foregroundStyle(obsidianService.vaultPath.isEmpty ? .textTertiary : .textPrimary)
                                     .lineLimit(1)
+                                    .truncationMode(.middle)
                                 Spacer()
-                                CryoButton(String(localized: "settings.chooseVault"), style: .secondary, action: {})
+                                AstraButton(
+                                    title: String(localized: "settings.chooseVault"),
+                                    style: .secondary
+                                ) {
+                                    obsidianService.selectVault()
+                                }
+                            }
+                            .padding(Spacing.sm)
+                            .background(Color.surface)
+                            .clipShape(RoundedRectangle(cornerRadius: Radius.control))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: Radius.control)
+                                    .stroke(Color.hairline, lineWidth: 1)
+                            )
+
+                            if obsidianService.isVaultValid {
+                                HStack(spacing: Spacing.xs) {
+                                    StatusDot(kind: .ready)
+                                    Text("\(obsidianService.vaultStructure.count) \(String(localized: "sidebar.subjects"))")
+                                        .font(TypeScale.caption)
+                                        .foregroundStyle(.textSecondary)
+                                }
+                            } else if !obsidianService.vaultPath.isEmpty {
+                                HStack(spacing: Spacing.xs) {
+                                    StatusDot(kind: .processing)
+                                    Text(String(localized: "settings.vaultInvalid"))
+                                        .font(TypeScale.caption)
+                                        .foregroundStyle(.textSecondary)
+                                }
                             }
                         }
                     }
                 }
 
-                // Transcription
                 settingsCard(String(localized: "settings.transcription")) {
-                    VStack(spacing: 16) {
+                    VStack(spacing: Spacing.lg) {
                         settingsRow(String(localized: "settings.whisperLanguage")) {
-                            Picker("", selection: $whisperLanguage) {
+                            Picker("", selection: whisperLanguageBinding) {
                                 Text(String(localized: "settings.autoDetect")).tag("auto")
                                 Text(String(localized: "settings.english")).tag("en")
                                 Text(String(localized: "settings.spanish")).tag("es")
                                 Text(String(localized: "settings.chinese")).tag("zh")
                             }
                             .labelsHidden()
-                            .tint(CryoColors.accent(tm))
+                            .tint(Color.accent)
                         }
 
-                        settingsToggle(String(localized: "settings.autoTranscribe"), isOn: $autoTranscribe)
+                        settingsToggle(String(localized: "settings.autoTranscribe"), isOn: autoTranscribeBinding)
                     }
                 }
 
-                // Note Generation
                 settingsCard(String(localized: "settings.noteGeneration")) {
-                    VStack(spacing: 16) {
+                    VStack(spacing: Spacing.lg) {
                         settingsRow(String(localized: "settings.style")) {
-                            Picker("", selection: $noteStyle) {
+                            Picker("", selection: noteStyleBinding) {
                                 Text(String(localized: "settings.detailed")).tag("detailed")
                                 Text(String(localized: "settings.concise")).tag("concise")
                                 Text(String(localized: "settings.examFocused")).tag("exam-focused")
                             }
                             .labelsHidden()
-                            .tint(CryoColors.accent(tm))
+                            .tint(Color.accent)
                         }
 
                         settingsRow(String(localized: "settings.quizDifficulty")) {
-                            Picker("", selection: $quizDifficulty) {
+                            Picker("", selection: quizDifficultyBinding) {
                                 Text(String(localized: "settings.sl")).tag("sl")
                                 Text(String(localized: "settings.hl")).tag("hl")
                                 Text(String(localized: "settings.mixed")).tag("mixed")
                             }
                             .labelsHidden()
-                            .tint(CryoColors.accent(tm))
+                            .tint(Color.accent)
                         }
                     }
                 }
 
-                // MARK: - App Language
                 settingsCard(String(localized: "settings.language")) {
-                    HStack {
-                        Text(String(localized: "settings.language"))
-                            .font(.system(size: 14, weight: .medium))
-                        Spacer()
-                        Picker("", selection: Binding(
-                            get: { settings.first?.appLanguage ?? "en" },
-                            set: { settings.first?.appLanguage = $0 }
-                        )) {
-                            ForEach(LocalizationManager.shared.supportedAppLanguages, id: \.code) { lang in
-                                Text(String(localized: "lang.\(lang.code)")).tag(lang.code)
+                    VStack(alignment: .leading, spacing: Spacing.sm) {
+                        settingsRow(String(localized: "settings.language")) {
+                            Picker("", selection: appLanguageBinding) {
+                                ForEach(LocalizationManager.shared.supportedAppLanguages, id: \.code) { lang in
+                                    Text(String(localized: "lang.\(lang.code)")).tag(lang.code)
+                                }
                             }
+                            .labelsHidden()
+                            .frame(width: 160)
                         }
-                        .labelsHidden()
-                        .frame(width: 140)
+                        Text(String(localized: "settings.languageHint"))
+                            .font(TypeScale.caption)
+                            .foregroundStyle(.textTertiary)
                     }
-                    Text(String(localized: "settings.languageHint"))
-                        .font(.system(size: 11))
-                        .foregroundColor(CryoColors.foregroundMuted(tm))
                 }
 
-                // MARK: - Note Output Language
                 settingsCard(String(localized: "settings.outputLanguage")) {
-                    HStack {
-                        Text(String(localized: "settings.outputLanguage"))
-                            .font(.system(size: 14, weight: .medium))
-                        Spacer()
-                        Picker("", selection: Binding(
-                            get: { settings.first?.noteOutputLanguage ?? "auto" },
-                            set: { settings.first?.noteOutputLanguage = $0 }
-                        )) {
+                    settingsRow(String(localized: "settings.outputLanguage")) {
+                        Picker("", selection: noteOutputLanguageBinding) {
                             Text(String(localized: "settings.outputLanguageAuto")).tag("auto")
                             ForEach(LocalizationManager.shared.supportedAppLanguages, id: \.code) { lang in
                                 Text(String(localized: "lang.\(lang.code)")).tag(lang.code)
                             }
                         }
                         .labelsHidden()
-                        .frame(width: 140)
+                        .frame(width: 160)
                     }
                 }
 
-                // About
                 settingsCard(String(localized: "settings.about")) {
-                    VStack(spacing: 8) {
+                    VStack(spacing: Spacing.sm) {
                         HStack {
-                            Text("\u{2744}\u{FE0F} AstraNotes")
-                                .font(.system(size: 16, weight: .bold, design: .rounded))
-                                .foregroundColor(CryoColors.foreground(tm))
+                            AstraIconView(.autoAwesome, size: 14)
+                                .foregroundStyle(Color.accent)
+                                .frame(width: 26, height: 26)
+                                .background(Color.accentContainer)
+                                .clipShape(RoundedRectangle(cornerRadius: Radius.micro))
+                            Text("AstraNotes")
+                                .font(TypeScale.heading)
+                                .foregroundStyle(.textPrimary)
                             Spacer()
-                            Text(String(localized: "settings.version"))
-                                .font(.system(size: 12, design: .monospaced))
-                                .foregroundColor(CryoColors.foregroundMuted(tm))
+                            Text("\(Bundle.main.fullVersion)")
+                                .font(.astraMono(11))
+                                .foregroundStyle(.textTertiary)
                         }
                         Text(String(localized: "settings.aboutDescription"))
-                            .font(.system(size: 13))
-                            .foregroundColor(CryoColors.foregroundMuted(tm))
+                            .font(TypeScale.body)
+                            .foregroundStyle(.textSecondary)
                     }
                 }
             }
-            .padding(32)
+            .padding(Spacing.xxl)
+            .frame(maxWidth: 720, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .top)
         }
-        .background(CryoColors.background(tm))
+        .background(Color.surfaceBackground)
     }
 
     // MARK: - Settings Header
 
     private var settingsHeader: some View {
-        Text(String(localized: "settings.title"))
-            .font(.system(size: 28, weight: .bold, design: .rounded))
-            .foregroundColor(CryoColors.foreground(tm))
-            .frame(maxWidth: .infinity, alignment: .leading)
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            Text(String(localized: "settings.title"))
+                .font(TypeScale.title)
+                .foregroundStyle(.textPrimary)
+        }
     }
 
     // MARK: - Reusable Card Container
 
     private func settingsCard<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
-        CryoCard(manager: tm, style: .standard) {
-            VStack(alignment: .leading, spacing: 16) {
-                Text(title)
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
-                    .textCase(.uppercase)
-                    .tracking(0.05)
-
+        AstraCard {
+            VStack(alignment: .leading, spacing: Spacing.lg) {
+                SectionHeader(title: title)
                 content()
             }
-            .padding(20)
         }
     }
 
@@ -201,8 +218,8 @@ struct SettingsView: View {
     private func settingsRow<Content: View>(_ label: String, @ViewBuilder content: () -> Content) -> some View {
         HStack(alignment: .center) {
             Text(label)
-                .font(.system(size: 14))
-                .foregroundColor(CryoColors.foreground(tm))
+                .font(TypeScale.body)
+                .foregroundStyle(.textPrimary)
             Spacer()
             content()
         }
@@ -213,67 +230,103 @@ struct SettingsView: View {
     private func settingsToggle(_ label: String, isOn: Binding<Bool>) -> some View {
         Toggle(isOn: isOn) {
             Text(label)
-                .font(.system(size: 14))
-                .foregroundColor(CryoColors.foreground(tm))
+                .font(TypeScale.body)
+                .foregroundStyle(.textPrimary)
         }
         .toggleStyle(.switch)
-        .tint(CryoColors.accent(tm))
+        .tint(Color.accent)
     }
 
     // MARK: - Theme Picker
 
     private var themePicker: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: Spacing.sm) {
             ForEach(ThemeMode.allCases, id: \.self) { mode in
-                let isSelected = selectedTheme == mode
+                let isSelected = tm.mode == mode
 
                 Button {
-                    selectedTheme = mode
-                    tm.mode = mode
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: mode.icon)
-                            .font(.system(size: 12))
-                        Text(mode.displayName)
-                            .font(.system(size: 12, weight: isSelected ? .semibold : .regular))
+                    withAnimation(Motion.stateChange) {
+                        tm.mode = mode
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(
-                        isSelected
-                            ? CryoColors.primaryGradient(tm)
-                            : CryoColors.frost(tm)
-                    )
-                    .foregroundColor(isSelected ? .white : CryoColors.foreground(tm))
+                } label: {
+                    HStack(spacing: Spacing.xs) {
+                        AstraIconView(mode.astraIcon, size: 12)
+                        Text(mode.displayName)
+                            .font(.astraBody(12, isSelected ? .semibold : .regular))
+                    }
+                    .padding(.horizontal, Spacing.lg)
+                    .padding(.vertical, Spacing.sm)
+                    .background(isSelected ? Color.accent : Color.surface)
+                    .foregroundStyle(isSelected ? Color.onAccent : Color.textPrimary)
                     .clipShape(Capsule())
                     .overlay(
-                        Capsule()
-                            .stroke(
-                                isSelected ? .clear : CryoColors.border(tm),
-                                lineWidth: 1
-                            )
+                        Capsule().stroke(isSelected ? Color.clear : Color.hairline, lineWidth: 1)
                     )
                 }
                 .buttonStyle(.plain)
             }
+            Spacer()
         }
     }
 
-    // MARK: - Theme Preview Chip
+    // MARK: - Model Bindings
+    // Lazy-create the singleton AppSettings row so settings persist.
 
-    private func themePreviewChip(_ name: String, mode: ThemeMode) -> some View {
-        VStack(spacing: 8) {
-            RoundedRectangle(cornerRadius: 8)
-                .fill(mode == .dark ? Color(hex: "#0F1729") : Color(hex: "#F0F7FF"))
-                .frame(width: 60, height: 40)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(CryoColors.border(tm), lineWidth: 1)
-                )
-
-            Text(name)
-                .font(.system(size: 11))
-                .foregroundColor(CryoColors.foregroundMuted(tm))
+    private var settingsModel: AppSettings {
+        if let existing = settings.first {
+            return existing
         }
+        let row = AppSettings()
+        modelContext.insert(row)
+        return row
+    }
+
+    private var apiKeyBinding: Binding<String> {
+        Binding(
+            get: { settingsModel.deepSeekAPIKey },
+            set: { settingsModel.deepSeekAPIKey = $0 }
+        )
+    }
+
+    private var whisperLanguageBinding: Binding<String> {
+        Binding(
+            get: { settingsModel.whisperLanguage },
+            set: { settingsModel.whisperLanguage = $0 }
+        )
+    }
+
+    private var autoTranscribeBinding: Binding<Bool> {
+        Binding(
+            get: { settingsModel.autoTranscribe },
+            set: { settingsModel.autoTranscribe = $0 }
+        )
+    }
+
+    private var noteStyleBinding: Binding<String> {
+        Binding(
+            get: { settingsModel.noteGenerationStyle },
+            set: { settingsModel.noteGenerationStyle = $0 }
+        )
+    }
+
+    private var quizDifficultyBinding: Binding<String> {
+        Binding(
+            get: { settingsModel.quizDifficulty },
+            set: { settingsModel.quizDifficulty = $0 }
+        )
+    }
+
+    private var appLanguageBinding: Binding<String> {
+        Binding(
+            get: { settingsModel.appLanguage },
+            set: { settingsModel.appLanguage = $0 }
+        )
+    }
+
+    private var noteOutputLanguageBinding: Binding<String> {
+        Binding(
+            get: { settingsModel.noteOutputLanguage },
+            set: { settingsModel.noteOutputLanguage = $0 }
+        )
     }
 }

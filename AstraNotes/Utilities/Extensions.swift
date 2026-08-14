@@ -1,5 +1,10 @@
 import SwiftUI
 import Foundation
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 // MARK: - Color Hex Initializer
 // Allows creating a Color from a hex string: Color(hex: "#7EC8E3").
@@ -40,53 +45,73 @@ extension Color {
 
         self.init(.sRGB, red: r, green: g, blue: b, opacity: a)
     }
+
+    /// Adaptive color that resolves light/dark hex variants against the
+    /// current system appearance (respects preferredColorScheme).
+    /// Usage: `Color(light: "#FFFFFF", dark: "#131316")`
+    init(light: String, dark: String) {
+        #if os(macOS)
+        self.init(nsColor: NSColor(name: nil) { appearance in
+            let isDark = appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+            return NSColor(hexString: isDark ? dark : light) ?? .systemGray
+        })
+        #else
+        self.init(uiColor: UIColor { trait in
+            UIColor(hexString: trait.userInterfaceStyle == .dark ? dark : light) ?? .systemGray
+        })
+        #endif
+    }
 }
 
-// MARK: - Hexagon Shape
-// A regular hexagon centered in its frame. Useful for ice-crystal
-// decorative elements in the Soft Cryo theme.
-
-struct HexagonShape: Shape {
-    func path(in rect: CGRect) -> Path {
-        let width  = rect.width
-        let height = rect.height
-        let center = CGPoint(x: width / 2, y: height / 2)
-        let radius = min(width, height) / 2
-
-        var path = Path()
-        for i in 0..<6 {
-            let angle = Angle.degrees(Double(i) * 60 - 30)
-            let x = center.x + radius * CGFloat(cos(angle.radians))
-            let y = center.y + radius * CGFloat(sin(angle.radians))
-            if i == 0 {
-                path.move(to: CGPoint(x: x, y: y))
-            } else {
-                path.addLine(to: CGPoint(x: x, y: y))
-            }
+#if os(macOS)
+extension NSColor {
+    convenience init?(hexString: String) {
+        let cleaned = hexString.trimmingCharacters(in: CharacterSet(charactersIn: "#"))
+        var int: UInt64 = 0
+        guard Scanner(string: cleaned).scanHexInt64(&int) else { return nil }
+        let r: CGFloat
+        let g: CGFloat
+        let b: CGFloat
+        switch cleaned.count {
+        case 6:
+            r = CGFloat((int >> 16) & 0xFF) / 255
+            g = CGFloat((int >> 8) & 0xFF) / 255
+            b = CGFloat(int & 0xFF) / 255
+        case 3:
+            r = CGFloat((int >> 8) & 0xF) * 17 / 255
+            g = CGFloat((int >> 4) & 0xF) * 17 / 255
+            b = CGFloat(int & 0xF) * 17 / 255
+        default:
+            return nil
         }
-        path.closeSubpath()
-        return path
+        self.init(srgbRed: r, green: g, blue: b, alpha: 1)
     }
 }
-
-// MARK: - Diamond Shape
-// A 45-degree rotated square used for crystal shard decorations.
-
-struct DiamondShape: Shape {
-    func path(in rect: CGRect) -> Path {
-        let center = CGPoint(x: rect.midX, y: rect.midY)
-        let hw = rect.width / 2
-        let hh = rect.height / 2
-
-        var path = Path()
-        path.move(to: CGPoint(x: center.x, y: center.y - hh))       // top
-        path.addLine(to: CGPoint(x: center.x + hw, y: center.y))      // right
-        path.addLine(to: CGPoint(x: center.x, y: center.y + hh))      // bottom
-        path.addLine(to: CGPoint(x: center.x - hw, y: center.y))      // left
-        path.closeSubpath()
-        return path
+#else
+extension UIColor {
+    convenience init?(hexString: String) {
+        let cleaned = hexString.trimmingCharacters(in: CharacterSet(charactersIn: "#"))
+        var int: UInt64 = 0
+        guard Scanner(string: cleaned).scanHexInt64(&int) else { return nil }
+        let r: CGFloat
+        let g: CGFloat
+        let b: CGFloat
+        switch cleaned.count {
+        case 6:
+            r = CGFloat((int >> 16) & 0xFF) / 255
+            g = CGFloat((int >> 8) & 0xFF) / 255
+            b = CGFloat(int & 0xFF) / 255
+        case 3:
+            r = CGFloat((int >> 8) & 0xF) * 17 / 255
+            g = CGFloat((int >> 4) & 0xF) * 17 / 255
+            b = CGFloat(int & 0xF) * 17 / 255
+        default:
+            return nil
+        }
+        self.init(red: r, green: g, blue: b, alpha: 1)
     }
 }
+#endif
 
 // MARK: - Date Extensions
 // Formatting helpers that cover the most common date display patterns
@@ -191,46 +216,20 @@ extension String {
 }
 
 // MARK: - View Extensions
-// Shared modifiers that apply the Soft Cryo card and hover styles.
+// Shared modifiers from the Astra design system.
 
 extension View {
 
-    /// Applies the standard cryo card treatment: warm background, rounded
-    /// corners, border, and subtle drop shadow.
-    func cryoCardStyle(_ manager: ThemeManager) -> some View {
+    /// Standard card treatment: surface background, card radius,
+    /// hairline border. Replaces cryoCardStyle.
+    func astraCardStyle(cornerRadius: CGFloat = Radius.card) -> some View {
         self
-            .background(CryoColors.backgroundWarm(manager))
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(CryoColors.border(manager), lineWidth: 1)
-            )
-            .shadow(color: CryoColors.shadow(manager), radius: 8, x: 0, y: 2)
-    }
-
-    /// Applies the cryo card style with a custom corner radius.
-    func cryoCardStyle(_ manager: ThemeManager, cornerRadius: CGFloat) -> some View {
-        self
-            .background(CryoColors.backgroundWarm(manager))
+            .background(Color.surface)
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(CryoColors.border(manager), lineWidth: 1)
+                    .stroke(Color.hairline, lineWidth: 1)
             )
-            .shadow(color: CryoColors.shadow(manager), radius: 8, x: 0, y: 2)
-    }
-
-    /// Wraps the view in a subtle hover animation container.
-    func cryoHoverEffect(_ manager: ThemeManager) -> some View {
-        #if os(macOS)
-        self.onHover { isHovered in
-            withAnimation(.easeOut(duration: 0.2)) {
-                // Intentional no-op; individual views add visual feedback.
-            }
-        }
-        #else
-        self
-        #endif
     }
 
     /// Conditional modifier helper that only applies the modifier

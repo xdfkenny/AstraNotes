@@ -17,8 +17,13 @@
 "nav.noSubjects" = "尚未添加科目";
 
 /* Sidebar */
-"sidebar.subjects" = "📚 科目";
-"sidebar.ibCore" = "📁 IB 核心";
+"sidebar.subjects" = "科目";
+"sidebar.ibCore" = "IB 核心";
+"sidebar.studio" = "录音室";
+"sidebar.study" = "学习";
+"sidebar.whisperReady" = "Whisper 就绪";
+"sidebar.deepSeekConnected" = "DeepSeek 已连接";
+"sidebar.deepSeekNotConfigured" = "DeepSeek 未配置";
 
 /* Dashboard */
 "dashboard.welcome" = "欢迎回来";
@@ -56,6 +61,8 @@
 "recording.importAudioFile" = "导入音频文件";
 "recording.saved" = "录音已保存";
 "recording.savedMessage" = "录音已保存至 %@";
+"recording.lecture" = "讲座";
+"recording.transcribeAfterStop" = "停止后转录";
 
 /* Transcription */
 "transcription.title" = "转录";
@@ -95,6 +102,8 @@
 
 /* Notes */
 "notes.title" = "笔记";
+"notes.noSelection" = "从列表中选择一条笔记";
+"notes.favorite" = "收藏";
 "notes.edit" = "编辑";
 "notes.preview" = "预览";
 "notes.noNotes" = "暂无笔记";
@@ -230,7 +239,7 @@
 "tok.analysis" = "分析";
 "tok.prescribedTitle" = "命题作文";
 "tok.exhibitionObject" = "展览物品";
-"tok.reflectionTitle %d" = "TOK 反思 %d";
+"tok.reflectionTitle" = "TOK 反思 %d";
 
 /* Extended Essay */
 "ee.title" = "拓展论文追踪器";
@@ -244,7 +253,7 @@
 "ee.wordCount" = "字数";
 "ee.maxWords %d" = "/ %d";
 "ee.minWords" = "最少：0";
-"ee.wordsCount %d %d" = "%d / %d";
+"ee.wordsCount" = "%d / %d";
 "ee.overallProgress" = "总体进度";
 "ee.meetingNotes" = "导师会议记录";
 "ee.noMeetings" = "暂无导师会议记录";
@@ -369,6 +378,7 @@
 "settings.deepSeekKey" = "DeepSeek API 密钥";
 "settings.obsidianVault" = "Obsidian 知识库";
 "settings.notSelected" = "未选择";
+"settings.vaultInvalid" = "不是有效的 Obsidian 仓库";
 "settings.chooseVault" = "选择...";
 "settings.transcription" = "转录";
 "settings.whisperLanguage" = "Whisper 语言";
@@ -466,3 +476,17 @@
 "error.obsidianCopyResource" = "复制资源失败：%@";
 "error.obsidianDeleteNoteDetail" = "删除笔记失败：%@";
 "error.obsidianMoveNote" = "移动笔记失败：%@";
+
+/* Format strings (added by redesign) */
+"cas.hoursFormat" = "%@ 小时";
+"cas.outcomesAchieved" = "已达成 %d 项成果";
+"ee.defaultTitle" = "扩展论文 %d";
+"ee.maxWords" = "最多 %d 字";
+"ia.defaultTitle" = "内部评估 %d";
+"ia.sectionNumber" = "第 %d 部分";
+"ia.sectionsComplete" = "%d / %d 部分已完成";
+"ia.wordCountLabel" = "%d 字";
+"settings.english" = "英语";
+"settings.spanish" = "西班牙语";
+"settings.chinese" = "中文";
+"cas.titleLabel" = "标题";

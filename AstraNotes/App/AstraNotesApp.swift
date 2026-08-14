@@ -2,11 +2,17 @@ import SwiftUI
 import SwiftData
 
 // MARK: - AstraNotes App Entry Point
-// Main application entry point for AstraNotes - an IB study companion
-// with a "Soft Cryo" ice crystal aesthetic, built for macOS 14+.
+// Main application entry point for AstraNotes - an IB study companion.
+// Persists models via SwiftData, manages theme and localization.
 
 @main
 struct AstraNotesApp: App {
+
+    // MARK: - Font Registration
+    // Registers the bundled Google Material Symbols font for AstraIconView.
+    init() {
+        FontRegistrar.register()
+    }
 
     // MARK: - Theme Manager
     // Persistent theme state managed through @Observable and UserDefaults.

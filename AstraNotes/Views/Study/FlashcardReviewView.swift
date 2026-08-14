@@ -1,5 +1,5 @@
 // FlashcardReviewView.swift — AstraNotes
-// Spaced repetition flashcard review with Soft Cryo ice crystal design.
+// Spaced repetition flashcard review with the Astra design system.
 // Features: 3D flip animation, SM-2 quality rating buttons (Again/Hard/Good/Easy),
 // progress bar, card counter, deck/subject filtering, and session statistics.
 
@@ -12,7 +12,6 @@ struct FlashcardReviewView: View {
 
     // MARK: - Environment
 
-    @Environment(\.themeManager) private var tm
     @Environment(\.modelContext) private var modelContext
 
     // MARK: - State
@@ -115,7 +114,7 @@ struct FlashcardReviewView: View {
             .padding(32)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(CryoColors.background(tm))
+        .background(Color.surfaceBackground)
         .sheet(isPresented: $showSessionComplete) {
             sessionCompleteSheet
         }
@@ -130,13 +129,13 @@ struct FlashcardReviewView: View {
                     Text("❄️")
                         .font(.system(size: 24))
                     Text(String(localized: "flashcards.title"))
-                        .font(.system(size: 28, weight: .bold, design: .rounded))
-                        .foregroundColor(CryoColors.foreground(tm))
+                        .font(TypeScale.title)
+                        .foregroundColor(Color.textPrimary)
                 }
 
                 Text(String(localized: "flashcards.subtitle"))
                     .font(.system(size: 14))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
             }
 
             Spacer()
@@ -146,17 +145,17 @@ struct FlashcardReviewView: View {
                 statPill(
                     label: String(localized: "flashcards.due"),
                     value: "\(dueCount)",
-                    color: CryoColors.accent(tm)
+                    color: Color.accent
                 )
                 statPill(
                     label: String(localized: "flashcards.total"),
                     value: "\(totalCount)",
-                    color: CryoColors.foreground(tm)
+                    color: Color.textPrimary
                 )
                 statPill(
                     label: String(localized: "flashcards.accuracy"),
                     value: String(format: "%.0f%%", overallAccuracy * 100),
-                    color: overallAccuracy >= 0.7 ? CryoColors.success(tm) : CryoColors.warning(tm)
+                    color: overallAccuracy >= 0.7 ? Color.semanticSuccess : Color.semanticWarning
                 )
             }
         }
@@ -166,7 +165,7 @@ struct FlashcardReviewView: View {
         HStack(spacing: 6) {
             Text(label)
                 .font(.system(size: 11, weight: .medium, design: .monospaced))
-                .foregroundColor(CryoColors.foregroundMuted(tm))
+                .foregroundColor(Color.textSecondary)
                 .textCase(.uppercase)
                 .tracking(0.06)
 
@@ -176,9 +175,9 @@ struct FlashcardReviewView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 6)
-        .background(CryoColors.backgroundWarm(tm))
+        .background(Color.surface)
         .clipShape(Capsule())
-        .overlay(Capsule().stroke(CryoColors.border(tm), lineWidth: 1))
+        .overlay(Capsule().stroke(Color.hairline, lineWidth: 1))
     }
 
     // MARK: - Filter Section
@@ -198,16 +197,16 @@ struct FlashcardReviewView: View {
                 }
             } label: {
                 HStack(spacing: 6) {
-                    Image(systemName: "square.stack.3d.up")
+                    AstraIconView(.layers)
                     Text(selectedDeck)
                 }
                 .font(.system(size: 13, weight: .medium))
-                .foregroundColor(CryoColors.foreground(tm))
+                .foregroundColor(Color.textPrimary)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .background(CryoColors.backgroundWarm(tm))
+                .background(Color.surface)
                 .clipShape(Capsule())
-                .overlay(Capsule().stroke(CryoColors.border(tm), lineWidth: 1))
+                .overlay(Capsule().stroke(Color.hairline, lineWidth: 1))
             }
 #if os(macOS)
             .menuStyle(.borderlessButton)
@@ -227,16 +226,16 @@ struct FlashcardReviewView: View {
                 }
             } label: {
                 HStack(spacing: 6) {
-                    Image(systemName: "book")
+                    AstraIconView(.menuBook)
                     Text(selectedSubject)
                 }
                 .font(.system(size: 13, weight: .medium))
-                .foregroundColor(CryoColors.foreground(tm))
+                .foregroundColor(Color.textPrimary)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .background(CryoColors.backgroundWarm(tm))
+                .background(Color.surface)
                 .clipShape(Capsule())
-                .overlay(Capsule().stroke(CryoColors.border(tm), lineWidth: 1))
+                .overlay(Capsule().stroke(Color.hairline, lineWidth: 1))
             }
 #if os(macOS)
             .menuStyle(.borderlessButton)
@@ -245,20 +244,19 @@ struct FlashcardReviewView: View {
 
             // Search
             HStack(spacing: 6) {
-                Image(systemName: "magnifyingglass")
-                    .font(.system(size: 12))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                AstraIconView(.search, size: 12)
+                    .foregroundColor(Color.textSecondary)
                     TextField(String(localized: "flashcards.searchCards"), text: $searchText)
                     .textFieldStyle(.plain)
                     .font(.system(size: 13))
-                    .foregroundColor(CryoColors.foreground(tm))
+                    .foregroundColor(Color.textPrimary)
                     .frame(width: 160)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 8)
-            .background(CryoColors.backgroundWarm(tm))
+            .background(Color.surface)
             .clipShape(Capsule())
-            .overlay(Capsule().stroke(CryoColors.border(tm), lineWidth: 1))
+            .overlay(Capsule().stroke(Color.hairline, lineWidth: 1))
 
             Spacer()
 
@@ -267,16 +265,16 @@ struct FlashcardReviewView: View {
                 withAnimation { isStudyMode.toggle(); resetSession() }
             } label: {
                 HStack(spacing: 6) {
-                    Image(systemName: isStudyMode ? "eye" : "clock")
+                    AstraIconView(isStudyMode ? .visibility : .schedule, size: 12)
                     Text(isStudyMode ? String(localized: "flashcards.studyMode") : String(localized: "flashcards.reviewDue"))
                 }
                 .font(.system(size: 12, weight: .medium))
-                .foregroundColor(isStudyMode ? CryoColors.accent(tm) : CryoColors.foregroundMuted(tm))
+                .foregroundColor(isStudyMode ? Color.accent : Color.textSecondary)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 7)
-                .background(isStudyMode ? CryoColors.accentGlow(tm) : CryoColors.backgroundWarm(tm))
+                .background(isStudyMode ? Color.accentContainer : Color.surface)
                 .clipShape(Capsule())
-                .overlay(Capsule().stroke(isStudyMode ? CryoColors.accent(tm) : CryoColors.border(tm), lineWidth: 1))
+                .overlay(Capsule().stroke(isStudyMode ? Color.accent : Color.hairline, lineWidth: 1))
             }
             .buttonStyle(.plain)
         }
@@ -287,16 +285,16 @@ struct FlashcardReviewView: View {
     private var progressSection: some View {
         VStack(spacing: 8) {
             HStack {
-                Text(String(localized: "flashcards.cardOf \(currentCardIndex + 1) \(filteredCards.count)"))
+                Text(String(format: String(localized: "flashcards.cardOf"), currentCardIndex + 1, filteredCards.count))
                     .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                    .foregroundColor(CryoColors.accentDark(tm))
+                    .foregroundColor(Color.accent)
                     .tracking(0.08)
 
                 Spacer()
 
-                Text(String(localized: "flashcards.sessionReviewed \(sessionTotal)"))
+                Text(String(format: String(localized: "flashcards.sessionReviewed"), sessionTotal))
                     .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
                     .tracking(0.06)
             }
 
@@ -304,13 +302,13 @@ struct FlashcardReviewView: View {
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Capsule()
-                        .fill(CryoColors.frost(tm))
+                        .fill(Color.accentContainer)
                         .frame(height: 6)
 
                     Capsule()
                         .fill(
                             LinearGradient(
-                                colors: [CryoColors.accent(tm), CryoColors.accentDark(tm)],
+                                colors: [Color.accent, Color.accent],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -368,7 +366,7 @@ struct FlashcardReviewView: View {
                             }
                         } label: {
                             HStack(spacing: 8) {
-                                Image(systemName: "arrow.triangle.2.circlepath")
+                                AstraIconView(.refresh)
                                 Text(String(localized: "flashcards.showAnswer"))
                             }
                             .font(.system(size: 15, weight: .semibold))
@@ -377,13 +375,13 @@ struct FlashcardReviewView: View {
                             .padding(.vertical, 10)
                             .background(
                                 LinearGradient(
-                                    colors: [CryoColors.accent(tm), CryoColors.accentDark(tm)],
+                                    colors: [Color.accent, Color.accent],
                                     startPoint: .leading,
                                     endPoint: .trailing
                                 )
                             )
                             .clipShape(Capsule())
-                            .shadow(color: CryoColors.shadowGlow(tm), radius: 10, x: 0, y: 3)
+                            .shadow(color: Color.accent.opacity(0.15), radius: 10, x: 0, y: 3)
                         }
                         .buttonStyle(.plain)
                     }
@@ -400,15 +398,14 @@ struct FlashcardReviewView: View {
             HStack {
                 Text(isFront ? String(localized: "flashcards.question") : String(localized: "flashcards.answer"))
                     .font(.system(size: 11, weight: .bold, design: .monospaced))
-                    .foregroundColor(CryoColors.accentDark(tm))
+                    .foregroundColor(Color.accent)
                     .tracking(0.1)
 
                 Spacer()
 
                 // Bloom level badge
                 HStack(spacing: 4) {
-                    Image(systemName: "brain")
-                        .font(.system(size: 10))
+                    AstraIconView(.psychology, size: 10)
                     Text(card.bloomLevel.rawValue)
                         .font(.system(size: 10, weight: .semibold, design: .monospaced))
                 }
@@ -421,10 +418,10 @@ struct FlashcardReviewView: View {
                 // Deck badge
                 Text(card.deckName)
                     .font(.system(size: 10, weight: .medium, design: .monospaced))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 3)
-                    .background(CryoColors.frost(tm))
+                    .background(Color.accentContainer)
                     .clipShape(Capsule())
             }
             .padding(.horizontal, 24)
@@ -432,14 +429,14 @@ struct FlashcardReviewView: View {
             .padding(.bottom, 12)
 
             Divider()
-                .background(CryoColors.border(tm))
+                .background(Color.hairline)
                 .padding(.horizontal, 20)
 
             // Content
             ScrollView {
                 Text(content)
                     .font(.system(size: 20, weight: .medium, design: .rounded))
-                    .foregroundColor(CryoColors.foreground(tm))
+                    .foregroundColor(Color.textPrimary)
                     .lineSpacing(6)
                     .multilineTextAlignment(.center)
                     .padding(24)
@@ -449,12 +446,11 @@ struct FlashcardReviewView: View {
             // Context hint (front side only)
             if isFront, let hint = card.contextHint, !hint.isBlank {
                 HStack(spacing: 6) {
-                    Image(systemName: "lightbulb")
-                        .font(.system(size: 11))
+                    AstraIconView(.lightbulb, size: 11)
                     Text(hint)
                         .font(.system(size: 12))
                 }
-                .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.7))
+                .foregroundColor(Color.textSecondary.opacity(0.7))
                 .padding(.horizontal, 24)
                 .padding(.bottom, 16)
             }
@@ -465,10 +461,10 @@ struct FlashcardReviewView: View {
                     ForEach(card.tags, id: \.self) { tag in
                         Text("#\(tag)")
                             .font(.system(size: 10, weight: .medium))
-                            .foregroundColor(CryoColors.accent(tm))
+                            .foregroundColor(Color.accent)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 3)
-                            .background(CryoColors.accentGlow(tm))
+                            .background(Color.accentContainer)
                             .clipShape(Capsule())
                     }
                 }
@@ -482,39 +478,39 @@ struct FlashcardReviewView: View {
                     Label {
                         Text(String(format: "%.1f", card.easeFactor))
                     } icon: {
-                        Image(systemName: "gauge")
+                        AstraIconView(.speed)
                     }
                     .font(.system(size: 11, design: .monospaced))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
 
                     Label {
                         Text(String(format: "%.0f days", card.interval))
                     } icon: {
-                        Image(systemName: "calendar")
+                        AstraIconView(.calendarMonth)
                     }
                     .font(.system(size: 11, design: .monospaced))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
 
                     Label {
                         Text(String(format: "%.0f%%", card.accuracy * 100))
                     } icon: {
-                        Image(systemName: "chart.bar")
+                        AstraIconView(.barChart)
                     }
                     .font(.system(size: 11, design: .monospaced))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 16)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(CryoColors.backgroundWarm(tm))
+        .background(Color.surface)
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .overlay(
             RoundedRectangle(cornerRadius: 20)
-                .stroke(CryoColors.crystalBorderGradient(tm), lineWidth: 1.5)
+                .stroke(Color.accent.opacity(0.6), lineWidth: 1.5)
         )
-        .shadow(color: CryoColors.shadowGlow(tm), radius: 12, x: 0, y: 4)
+        .shadow(color: Color.accent.opacity(0.15), radius: 12, x: 0, y: 4)
     }
 
     // MARK: - Rating Buttons Section
@@ -525,42 +521,42 @@ struct FlashcardReviewView: View {
                 VStack(spacing: 12) {
                     Text(String(localized: "flashcards.howWell"))
                         .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(CryoColors.foregroundMuted(tm))
+                        .foregroundColor(Color.textSecondary)
 
                     HStack(spacing: 12) {
                         // Again (quality: 0)
                         ratingButton(
                             label: String(localized: "flashcards.again"),
-                            icon: "xmark.circle",
+                            icon: .cancel,
                             quality: 0,
-                            color: CryoColors.error(tm),
+                            color: Color.semanticDanger,
                             description: String(localized: "flashcards.againDescription")
                         )
 
                         // Hard (quality: 2)
                         ratingButton(
                             label: String(localized: "flashcards.hard"),
-                            icon: "arrow.uturn.backward",
+                            icon: .undo,
                             quality: 2,
-                            color: CryoColors.warning(tm),
+                            color: Color.semanticWarning,
                             description: String(localized: "flashcards.hardDescription")
                         )
 
                         // Good (quality: 3)
                         ratingButton(
                             label: String(localized: "flashcards.good"),
-                            icon: "checkmark.circle",
+                            icon: .checkCircle,
                             quality: 3,
-                            color: CryoColors.success(tm),
+                            color: Color.semanticSuccess,
                             description: String(localized: "flashcards.goodDescription")
                         )
 
                         // Easy (quality: 5)
                         ratingButton(
                             label: String(localized: "flashcards.easy"),
-                            icon: "bolt.circle",
+                            icon: .bolt,
                             quality: 5,
-                            color: CryoColors.accent(tm),
+                            color: Color.accent,
                             description: String(localized: "flashcards.easyDescription")
                         )
                     }
@@ -572,7 +568,7 @@ struct FlashcardReviewView: View {
 
     private func ratingButton(
         label: String,
-        icon: String,
+        icon: AstraIcon,
         quality: Int,
         color: Color,
         description: String
@@ -581,21 +577,20 @@ struct FlashcardReviewView: View {
             rateCard(quality: quality)
         } label: {
             VStack(spacing: 6) {
-                Image(systemName: icon)
-                    .font(.system(size: 20, weight: .semibold))
+                AstraIconView(icon, size: 20)
                     .foregroundColor(color)
 
                 Text(label)
                     .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .foregroundColor(CryoColors.foreground(tm))
+                    .foregroundColor(Color.textPrimary)
 
                 Text(description)
                     .font(.system(size: 10, weight: .medium, design: .monospaced))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
                     .tracking(0.04)
             }
             .frame(width: 110, height: 80)
-            .background(CryoColors.backgroundWarm(tm))
+            .background(Color.surface)
             .clipShape(RoundedRectangle(cornerRadius: 14))
             .overlay(
                 RoundedRectangle(cornerRadius: 14)
@@ -616,66 +611,65 @@ struct FlashcardReviewView: View {
                     .font(.system(size: 28, weight: .bold, design: .monospaced))
                     .foregroundColor(
                         sessionTotal > 0 && Double(sessionCorrect) / Double(sessionTotal) >= 0.7
-                            ? CryoColors.success(tm)
-                            : CryoColors.accent(tm)
+                            ? Color.semanticSuccess
+                            : Color.accent
                     )
 
                 Text(String(localized: "flashcards.sessionAccuracy"))
                     .font(.system(size: 11, weight: .medium, design: .monospaced))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
                     .tracking(0.06)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 20)
-            .cryoCardStyle(tm)
+            .astraCardStyle()
 
             // Correct count
             VStack(spacing: 8) {
                 Text("\(sessionCorrect)")
                     .font(.system(size: 28, weight: .bold, design: .monospaced))
-                    .foregroundColor(CryoColors.success(tm))
+                    .foregroundColor(Color.semanticSuccess)
 
                 Text(String(localized: "flashcards.correct"))
                     .font(.system(size: 11, weight: .medium, design: .monospaced))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
                     .tracking(0.06)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 20)
-            .cryoCardStyle(tm)
+            .astraCardStyle()
 
             // Remaining
             VStack(spacing: 8) {
                 Text("\(max(0, filteredCards.count - currentCardIndex - 1))")
                     .font(.system(size: 28, weight: .bold, design: .monospaced))
-                    .foregroundColor(CryoColors.accent(tm))
+                    .foregroundColor(Color.accent)
 
                 Text(String(localized: "flashcards.remaining"))
                     .font(.system(size: 11, weight: .medium, design: .monospaced))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
                     .tracking(0.06)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 20)
-            .cryoCardStyle(tm)
+            .astraCardStyle()
 
             // Skip button
             Button {
                 advanceToNext()
             } label: {
                 VStack(spacing: 8) {
-                    Image(systemName: "forward")
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundColor(CryoColors.foregroundMuted(tm))
+                    AstraIconView(.arrowForward, size: 20)
+                        .foregroundColor(Color.textSecondary)
 
                     Text(String(localized: "flashcards.skip"))
                         .font(.system(size: 11, weight: .medium, design: .monospaced))
-                        .foregroundColor(CryoColors.foregroundMuted(tm))
+                        .foregroundColor(Color.textSecondary)
                         .tracking(0.06)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 20)
-                .cryoCardStyle(tm)
+                .astraCardStyle()
             }
             .buttonStyle(.plain)
         }
@@ -685,18 +679,17 @@ struct FlashcardReviewView: View {
 
     private var emptyState: some View {
         VStack(spacing: 16) {
-            Image(systemName: "square.stack.3d.up.slash")
-                .font(.system(size: 48))
-                .foregroundColor(CryoColors.frost(tm))
+            AstraIconView(.layersClear, size: 48)
+                .foregroundColor(Color.accentContainer)
 
             Text(isStudyMode ? String(localized: "flashcards.noCardsMatch") : String(localized: "flashcards.noCardsDue"))
                 .font(.system(size: 18, weight: .medium))
-                .foregroundColor(CryoColors.foregroundMuted(tm))
+                .foregroundColor(Color.textSecondary)
 
             if !isStudyMode {
                 Text(String(localized: "flashcards.noCardsDueHint"))
                     .font(.system(size: 14))
-                    .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.7))
+                    .foregroundColor(Color.textSecondary.opacity(0.7))
                     .multilineTextAlignment(.center)
             }
         }
@@ -711,58 +704,57 @@ struct FlashcardReviewView: View {
             // Crystal decoration
             ZStack {
                 Circle()
-                    .fill(CryoColors.accentGlow(tm))
+                    .fill(Color.accentContainer)
                     .frame(width: 80, height: 80)
 
-                Image(systemName: "checkmark.seal.fill")
-                    .font(.system(size: 36, weight: .semibold))
-                    .foregroundColor(CryoColors.accent(tm))
+                AstraIconView(.verified, size: 36)
+                    .foregroundColor(Color.accent)
             }
 
             Text(String(localized: "flashcards.sessionComplete"))
                 .font(.system(size: 24, weight: .bold, design: .rounded))
-                .foregroundColor(CryoColors.foreground(tm))
+                .foregroundColor(Color.textPrimary)
 
             // Stats grid
             HStack(spacing: 16) {
                 VStack(spacing: 8) {
                     Text("\(sessionTotal)")
                         .font(.system(size: 32, weight: .bold, design: .monospaced))
-                        .foregroundColor(CryoColors.accent(tm))
+                        .foregroundColor(Color.accent)
                     Text(String(localized: "flashcards.reviewed"))
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(CryoColors.foregroundMuted(tm))
+                        .foregroundColor(Color.textSecondary)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
-                .cryoCardStyle(tm)
+                .astraCardStyle()
 
                 VStack(spacing: 8) {
                     Text("\(sessionCorrect)")
                         .font(.system(size: 32, weight: .bold, design: .monospaced))
-                        .foregroundColor(CryoColors.success(tm))
+                        .foregroundColor(Color.semanticSuccess)
                     Text(String(localized: "flashcards.correct"))
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(CryoColors.foregroundMuted(tm))
+                        .foregroundColor(Color.textSecondary)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
-                .cryoCardStyle(tm)
+                .astraCardStyle()
 
                 VStack(spacing: 8) {
                     Text(sessionTotal > 0 ? String(format: "%.0f%%", Double(sessionCorrect) / Double(sessionTotal) * 100) : "--")
                         .font(.system(size: 32, weight: .bold, design: .monospaced))
                         .foregroundColor(
                             sessionTotal > 0 && Double(sessionCorrect) / Double(sessionTotal) >= 0.7
-                                ? CryoColors.success(tm) : CryoColors.warning(tm)
+                                ? Color.semanticSuccess : Color.semanticWarning
                         )
                     Text(String(localized: "flashcards.accuracy"))
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(CryoColors.foregroundMuted(tm))
+                        .foregroundColor(Color.textSecondary)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
-                .cryoCardStyle(tm)
+                .astraCardStyle()
             }
 
             HStack(spacing: 12) {
@@ -770,12 +762,12 @@ struct FlashcardReviewView: View {
                     showSessionComplete = false
                 }
                 .font(.system(size: 14, weight: .medium))
-                .foregroundColor(CryoColors.foregroundMuted(tm))
+                .foregroundColor(Color.textSecondary)
                 .padding(.horizontal, 24)
                 .padding(.vertical, 10)
-                .background(CryoColors.backgroundWarm(tm))
+                .background(Color.surface)
                 .clipShape(Capsule())
-                .overlay(Capsule().stroke(CryoColors.border(tm), lineWidth: 1))
+                .overlay(Capsule().stroke(Color.hairline, lineWidth: 1))
                 .buttonStyle(.plain)
 
                 Button(String(localized: "flashcards.newSession")) {
@@ -788,7 +780,7 @@ struct FlashcardReviewView: View {
                 .padding(.vertical, 10)
                 .background(
                     LinearGradient(
-                        colors: [CryoColors.accent(tm), CryoColors.accentDark(tm)],
+                        colors: [Color.accent, Color.accent],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
@@ -799,13 +791,13 @@ struct FlashcardReviewView: View {
         }
         .padding(32)
         .frame(width: 480)
-        .background(CryoColors.backgroundWarm(tm))
+        .background(Color.surface)
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .overlay(
             RoundedRectangle(cornerRadius: 20)
-                .stroke(CryoColors.crystalBorderGradient(tm), lineWidth: 1.5)
+                .stroke(Color.accent.opacity(0.6), lineWidth: 1.5)
         )
-        .shadow(color: CryoColors.shadowGlow(tm), radius: 16, x: 0, y: 4)
+        .shadow(color: Color.accent.opacity(0.15), radius: 16, x: 0, y: 4)
     }
 
     // MARK: - Actions
@@ -856,6 +848,6 @@ struct FlashcardReviewView: View {
 
 #Preview {
     FlashcardReviewView()
-        .environment(ThemeManager())
+        
         .modelContainer(for: Flashcard.self, inMemory: true)
 }

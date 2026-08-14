@@ -22,11 +22,11 @@ enum ThemeMode: String, CaseIterable, Identifiable {
         }
     }
 
-    var icon: String {
+    var astraIcon: AstraIcon {
         switch self {
-        case .light:  return "sun.max"
-        case .dark:   return "moon"
-        case .system: return "circle.lefthalf.filled"
+        case .light:  return .lightMode
+        case .dark:   return .darkMode
+        case .system: return .contrast
         }
     }
 }

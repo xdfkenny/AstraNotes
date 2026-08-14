@@ -1,7 +1,7 @@
 // RecordingView.swift — AstraNotes
-// Recording UI with Soft Cryo ice crystal design aesthetic.
-// Features: large circular record button, waveform visualization, timer,
-// subject selector, file import with drag-and-drop.
+// Recording UI with the Astra design system.
+// Features: large double-bezel record button, live waveform, mono timer,
+// subject selector, file import with drag-and-drop, right-side inspector.
 
 import SwiftUI
 import SwiftData
@@ -13,7 +13,6 @@ struct RecordingView: View {
 
     // MARK: - Environment
 
-    @Environment(\.themeManager) private var tm
     @Environment(\.modelContext) private var modelContext
 
     // MARK: - State
@@ -24,6 +23,7 @@ struct RecordingView: View {
     @State private var isDragOver: Bool = false
     @State private var showSaveConfirmation: Bool = false
     @State private var savedRecordingURL: URL?
+    @State private var selectedLanguage: TranscriptionLanguage = .autoDetect
 
     // MARK: - Queries
 
@@ -33,18 +33,21 @@ struct RecordingView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 32) {
+            VStack(alignment: .leading, spacing: Spacing.xl) {
                 headerSection
-                waveformSection
-                timerSection
-                controlsSection
-                subjectSelectorSection
-                importSection
+
+                // Asymmetric split: main recording surface + inspector
+                HStack(alignment: .top, spacing: Spacing.xl) {
+                    mainColumn
+                        .frame(maxWidth: .infinity)
+                    inspectorColumn
+                        .frame(width: 260)
+                }
             }
-            .padding(32)
+            .padding(Spacing.xxl)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(CryoColors.background(tm))
+        .background(Color.surfaceBackground)
 #if os(macOS)
         .onDrop(of: [.fileURL], isTargeted: $isDragOver) { providers in
             handleDroppedFiles(providers: providers)
@@ -60,113 +63,156 @@ struct RecordingView: View {
     // MARK: - Header Section
 
     private var headerSection: some View {
-        VStack(spacing: 8) {
-            HStack(spacing: 8) {
-                Text("❄️")
-                    .font(.system(size: 24))
-                Text(String(localized: "recording.title"))
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundColor(CryoColors.foreground(tm))
-            }
-
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            Text(String(localized: "recording.title"))
+                .font(TypeScale.title)
+                .foregroundStyle(.textPrimary)
             Text(String(localized: "recording.subtitle"))
-                .font(.system(size: 14))
-                .foregroundColor(CryoColors.foregroundMuted(tm))
+                .font(TypeScale.body)
+                .foregroundStyle(.textSecondary)
         }
     }
 
-    // MARK: - Waveform Section
+    // MARK: - Main Column (waveform + controls)
 
-    private var waveformSection: some View {
-        CryoCard(manager: tm, style: .standard) {
-            VStack(spacing: 16) {
-                HStack(spacing: 6) {
-                    Text(String(localized: "recording.liveWaveform"))
-                        .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                        .foregroundColor(CryoColors.accentDark(tm))
-                        .tracking(0.08)
-                    Spacer()
+    private var mainColumn: some View {
+        VStack(spacing: Spacing.xl) {
+            // Waveform panel
+            AstraCard(tint: audioService.state == .recording ? Color.semanticDanger.opacity(0.04) : .clear) {
+                VStack(spacing: Spacing.lg) {
+                    HStack(spacing: Spacing.sm) {
+                        StatusDot(
+                            kind: audioService.state == .recording ? .recording : .idle,
+                            label: stateLabel
+                        )
+                        Spacer()
+                        Text(String(format: "%.0f dB", audioService.averagePower))
+                            .font(.astraMono(11))
+                            .foregroundStyle(.textTertiary)
+                    }
 
-                    // Power level indicator
-                    Text(String(format: "%.0f dB", audioService.averagePower))
-                        .font(.system(size: 11, design: .monospaced))
-                        .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.6))
-                }
-
-                // Waveform canvas
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(CryoColors.frost(tm))
-                        .frame(height: 120)
-
-                    if audioService.state == .idle {
-                        VStack(spacing: 8) {
-                            Image(systemName: "waveform")
-                                .font(.system(size: 28))
-                                .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.3))
-                            Text(String(localized: "recording.ready"))
-                                .font(.system(size: 13))
-                                .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.4))
-                        }
-                    } else if audioService.state == .paused {
-                        VStack(spacing: 8) {
-                            Image(systemName: "pause.circle")
-                                .font(.system(size: 28))
-                                .foregroundColor(CryoColors.accent(tm).opacity(0.5))
-                            Text(String(localized: "recording.paused"))
-                                .font(.system(size: 13))
-                                .foregroundColor(CryoColors.accent(tm).opacity(0.6))
-                        }
-                    } else if !audioService.waveformData.isEmpty {
-                        WaveformView(data: audioService.waveformData, manager: tm)
+                    // Waveform canvas
+                    ZStack {
+                        RoundedRectangle(cornerRadius: Radius.card)
+                            .fill(Color.hairline.opacity(0.35))
                             .frame(height: 120)
-                    } else {
-                        // Recording started but no data yet (very brief moment)
-                        ProgressView()
-                            .progressViewStyle(.circular)
-                            .scaleEffect(0.6)
-                            .tint(CryoColors.accent(tm))
+
+                        if audioService.state == .idle {
+                            VStack(spacing: Spacing.sm) {
+                                AstraIconView(.graphicEq, size: 26)
+                                    .foregroundStyle(.textTertiary.opacity(0.5))
+                                Text(String(localized: "recording.ready"))
+                                    .font(TypeScale.caption)
+                                    .foregroundStyle(.textTertiary)
+                            }
+                        } else if audioService.state == .paused {
+                            VStack(spacing: Spacing.sm) {
+                                AstraIconView(.pauseCircle, size: 26)
+                                    .foregroundStyle(Color.accent.opacity(0.6))
+                                Text(String(localized: "recording.paused"))
+                                    .font(TypeScale.caption)
+                                    .foregroundStyle(Color.accent.opacity(0.7))
+                            }
+                        } else if !audioService.waveformData.isEmpty {
+                            WaveformView(
+                                levels: audioService.waveformData.map(Double.init),
+                                isActive: audioService.state == .recording
+                            )
+                            .frame(height: 120)
+                        } else {
+                            ProgressView()
+                                .controlSize(.small)
+                                .tint(Color.accent)
+                        }
                     }
                 }
+                .padding(Layout.cardPadding)
             }
-            .padding(20)
+
+            // Timer + state
+            VStack(spacing: Spacing.xs) {
+                Text(audioService.formattedTime)
+                    .font(.astraMono(28, .light))
+                    .monospacedDigit()
+                    .foregroundStyle(.textPrimary)
+                    .frame(height: 34)
+
+                MicroLabel(text: stateLabel)
+            }
+
+            // Controls
+            HStack(spacing: Spacing.xl) {
+                // Pause / Resume
+                AstraIconButton(
+                    icon: audioService.state == .paused ? .playArrow : .pause,
+                    help: String(localized: "recording.pauseResume")
+                ) {
+                    withAnimation(Motion.stateChange) {
+                        if audioService.state == .recording {
+                            audioService.pauseRecording()
+                        } else if audioService.state == .paused {
+                            try? audioService.resumeRecording()
+                        }
+                    }
+                }
+                .disabled(audioService.state == .idle)
+                .opacity(audioService.state == .idle ? 0.4 : 1)
+
+                // Record / Stop (double-bezel)
+                recordButton
+
+                // Import
+                AstraIconButton(
+                    icon: .folder,
+                    help: String(localized: "recording.importAudioFile")
+                ) {
+                    isImporting = true
+                }
+                .fileImporter(
+                    isPresented: $isImporting,
+                    allowedContentTypes: [.audio],
+                    allowsMultipleSelection: false
+                ) { result in
+                    handleImportedFile(result: result)
+                }
+            }
+            .padding(.top, Spacing.xs)
         }
     }
 
-    // MARK: - Timer Section
-
-    private var timerSection: some View {
-        VStack(spacing: 6) {
-            Text(audioService.formattedTime)
-                .font(.system(size: 48, weight: .light, design: .monospaced))
-                .foregroundColor(CryoColors.foreground(tm))
-                .tracking(0.05)
-                .frame(height: 56)
-
-            // Recording state label
-            HStack(spacing: 6) {
+    /// Double-bezel record button: outer material ring, inner danger circle.
+    private var recordButton: some View {
+        Button {
+            withAnimation(Motion.entrance) {
+                handleRecordButtonTap()
+            }
+        } label: {
+            ZStack {
+                // Outer ring (material shell)
                 Circle()
-                    .fill(stateIndicatorColor)
-                    .frame(width: 8, height: 8)
+                    .fill(Color.surface.opacity(0.6))
+                    .frame(width: 64, height: 64)
+                    .overlay(Circle().stroke(Color.hairline, lineWidth: 1))
 
-                Text(stateLabel)
-                    .font(.system(size: 12, weight: .medium, design: .monospaced))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
-                    .textCase(.uppercase)
-                    .tracking(0.06)
+                // Inner core
+                Circle()
+                    .fill(audioService.state == .recording ? Color.semanticDanger : Color.accent)
+                    .frame(width: 44, height: 44)
+                    .overlay(Circle().stroke(Color.white.opacity(0.15), lineWidth: 1))
+
+                AstraIconView(buttonIcon, size: 18)
+                    .foregroundStyle(.white)
             }
         }
+        .buttonStyle(.plain)
+        #if os(macOS)
+        .help(String(localized: "recording.startStop"))
+        #endif
+        .accessibilityLabel(String(localized: "recording.startStop"))
     }
 
-    private var stateIndicatorColor: Color {
-        switch audioService.state {
-        case .recording:
-            return .red.opacity(audioService.isSilent ? 0.4 : 1.0)
-        case .paused:
-            return CryoColors.accent(tm).opacity(0.5)
-        case .idle, .stopped:
-            return CryoColors.foregroundMuted(tm).opacity(0.3)
-        }
+    private var buttonIcon: AstraIcon {
+        audioService.state == .recording ? .stop : .mic
     }
 
     private var stateLabel: String {
@@ -178,223 +224,135 @@ struct RecordingView: View {
         }
     }
 
-    // MARK: - Controls Section
+    // MARK: - Inspector Column
 
-    private var controlsSection: some View {
-        HStack(spacing: 24) {
-            // Pause / Resume Button (40x40)
-            Button {
-                withAnimation(.easeInOut(duration: 0.15)) {
-                    if audioService.state == .recording {
-                        audioService.pauseRecording()
-                    } else if audioService.state == .paused {
-                        try? audioService.resumeRecording()
+    private var inspectorColumn: some View {
+        VStack(alignment: .leading, spacing: Spacing.lg) {
+            SectionHeader(title: String(localized: "recording.lecture"), icon: .info)
+
+            // Subject picker
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text(String(localized: "recording.subject"))
+                    .font(TypeScale.caption)
+                    .foregroundStyle(.textSecondary)
+
+                Menu {
+                    Button(String(localized: "recording.noSubject")) {
+                        selectedSubject = String(localized: "recording.noSubject")
                     }
-                }
-            } label: {
-                Image(systemName: audioService.state == .paused ? "play.fill" : "pause.fill")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(CryoColors.accentDark(tm))
-                    .frame(width: 40, height: 40)
-                    .background(CryoColors.backgroundWarm(tm))
-                    .clipShape(Circle())
-                    .overlay(
-                        Circle().stroke(CryoColors.border(tm), lineWidth: 1)
-                    )
-            }
-            .buttonStyle(.plain)
-            .disabled(audioService.state == .idle)
-            .opacity(audioService.state == .idle ? 0.4 : 1.0)
-#if os(macOS)
-            .help("Pause / Resume recording")
-#endif
-
-            // Record / Stop Button (80x80)
-            Button {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                    handleRecordButtonTap()
-                }
-            } label: {
-                ZStack {
-                    // Glow ring
-                    Circle()
-                        .stroke(
-                            CryoColors.accent(tm).opacity(audioService.state == .recording ? 0.3 : 0.15),
-                            lineWidth: 2
-                        )
-                        .frame(width: 96, height: 96)
-
-                    // Main button
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: buttonGradientColors,
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: 80, height: 80)
-                        .shadow(
-                            color: CryoColors.shadowGlow(tm),
-                            radius: audioService.state == .recording ? 24 : 16,
-                            x: 0,
-                            y: 0
-                        )
-
-                    // Pulsing overlay when recording
-                    if audioService.state == .recording {
-                        Circle()
-                            .stroke(CryoColors.accent(tm).opacity(0.4), lineWidth: 1.5)
-                            .frame(width: 80, height: 80)
-                            .scaleEffect(recordingPulseScale)
-                            .opacity(2 - recordingPulseScale)
-                    }
-
-                    Image(systemName: buttonIcon)
-                        .font(.system(size: 28, weight: .semibold))
-                        .foregroundColor(.white)
-                }
-            }
-            .buttonStyle(.plain)
-#if os(macOS)
-            .help("Start / Stop recording")
-#endif
-
-            // Import Button (40x40)
-            Button {
-                isImporting = true
-            } label: {
-                Image(systemName: "folder")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(CryoColors.accentDark(tm))
-                    .frame(width: 40, height: 40)
-                    .background(CryoColors.backgroundWarm(tm))
-                    .clipShape(Circle())
-                    .overlay(
-                        Circle().stroke(CryoColors.border(tm), lineWidth: 1)
-                    )
-            }
-            .buttonStyle(.plain)
-            .fileImporter(
-                isPresented: $isImporting,
-                allowedContentTypes: [.audio],
-                allowsMultipleSelection: false
-            ) { result in
-                handleImportedFile(result: result)
-            }
-#if os(macOS)
-            .help("Import an audio file")
-#endif
-        }
-    }
-
-    private var buttonGradientColors: [Color] {
-        if audioService.state == .recording {
-            return [Color.red.opacity(0.9), Color.red.opacity(0.7)]
-        }
-        return [CryoColors.accent(tm), CryoColors.accentDark(tm)]
-    }
-
-    private var buttonIcon: String {
-        if audioService.state == .recording {
-            return "stop.fill"
-        }
-        return "mic.fill"
-    }
-
-    // Simple pulse animation for the record button while recording.
-    private var recordingPulseScale: CGFloat {
-        let phase = Date().timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 1.5)
-        return 1.0 + 0.08 * sin(phase * .pi * 2)
-    }
-
-    // MARK: - Subject Selector Section
-
-    private var subjectSelectorSection: some View {
-        HStack(spacing: 12) {
-            Text(String(localized: "recording.subject"))
-                .font(.system(size: 14, weight: .medium))
-                .foregroundColor(CryoColors.foregroundMuted(tm))
-
-            Menu {
-                Button(String(localized: "recording.noSubject")) {
-                    selectedSubject = String(localized: "recording.noSubject")
-                }
-
-                Divider()
-
-                ForEach(subjects) { subject in
-                    Button {
-                        selectedSubject = subject.name
-                    } label: {
-                        HStack {
-                            Text(subject.name)
-                            Text("(\(subject.level.displayName))")
-                                .foregroundColor(CryoColors.foregroundMuted(tm))
+                    Divider()
+                    ForEach(subjects) { subject in
+                        Button {
+                            selectedSubject = subject.name
+                        } label: {
+                            HStack {
+                                Text(subject.name)
+                                Text("(\(subject.level.displayName))")
+                                    .foregroundStyle(.textTertiary)
+                            }
                         }
                     }
+                } label: {
+                    HStack(spacing: Spacing.sm) {
+                        Text(selectedSubject)
+                            .font(TypeScale.body)
+                            .foregroundStyle(.textPrimary)
+                            .lineLimit(1)
+                        Spacer()
+                        AstraIconView(.expandMore, size: 10)
+                            .foregroundStyle(.textTertiary)
+                    }
+                    .padding(.horizontal, Spacing.md)
+                    .frame(height: 32)
+                    .background(Color.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: Radius.control))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: Radius.control)
+                            .stroke(Color.hairline, lineWidth: 1)
+                    )
                 }
-            } label: {
-                HStack(spacing: 6) {
-                    Text(selectedSubject)
-                        .font(.system(size: 14))
-                        .foregroundColor(CryoColors.foreground(tm))
-
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundColor(CryoColors.foregroundMuted(tm))
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(CryoColors.backgroundWarm(tm))
-                .clipShape(Capsule())
-                .overlay(
-                    Capsule().stroke(CryoColors.border(tm), lineWidth: 1)
-                )
+                #if os(macOS)
+                .menuStyle(.borderlessButton)
+                .menuIndicator(.hidden)
+                #endif
             }
-            #if os(macOS)
-            .menuStyle(.borderlessButton)
-            .menuIndicator(.hidden)
-            #endif
+
+            // Language
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text(String(localized: "settings.whisperLanguage"))
+                    .font(TypeScale.caption)
+                    .foregroundStyle(.textSecondary)
+
+                Picker("", selection: $selectedLanguage) {
+                    ForEach(TranscriptionLanguage.allCases) { lang in
+                        Text(lang.displayName).tag(lang)
+                    }
+                }
+                .pickerStyle(.menu)
+                .labelsHidden()
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            Divider()
+                .overlay(Color.hairline)
+
+            // Transcription options
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                Text(String(localized: "transcription.title"))
+                    .font(TypeScale.subheading)
+                    .foregroundStyle(.textPrimary)
+
+                HStack(spacing: Spacing.xs) {
+                    AstraIconView(.checkCircle, size: 12)
+                        .foregroundStyle(Color.accent)
+                    Text(String(localized: "recording.transcribeAfterStop"))
+                        .font(TypeScale.caption)
+                        .foregroundStyle(.textSecondary)
+                }
+            }
         }
+        .padding(Spacing.lg)
+        .background(Color.surface)
+        .clipShape(RoundedRectangle(cornerRadius: Radius.panel))
+        .overlay(
+            RoundedRectangle(cornerRadius: Radius.panel)
+                .stroke(Color.hairline, lineWidth: 1)
+        )
     }
 
     // MARK: - Import (Drag & Drop) Section
 
     private var importSection: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: Spacing.md) {
             Text(String(localized: "recording.dragDrop"))
-                .font(.system(size: 13))
-                .foregroundColor(CryoColors.foregroundMuted(tm))
+                .font(TypeScale.body)
+                .foregroundStyle(.textSecondary)
 
-            RoundedRectangle(cornerRadius: 24)
+            RoundedRectangle(cornerRadius: Radius.panel)
                 .strokeBorder(
-                    style: StrokeStyle(lineWidth: 2, dash: [8, 4])
+                    style: StrokeStyle(lineWidth: 1.5, dash: [8, 4])
                 )
-                .foregroundColor(isDragOver ? CryoColors.accent(tm) : CryoColors.border(tm))
-                .frame(height: 100)
+                .foregroundStyle(isDragOver ? Color.accent : Color.hairline)
+                .frame(height: 90)
                 .background(
-                    RoundedRectangle(cornerRadius: 24)
-                        .fill(isDragOver ? CryoColors.accentGlow(tm) : .clear)
+                    RoundedRectangle(cornerRadius: Radius.panel)
+                        .fill(isDragOver ? Color.accentContainer : Color.clear)
                 )
                 .overlay(
-                    VStack(spacing: 8) {
-                        Image(systemName: "arrow.down.doc")
-                            .font(.system(size: 24))
-                            .foregroundColor(
-                                isDragOver ? CryoColors.accent(tm) : CryoColors.foregroundMuted(tm).opacity(0.4)
-                            )
+                    VStack(spacing: Spacing.sm) {
+                        AstraIconView(.download, size: 22)
+                            .foregroundStyle(isDragOver ? Color.accent : Color.textTertiary)
 
-                        HStack(spacing: 8) {
+                        HStack(spacing: Spacing.sm) {
                             ForEach([".m4a", ".mp3", ".wav", ".aac"], id: \.self) { ext in
                                 Text(ext)
-                                    .font(.system(size: 11, design: .monospaced))
-                                    .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.4))
+                                    .font(.astraMono(11))
+                                    .foregroundStyle(.textTertiary.opacity(0.7))
                             }
                         }
                     }
                 )
-                .scaleEffect(isDragOver ? 1.02 : 1.0)
+                .scaleEffect(isDragOver ? 1.01 : 1.0)
                 .animation(.easeOut(duration: 0.2), value: isDragOver)
         }
     }
@@ -415,14 +373,7 @@ struct RecordingView: View {
                 }
             }
 
-        case .recording:
-            if let url = audioService.stopRecording() {
-                savedRecordingURL = url
-                saveRecordingSession(url: url)
-                showSaveConfirmation = true
-            }
-
-        case .paused:
+        case .recording, .paused:
             if let url = audioService.stopRecording() {
                 savedRecordingURL = url
                 saveRecordingSession(url: url)
@@ -432,12 +383,14 @@ struct RecordingView: View {
     }
 
     private func saveRecordingSession(url: URL) {
+        let subjectName = selectedSubject == String(localized: "recording.noSubject") ? nil : selectedSubject
         let session = RecordingSession(
-            audioFileURL: url.path,
-            subject: selectedSubject,
+            title: url.deletingPathExtension().lastPathComponent,
+            subjectName: subjectName,
+            date: Date(),
             duration: audioService.currentTime,
-            dateRecorded: Date(),
-            fileSize: url.fileSize
+            fileName: url.lastPathComponent,
+            filePath: url
         )
         modelContext.insert(session)
     }
@@ -481,64 +434,6 @@ struct RecordingView: View {
     #endif
 }
 
-// MARK: - Waveform View
-
-/// Renders a real-time bar-style waveform visualization using SwiftUI Canvas.
-struct WaveformView: View {
-    let data: [Float]
-    let manager: ThemeManager
-
-    var body: some View {
-        Canvas { context, size in
-            guard !data.isEmpty else { return }
-
-            let barWidth = size.width / CGFloat(data.count)
-            let centerY = size.height / 2
-
-            for (index, sample) in data.enumerated() {
-                let normalizedHeight = CGFloat(sample) * (size.height / 2) * 0.8
-                let barHeight = max(1, normalizedHeight)
-                let x = CGFloat(index) * barWidth + barWidth * 0.5
-                let rect = CGRect(
-                    x: x - barWidth * 0.4,
-                    y: centerY - barHeight,
-                    width: max(1, barWidth - 1),
-                    height: barHeight * 2
-                )
-
-                // Main bar
-                context.fill(
-                    Path(roundedRect: rect, cornerRadius: barWidth / 2),
-                    with: .color(CryoColors.accent(manager).opacity(0.7))
-                )
-
-                // Subtle glow at top and bottom
-                let glowRect = CGRect(
-                    x: x - barWidth * 0.6,
-                    y: centerY - barHeight,
-                    width: max(1, barWidth + 1),
-                    height: 3
-                )
-                context.fill(
-                    Path(roundedRect: glowRect, cornerRadius: 1.5),
-                    with: .color(CryoColors.accentLight(manager).opacity(0.5))
-                )
-
-                let glowBottomRect = CGRect(
-                    x: x - barWidth * 0.6,
-                    y: centerY + barHeight - 3,
-                    width: max(1, barWidth + 1),
-                    height: 3
-                )
-                context.fill(
-                    Path(roundedRect: glowBottomRect, cornerRadius: 1.5),
-                    with: .color(CryoColors.accentLight(manager).opacity(0.5))
-                )
-            }
-        }
-    }
-}
-
 // MARK: - URL Extension (file size)
 
 extension URL {
@@ -552,5 +447,4 @@ extension URL {
 
 #Preview {
     RecordingView()
-        .environment(ThemeManager())
 }

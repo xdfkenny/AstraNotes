@@ -17,8 +17,13 @@
 "nav.noSubjects" = "No hay materias agregadas";
 
 /* Sidebar */
-"sidebar.subjects" = "📚 Materias";
-"sidebar.ibCore" = "📁 Núcleo del IB";
+"sidebar.subjects" = "Materias";
+"sidebar.ibCore" = "Núcleo del IB";
+"sidebar.studio" = "Estudio";
+"sidebar.study" = "Estudio";
+"sidebar.whisperReady" = "Whisper listo";
+"sidebar.deepSeekConnected" = "DeepSeek conectado";
+"sidebar.deepSeekNotConfigured" = "DeepSeek no configurado";
 
 /* Dashboard */
 "dashboard.welcome" = "Bienvenido de nuevo";
@@ -56,6 +61,8 @@
 "recording.importAudioFile" = "Importar un archivo de audio";
 "recording.saved" = "Grabación guardada";
 "recording.savedMessage" = "Grabación guardada en %@";
+"recording.lecture" = "Clase";
+"recording.transcribeAfterStop" = "Transcribir al detener";
 
 /* Transcription */
 "transcription.title" = "Transcripción";
@@ -95,6 +102,8 @@
 
 /* Notes */
 "notes.title" = "Notas";
+"notes.noSelection" = "Selecciona una nota de la lista";
+"notes.favorite" = "Favorita";
 "notes.edit" = "Editar";
 "notes.preview" = "Vista previa";
 "notes.noNotes" = "Sin notas aún";
@@ -230,7 +239,7 @@
 "tok.analysis" = "Análisis";
 "tok.prescribedTitle" = "Título prescrito";
 "tok.exhibitionObject" = "Objeto de exhibición";
-"tok.reflectionTitle %d" = "Reflexión de TOK %d";
+"tok.reflectionTitle" = "Reflexión de TOK %d";
 
 /* Extended Essay */
 "ee.title" = "Seguimiento de Monografía";
@@ -244,7 +253,7 @@
 "ee.wordCount" = "Conteo de palabras";
 "ee.maxWords %d" = "/ %d";
 "ee.minWords" = "Mín: 0";
-"ee.wordsCount %d %d" = "%d / %d";
+"ee.wordsCount" = "%d / %d";
 "ee.overallProgress" = "Progreso general";
 "ee.meetingNotes" = "Notas de reuniones";
 "ee.noMeetings" = "Sin reuniones con el supervisor registradas aún";
@@ -369,6 +378,7 @@
 "settings.deepSeekKey" = "Clave API de DeepSeek";
 "settings.obsidianVault" = "Bóveda de Obsidian";
 "settings.notSelected" = "No seleccionado";
+"settings.vaultInvalid" = "No es una bóveda de Obsidian válida";
 "settings.chooseVault" = "Elegir...";
 "settings.transcription" = "Transcripción";
 "settings.whisperLanguage" = "Idioma de Whisper";
@@ -466,3 +476,17 @@
 "error.obsidianCopyResource" = "No se pudo copiar el recurso: %@";
 "error.obsidianDeleteNoteDetail" = "No se pudo eliminar la nota: %@";
 "error.obsidianMoveNote" = "No se pudo mover la nota: %@";
+
+/* Format strings (added by redesign) */
+"cas.hoursFormat" = "%@ h";
+"cas.outcomesAchieved" = "%d resultados logrados";
+"ee.defaultTitle" = "Ensayo Extendido %d";
+"ee.maxWords" = "Máx. %d palabras";
+"ia.defaultTitle" = "Evaluación Interna %d";
+"ia.sectionNumber" = "Sección %d";
+"ia.sectionsComplete" = "%d / %d secciones completas";
+"ia.wordCountLabel" = "%d palabras";
+"settings.english" = "Inglés";
+"settings.spanish" = "Español";
+"settings.chinese" = "Chino";
+"cas.titleLabel" = "Título";

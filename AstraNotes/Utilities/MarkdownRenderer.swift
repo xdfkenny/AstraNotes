@@ -1,7 +1,7 @@
 // MarkdownRenderer.swift — AstraNotes
 // Preview renderer using WKWebView for displaying markdown content.
 // Supports Mermaid diagrams, LaTeX math, and HTML rendering with the
-// Soft Cryo ice crystal aesthetic. Includes print/export support.
+// Astra theme. Includes print/export support.
 
 import SwiftUI
 import WebKit
@@ -338,13 +338,13 @@ final class MarkdownRenderer: NSObject {
     // MARK: - Theme HTML Wrapper
 
     private func wrapInThemeHTML(_ bodyContent: String, isDark: Bool) -> String {
-        let bgColor = isDark ? "#0F1729" : "#F0F7FF"
-        let textColor = isDark ? "#E8F4FC" : "#2C3E50"
-        let cardBg = isDark ? "#1A2332" : "#F8FBFF"
-        let codeBg = isDark ? "#1E3A4F" : "#E1F5FE"
-        let accentColor = "#7EC8E3"
-        let borderColor = isDark ? "#2A4360" : "#C5E3F5"
-        let mutedColor = isDark ? "#8BA3B8" : "#5A6D7E"
+        let bgColor = isDark ? "#131316" : "#F7F7F8"
+        let textColor = isDark ? "#F2F2F4" : "#1A1A1E"
+        let cardBg = isDark ? "#1C1C1F" : "#FFFFFF"
+        let codeBg = isDark ? "#242428" : "#F0F0F2"
+        let accentColor = isDark ? "#59C9B8" : "#0B7A6E"
+        let borderColor = isDark ? "#FFFFFF" : "#000000"
+        let mutedColor = isDark ? "#A0A0AA" : "#5C5C66"
 
         return """
         <!DOCTYPE html>
@@ -372,7 +372,7 @@ final class MarkdownRenderer: NSObject {
                 * { margin: 0; padding: 0; box-sizing: border-box; }
 
                 body {
-                    font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, sans-serif;
+                    font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', BlinkMacSystemFont, sans-serif;
                     font-size: 16px;
                     line-height: 1.7;
                     color: var(--text);
@@ -512,9 +512,9 @@ final class MarkdownRenderer: NSObject {
                     startOnLoad: true,
                     theme: '\(isDark ? "dark" : "default")',
                     themeVariables: {
-                        primaryColor: '#7EC8E3',
+                        primaryColor: '\(accentColor)',
                         primaryTextColor: '\(textColor)',
-                        lineColor: '#4A9ECF',
+                        lineColor: '\(accentColor)',
                         background: '\(cardBg)'
                     }
                 });
@@ -562,7 +562,7 @@ final class MarkdownRenderer: NSObject {
 
 // MARK: - Markdown Preview (SwiftUI Wrapper)
 
-/// A SwiftUI view that wraps WKWebView for rendering markdown with the Cryo theme.
+/// A SwiftUI view that wraps WKWebView for rendering markdown with the Astra theme.
 #if os(macOS)
 struct MarkdownPreview: NSViewRepresentable {
 
@@ -701,13 +701,13 @@ struct MarkdownPreviewWithExport: View {
                 Button {
                     exportToPDF()
                 } label: {
-                    Label("Export PDF", systemImage: "square.and.arrow.down")
+                    Label { Text("Export PDF") } icon: { AstraIconView(.download, size: 12) }
                 }
 
                 Button {
                     printContent()
                 } label: {
-                    Label("Print", systemImage: "printer")
+                    Label { Text("Print") } icon: { AstraIconView(.print, size: 12) }
                 }
             }
         }

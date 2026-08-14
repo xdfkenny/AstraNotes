@@ -1,7 +1,7 @@
 // IAWorkbenchView.swift — AstraNotes
 // Internal Assessment workbench with per-subject templates.
 // Dashboard-style status cards for each section, completion indicators,
-// word count tracker, and reflection areas with the Soft Cryo aesthetic.
+// word count tracker, and reflection areas with the Astra design system.
 
 import SwiftUI
 import SwiftData
@@ -12,7 +12,6 @@ struct IAWorkbenchView: View {
 
     // MARK: - Environment
 
-    @Environment(\.themeManager) private var tm
     @Environment(\.modelContext) private var modelContext
 
     // MARK: - State
@@ -61,7 +60,7 @@ struct IAWorkbenchView: View {
             .padding(32)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(CryoColors.background(tm))
+        .background(Color.surfaceBackground)
     }
 
     // MARK: - Header
@@ -69,39 +68,37 @@ struct IAWorkbenchView: View {
     private var headerSection: some View {
         VStack(spacing: 8) {
             HStack(spacing: 8) {
-                Text("chart.bar")
-                    .font(.system(size: 22))
-                    .foregroundStyle(CryoColors.accent(tm))
+                AstraIconView(.barChart, size: 22)
+                    .foregroundStyle(Color.accent)
                 Text(String(localized: "ia.title"))
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundColor(CryoColors.foreground(tm))
+                    .font(TypeScale.title)
+                    .foregroundColor(Color.textPrimary)
             }
 
             Text(String(localized: "ia.subtitle"))
                 .font(.system(size: 14))
-                .foregroundColor(CryoColors.foregroundMuted(tm))
+                .foregroundColor(Color.textSecondary)
 
             HStack {
                 Spacer()
                 Text("^[\(assessments.count) IA](inflect: true)")
                     .font(.system(size: 12, design: .monospaced))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
 
                 Button {
                     createNewIA()
                 } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 12, weight: .semibold))
+                        AstraIconView(.add, size: 12)
                         Text(String(localized: "ia.newIA"))
                             .font(.system(size: 13, weight: .medium))
                     }
                     .foregroundColor(.white)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
-                    .background(CryoColors.primaryGradient(tm))
+                    .background(Color.accent)
                     .clipShape(Capsule())
-                    .shadow(color: CryoColors.shadowGlow(tm), radius: 8, x: 0, y: 2)
+                    .shadow(color: Color.accent.opacity(0.15), radius: 8, x: 0, y: 2)
                 }
                 .buttonStyle(.plain)
             }
@@ -114,9 +111,8 @@ struct IAWorkbenchView: View {
         HStack(spacing: 16) {
             // Subject filter
             HStack(spacing: 6) {
-                Image(systemName: "book")
-                    .font(.system(size: 12))
-                    .foregroundColor(CryoColors.accent(tm))
+                AstraIconView(.menuBook, size: 12)
+                    .foregroundColor(Color.accent)
 
                 Menu {
                     Button(String(localized: "ia.allSubjects")) { selectedSubject = "" }
@@ -132,18 +128,17 @@ struct IAWorkbenchView: View {
                     HStack(spacing: 6) {
                         Text(selectedSubject.isEmpty ? String(localized: "ia.allSubjects") : selectedSubject)
                             .font(.system(size: 13))
-                            .foregroundColor(CryoColors.foreground(tm))
-                        Image(systemName: "chevron.down")
-                            .font(.system(size: 10, weight: .semibold))
-                            .foregroundColor(CryoColors.foregroundMuted(tm))
+                            .foregroundColor(Color.textPrimary)
+                        AstraIconView(.expandMore, size: 10)
+                            .foregroundColor(Color.textSecondary)
                     }
                     .padding(.horizontal, 14)
                     .padding(.vertical, 7)
-                    .background(CryoColors.backgroundWarm(tm))
+                    .background(Color.surface)
                     .clipShape(Capsule())
                     .overlay(
                         Capsule()
-                            .stroke(CryoColors.border(tm), lineWidth: 1)
+                            .stroke(Color.hairline, lineWidth: 1)
                     )
                 }
                 #if os(macOS)
@@ -162,21 +157,21 @@ struct IAWorkbenchView: View {
                     } label: {
                         Text(type.displayName)
                             .font(.system(size: 12, weight: selectedIAType == type ? .semibold : .regular))
-                            .foregroundColor(selectedIAType == type ? .white : CryoColors.foreground(tm))
+                            .foregroundColor(selectedIAType == type ? .white : Color.textPrimary)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
                             .background(
                                 selectedIAType == type
-                                    ? CryoColors.primaryGradient(tm)
-                                    : CryoColors.backgroundWarm(tm)
+                                    ? Color.accent
+                                    : Color.surface
                             )
                             .clipShape(Capsule())
                             .overlay(
                                 Capsule()
                                     .stroke(
                                         selectedIAType == type
-                                            ? CryoColors.accent(tm)
-                                            : CryoColors.border(tm),
+                                            ? Color.accent
+                                            : Color.hairline,
                                         lineWidth: 1
                                     )
                             )
@@ -194,22 +189,22 @@ struct IAWorkbenchView: View {
             overviewStatCard(
                 title: String(localized: "ia.totalIAs"),
                 value: "\(filteredAssessments.count)",
-                icon: "folder",
-                color: CryoColors.accent(tm)
+                icon: .folder,
+                color: Color.accent
             )
 
             overviewStatCard(
                 title: String(localized: "ia.inProgress"),
                 value: "\(filteredAssessments.filter { $0.status == .inProgress }.count)",
-                icon: "hourglass",
-                color: CryoColors.warning(tm)
+                icon: .hourglassEmpty,
+                color: Color.semanticWarning
             )
 
             overviewStatCard(
                 title: String(localized: "ia.submitted"),
                 value: "\(filteredAssessments.filter { $0.status == .submitted }.count)",
-                icon: "checkmark.circle",
-                color: CryoColors.success(tm)
+                icon: .checkCircle,
+                color: Color.semanticSuccess
             )
 
             overviewStatCard(
@@ -217,29 +212,28 @@ struct IAWorkbenchView: View {
                 value: filteredAssessments.isEmpty
                     ? "0%"
                     : "\(Int(filteredAssessments.map(\.progress).reduce(0, +) / Double(max(filteredAssessments.count, 1)) * 100))%",
-                icon: "chart.line.uptrend.xyaxis",
-                color: CryoColors.crystal(tm)
+                icon: .showChart,
+                color: Color.accent.opacity(0.7)
             )
         }
     }
 
-    private func overviewStatCard(title: String, value: String, icon: String, color: Color) -> some View {
+    private func overviewStatCard(title: String, value: String, icon: AstraIcon, color: Color) -> some View {
         VStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.system(size: 18, weight: .medium))
+            AstraIconView(icon, size: 18)
                 .foregroundColor(color)
 
             Text(value)
-                .font(.system(size: 24, weight: .bold, design: .monospaced, family: "JetBrains Mono"))
-                .foregroundColor(CryoColors.foreground(tm))
+                .font(.astraMono(24, .bold))
+                .foregroundColor(Color.textPrimary)
 
             Text(title)
                 .font(.system(size: 11, weight: .medium))
-                .foregroundColor(CryoColors.foregroundMuted(tm))
+                .foregroundColor(Color.textSecondary)
         }
         .frame(maxWidth: .infinity)
         .padding(16)
-        .cryoCardStyle(tm)
+        .astraCardStyle()
     }
 
     // MARK: - IA Selection (no IA selected)
@@ -248,15 +242,14 @@ struct IAWorkbenchView: View {
         VStack(spacing: 16) {
             if filteredAssessments.isEmpty {
                 VStack(spacing: 16) {
-                    Image(systemName: "chart.bar")
-                        .font(.system(size: 40))
-                        .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.3))
+                    AstraIconView(.barChart, size: 40)
+                        .foregroundColor(Color.textSecondary.opacity(0.3))
                     Text(String(localized: "ia.noAssessments"))
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(CryoColors.foreground(tm))
+                        .foregroundColor(Color.textPrimary)
                     Text(String(localized: "ia.noAssessmentsHint"))
                         .font(.system(size: 13))
-                        .foregroundColor(CryoColors.foregroundMuted(tm))
+                        .foregroundColor(Color.textSecondary)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 48)
@@ -280,7 +273,7 @@ struct IAWorkbenchView: View {
             HStack {
                 Text(ia.title)
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(CryoColors.foreground(tm))
+                    .foregroundColor(Color.textPrimary)
                     .lineLimit(1)
 
                 Spacer()
@@ -295,19 +288,19 @@ struct IAWorkbenchView: View {
             }
 
             HStack(spacing: 12) {
-                Label(ia.subject, systemImage: "book")
+                Label { Text(ia.subject) } icon: { AstraIconView(.menuBook, size: 12) }
                     .font(.system(size: 12))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
 
-                Label(ia.type.displayName, systemImage: "doc.text")
+                Label { Text(ia.type.displayName) } icon: { AstraIconView(.description, size: 12) }
                     .font(.system(size: 12))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
 
                 Spacer()
 
                 Text("\(ia.wordCount) / \(ia.maxWordCount)")
-                    .font(.system(size: 12, weight: .medium, design: .monospaced, family: "JetBrains Mono"))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .font(.astraMono(12, .medium))
+                    .foregroundColor(Color.textSecondary)
             }
 
             // Progress bar
@@ -315,12 +308,12 @@ struct IAWorkbenchView: View {
 
             // Section completion count
             let completedSections = ia.sections.filter(\.isComplete).count
-            Text(String(localized: "ia.sectionsComplete \(completedSections) \(ia.sections.count)"))
+            Text(String(format: String(localized: "ia.sectionsComplete"), completedSections, ia.sections.count))
                 .font(.system(size: 11, design: .monospaced))
-                .foregroundColor(CryoColors.foregroundMuted(tm))
+                .foregroundColor(Color.textSecondary)
         }
         .padding(16)
-        .cryoCardStyle(tm)
+        .astraCardStyle()
         .onTapGesture {
             selectedIA = ia
             loadIA(ia)
@@ -336,19 +329,19 @@ struct IAWorkbenchView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(ia.title)
                         .font(.system(size: 22, weight: .bold, design: .rounded))
-                        .foregroundColor(CryoColors.foreground(tm))
+                        .foregroundColor(Color.textPrimary)
 
                     HStack(spacing: 8) {
                         Text(ia.subject)
                             .font(.system(size: 13))
-                            .foregroundColor(CryoColors.accent(tm))
+                            .foregroundColor(Color.accent)
 
                         Text(ia.type.displayName)
                             .font(.system(size: 12))
-                            .foregroundColor(CryoColors.foregroundMuted(tm))
+                            .foregroundColor(Color.textSecondary)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 3)
-                            .background(CryoColors.frost(tm))
+                            .background(Color.accentContainer)
                             .clipShape(Capsule())
 
                         Text(ia.status.displayName)
@@ -360,14 +353,14 @@ struct IAWorkbenchView: View {
                 Spacer()
 
                 Text("\(Int(ia.progress * 100))%")
-                    .font(.system(size: 28, weight: .bold, design: .monospaced, family: "JetBrains Mono"))
-                    .foregroundColor(CryoColors.accent(tm))
+                    .font(.astraMono(28, .bold))
+                    .foregroundColor(Color.accent)
             }
             .padding(16)
-            .cryoCardStyle(tm)
+            .astraCardStyle()
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
-                    .strokeBorder(CryoColors.crystalBorderGradient(tm), lineWidth: 2)
+                    .strokeBorder(Color.accent.opacity(0.6), lineWidth: 2)
             )
 
             // Section status cards grid
@@ -385,19 +378,18 @@ struct IAWorkbenchView: View {
                 selectedIA = nil
             } label: {
                 HStack(spacing: 6) {
-                    Image(systemName: "arrow.left")
-                        .font(.system(size: 12, weight: .semibold))
+                    AstraIconView(.arrowBack, size: 12)
                     Text(String(localized: "ia.backToAllIAs"))
                         .font(.system(size: 13, weight: .medium))
                 }
-                .foregroundColor(CryoColors.accentDark(tm))
+                .foregroundColor(Color.accent)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .background(CryoColors.backgroundWarm(tm))
+                .background(Color.surface)
                 .clipShape(Capsule())
                 .overlay(
                     Capsule()
-                        .stroke(CryoColors.border(tm), lineWidth: 1)
+                        .stroke(Color.hairline, lineWidth: 1)
                 )
             }
             .buttonStyle(.plain)
@@ -408,30 +400,28 @@ struct IAWorkbenchView: View {
 
     private func sectionStatusGrid(_ ia: InternalAssessment) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionLabel(String(localized: "ia.sections"), icon: "list.bullet.rectangle")
+            sectionLabel(String(localized: "ia.sections"), icon: .notes)
 
             if ia.sections.isEmpty {
                 VStack(spacing: 12) {
-                    Image(systemName: "list.bullet.rectangle")
-                        .font(.system(size: 28))
-                        .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.3))
+                    AstraIconView(.notes, size: 28)
+                        .foregroundColor(Color.textSecondary.opacity(0.3))
                     Text(String(localized: "ia.noSectionsDefined"))
                         .font(.system(size: 13))
-                        .foregroundColor(CryoColors.foregroundMuted(tm))
+                        .foregroundColor(Color.textSecondary)
 
                     Button {
                         addDefaultSections(to: ia)
                     } label: {
                         HStack(spacing: 4) {
-                            Image(systemName: "plus")
-                                .font(.system(size: 11, weight: .semibold))
+                            AstraIconView(.add, size: 11)
                             Text(String(localized: "ia.addDefaultSections"))
                                 .font(.system(size: 12, weight: .medium))
                         }
                         .foregroundColor(.white)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 7)
-                        .background(CryoColors.primaryGradient(tm))
+                        .background(Color.accent)
                         .clipShape(Capsule())
                     }
                     .buttonStyle(.plain)
@@ -458,16 +448,15 @@ struct IAWorkbenchView: View {
                 // Completion circle
                 ZStack {
                     Circle()
-                        .stroke(CryoColors.border(tm), lineWidth: 2)
+                        .stroke(Color.hairline, lineWidth: 2)
                         .frame(width: 28, height: 28)
 
                     if section.isComplete {
                         Circle()
-                            .fill(CryoColors.accent(tm))
+                            .fill(Color.accent)
                             .frame(width: 28, height: 28)
 
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 12, weight: .bold))
+                        AstraIconView(.check, size: 12)
                             .foregroundColor(.white)
                     }
                 }
@@ -475,11 +464,11 @@ struct IAWorkbenchView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(section.title)
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(CryoColors.foreground(tm))
+                        .foregroundColor(Color.textPrimary)
 
-                    Text(String(localized: "ia.sectionNumber \(section.order + 1)"))
+                    Text(String(format: String(localized: "ia.sectionNumber"), section.order + 1))
                         .font(.system(size: 11, design: .monospaced))
-                        .foregroundColor(CryoColors.foregroundMuted(tm))
+                        .foregroundColor(Color.textSecondary)
                 }
 
                 Spacer()
@@ -488,9 +477,8 @@ struct IAWorkbenchView: View {
                 Button {
                     section.isComplete.toggle()
                 } label: {
-                    Image(systemName: section.isComplete ? "checkmark.seal.fill" : "circle.dashed")
-                        .font(.system(size: 16))
-                        .foregroundColor(section.isComplete ? CryoColors.success(tm) : CryoColors.foregroundMuted(tm).opacity(0.4))
+                    AstraIconView(section.isComplete ? .verified : .radioButtonUnchecked, size: 16)
+                        .foregroundColor(section.isComplete ? Color.semanticSuccess : Color.textSecondary.opacity(0.4))
                 }
                 .buttonStyle(.plain)
             }
@@ -499,27 +487,27 @@ struct IAWorkbenchView: View {
             if !section.content.isEmpty {
                 Text(section.content)
                     .font(.system(size: 12))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
                     .lineLimit(3)
             } else {
                 Text(String(localized: "ia.noContentYet"))
                     .font(.system(size: 12))
-                    .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.4))
+                    .foregroundColor(Color.textSecondary.opacity(0.4))
             }
 
             // Word count for this section
-            Text(String(localized: "ia.wordCountLabel \(section.content.wordCount)"))
-                .font(.system(size: 10, design: .monospaced, family: "JetBrains Mono"))
-                .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.6))
+            Text(String(format: String(localized: "ia.wordCountLabel"), section.content.wordCount))
+                .font(.astraMono(10))
+                .foregroundColor(Color.textSecondary.opacity(0.6))
         }
         .padding(14)
-        .cryoCardStyle(tm)
+        .astraCardStyle()
         .overlay(
             RoundedRectangle(cornerRadius: 16)
                 .strokeBorder(
                     section.isComplete
-                        ? CryoColors.accent(tm).opacity(0.4)
-                        : CryoColors.border(tm),
+                        ? Color.accent.opacity(0.4)
+                        : Color.hairline,
                     lineWidth: section.isComplete ? 2 : 1
                 )
         )
@@ -529,27 +517,27 @@ struct IAWorkbenchView: View {
 
     private func reflectionSection(_ ia: InternalAssessment) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionLabel(String(localized: "ia.reflections"), icon: "pencil.and.outline")
+            sectionLabel(String(localized: "ia.reflections"), icon: .editNote)
 
             HStack(spacing: 16) {
                 reflectionCard(
                     title: String(localized: "ia.reflectionExploration"),
                     text: $explorationReflection,
-                    icon: "lightbulb",
+                    icon: .lightbulb,
                     placeholder: String(localized: "ia.reflectionExplorationPlaceholder")
                 )
 
                 reflectionCard(
                     title: String(localized: "ia.reflectionAnalysis"),
                     text: $analysisReflection,
-                    icon: "magnifyingglass",
+                    icon: .search,
                     placeholder: String(localized: "ia.reflectionAnalysisPlaceholder")
                 )
 
                 reflectionCard(
                     title: String(localized: "ia.reflectionEvaluation"),
                     text: $evaluationReflection,
-                    icon: "eye",
+                    icon: .visibility,
                     placeholder: String(localized: "ia.reflectionEvaluationPlaceholder")
                 )
             }
@@ -559,41 +547,40 @@ struct IAWorkbenchView: View {
     private func reflectionCard(
         title: String,
         text: Binding<String>,
-        icon: String,
+        icon: AstraIcon,
         placeholder: String
     ) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
-                Image(systemName: icon)
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(CryoColors.accent(tm))
+                AstraIconView(icon, size: 12)
+                    .foregroundColor(Color.accent)
                 Text(title)
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
-                    .foregroundColor(CryoColors.foreground(tm))
+                    .foregroundColor(Color.textPrimary)
             }
 
             TextEditor(text: text)
                 .font(.system(size: 13))
-                .foregroundColor(CryoColors.foreground(tm))
+                .foregroundColor(Color.textPrimary)
                 .scrollContentBackground(.hidden)
                 .frame(minHeight: 120)
                 .padding(10)
-                .background(CryoColors.backgroundWarm(tm))
+                .background(Color.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
-                        .stroke(CryoColors.border(tm), lineWidth: 1)
+                        .stroke(Color.hairline, lineWidth: 1)
                 )
 
             if text.wrappedValue.isEmpty {
                 Text(placeholder)
                     .font(.system(size: 11))
-                    .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.5))
+                    .foregroundColor(Color.textSecondary.opacity(0.5))
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
-        .cryoCardStyle(tm)
+        .astraCardStyle()
     }
 
     // MARK: - Word Count Tracker
@@ -601,22 +588,22 @@ struct IAWorkbenchView: View {
     private func wordCountTracker(_ ia: InternalAssessment) -> some View {
         VStack(spacing: 16) {
             HStack {
-                sectionLabel(String(localized: "ee.wordCount"), icon: "textformat")
+                sectionLabel(String(localized: "ee.wordCount"), icon: .textFields)
 
                 Spacer()
 
                 let totalWords = ia.sections.reduce(0) { $0 + $1.content.wordCount }
                 Text("\(totalWords)")
-                    .font(.system(size: 32, weight: .bold, design: .monospaced, family: "JetBrains Mono"))
+                    .font(.astraMono(32, .bold))
                     .foregroundColor(
                         totalWords > ia.maxWordCount
-                            ? CryoColors.error(tm)
-                            : CryoColors.accent(tm)
+                            ? Color.semanticDanger
+                            : Color.accent
                     )
 
                 Text("/ \(ia.maxWordCount)")
-                    .font(.system(size: 18, weight: .regular, design: .monospaced, family: "JetBrains Mono"))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .font(.astraMono(18, .regular))
+                    .foregroundColor(Color.textSecondary)
             }
 
             let ratio = min(1.0, Double(ia.sections.reduce(0) { $0 + $1.content.wordCount }) / Double(max(ia.maxWordCount, 1)))
@@ -629,26 +616,26 @@ struct IAWorkbenchView: View {
                         VStack(spacing: 4) {
                             Text(section.title)
                                 .font(.system(size: 10))
-                                .foregroundColor(CryoColors.foregroundMuted(tm))
+                                .foregroundColor(Color.textSecondary)
                                 .lineLimit(1)
 
                             Text("\(section.content.wordCount)")
-                                .font(.system(size: 13, weight: .bold, design: .monospaced, family: "JetBrains Mono"))
-                                .foregroundColor(CryoColors.accent(tm))
+                                .font(.astraMono(13, .bold))
+                                .foregroundColor(Color.accent)
                         }
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
-                        .background(CryoColors.frost(tm))
+                        .background(Color.accentContainer)
                         .clipShape(Capsule())
                     }
                 }
             }
         }
         .padding(20)
-        .cryoCardStyle(tm)
+        .astraCardStyle()
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .strokeBorder(CryoColors.crystalBorderGradient(tm), lineWidth: 2)
+                .strokeBorder(Color.accent.opacity(0.6), lineWidth: 2)
         )
     }
 
@@ -658,13 +645,13 @@ struct IAWorkbenchView: View {
         GeometryReader { geometry in
             ZStack(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 4)
-                    .fill(CryoColors.frost(tm))
+                    .fill(Color.accentContainer)
                     .frame(height: 6)
 
                 RoundedRectangle(cornerRadius: 4)
                     .fill(
                         LinearGradient(
-                            colors: [CryoColors.accent(tm), CryoColors.accentDark(tm)],
+                            colors: [Color.accent, Color.accent],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
@@ -675,24 +662,23 @@ struct IAWorkbenchView: View {
         .frame(height: 6)
     }
 
-    private func sectionLabel(_ title: String, icon: String) -> some View {
+    private func sectionLabel(_ title: String, icon: AstraIcon) -> some View {
         HStack(spacing: 6) {
-            Image(systemName: icon)
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(CryoColors.accent(tm))
+            AstraIconView(icon, size: 12)
+                .foregroundColor(Color.accent)
             Text(title)
                 .font(.system(size: 13, weight: .semibold, design: .rounded))
-                .foregroundColor(CryoColors.foreground(tm))
+                .foregroundColor(Color.textPrimary)
                 .tracking(0.02)
         }
     }
 
     private func iaStatusColor(_ status: IAStatus) -> Color {
         switch status {
-        case .planning:    return CryoColors.warning(tm)
-        case .inProgress:  return CryoColors.accent(tm)
-        case .underReview: return CryoColors.crystal(tm)
-        case .submitted:   return CryoColors.success(tm)
+        case .planning:    return Color.semanticWarning
+        case .inProgress:  return Color.accent
+        case .underReview: return Color.accent.opacity(0.7)
+        case .submitted:   return Color.semanticSuccess
         }
     }
 
@@ -700,7 +686,7 @@ struct IAWorkbenchView: View {
 
     private func createNewIA() {
         let ia = InternalAssessment(
-            title: String(localized: "ia.defaultTitle \(assessments.count + 1)"),
+            title: String(format: String(localized: "ia.defaultTitle"), assessments.count + 1),
             subject: "",
             subjectGroup: 4,
             type: selectedIAType,
@@ -757,6 +743,6 @@ struct IAWorkbenchView: View {
 
 #Preview {
     IAWorkbenchView()
-        .environment(ThemeManager())
+        
         .modelContainer(for: InternalAssessment.self, inMemory: true)
 }

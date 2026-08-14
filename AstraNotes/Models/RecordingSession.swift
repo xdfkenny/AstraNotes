@@ -1,6 +1,37 @@
 import SwiftUI
 import SwiftData
 
+// MARK: - Transcription Language
+// Whisper language selection for recording sessions.
+
+enum TranscriptionLanguage: String, Codable, CaseIterable, Identifiable {
+    case english = "en"
+    case spanish = "es"
+    case chinese = "zh"
+    case autoDetect = "auto"
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .english: return "English"
+        case .spanish: return "Spanish"
+        case .chinese: return "Chinese"
+        case .autoDetect: return "Auto-detect"
+        }
+    }
+
+    /// Whisper language token (nil for auto).
+    var whisperToken: String? {
+        switch self {
+        case .english: return "en"
+        case .spanish: return "es"
+        case .chinese: return "zh"
+        case .autoDetect: return nil
+        }
+    }
+}
+
 @Model
 final class RecordingSession {
     var id: UUID

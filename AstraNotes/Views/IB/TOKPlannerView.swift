@@ -2,7 +2,7 @@
 // Theory of Knowledge exhibition and essay planner.
 // Features knowledge question cards with gradient borders,
 // WOK/AOK pill tag selectors, real-world situation analysis,
-// and related notes linking with the Soft Cryo aesthetic.
+// and related notes linking, with the Astra design system.
 
 import SwiftUI
 import SwiftData
@@ -13,7 +13,6 @@ struct TOKPlannerView: View {
 
     // MARK: - Environment
 
-    @Environment(\.themeManager) private var tm
     @Environment(\.modelContext) private var modelContext
 
     // MARK: - State
@@ -60,7 +59,7 @@ struct TOKPlannerView: View {
             .padding(32)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(CryoColors.background(tm))
+        .background(Color.surfaceBackground)
     }
 
     // MARK: - Header
@@ -68,17 +67,16 @@ struct TOKPlannerView: View {
     private var headerSection: some View {
         VStack(spacing: 8) {
             HStack(spacing: 8) {
-                Text("brain")
-                    .font(.system(size: 22))
-                    .foregroundStyle(CryoColors.accent(tm))
+                AstraIconView(.psychology, size: 22)
+                    .foregroundStyle(Color.accent)
                 Text(String(localized: "tok.title"))
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundColor(CryoColors.foreground(tm))
+                    .font(TypeScale.title)
+                    .foregroundColor(Color.textPrimary)
             }
 
             Text(String(localized: "tok.subtitle"))
                 .font(.system(size: 14))
-                .foregroundColor(CryoColors.foregroundMuted(tm))
+                .foregroundColor(Color.textSecondary)
 
             HStack {
                 Spacer()
@@ -86,23 +84,22 @@ struct TOKPlannerView: View {
                 // Note count
                 Text("^[\(tokNotes.count) note](inflect: true)")
                     .font(.system(size: 12, design: .monospaced))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
 
                 Button {
                     createNewNote()
                 } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 12, weight: .semibold))
+                        AstraIconView(.add, size: 12)
                         Text(String(localized: "tok.newNote"))
                             .font(.system(size: 13, weight: .medium))
                     }
                     .foregroundColor(.white)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
-                    .background(CryoColors.primaryGradient(tm))
+                    .background(Color.accent)
                     .clipShape(Capsule())
-                    .shadow(color: CryoColors.shadowGlow(tm), radius: 8, x: 0, y: 2)
+                    .shadow(color: Color.accent.opacity(0.15), radius: 8, x: 0, y: 2)
                 }
                 .buttonStyle(.plain)
             }
@@ -113,40 +110,39 @@ struct TOKPlannerView: View {
 
     private var knowledgeQuestionSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionLabel(String(localized: "tok.knowledgeQuestion"), icon: "questionmark.circle")
+            sectionLabel(String(localized: "tok.knowledgeQuestion"), icon: .help)
 
             VStack(alignment: .leading, spacing: 8) {
                 TextEditor(text: $knowledgeQuestion)
                     .font(.system(size: 16, weight: .medium, design: .rounded))
-                    .foregroundColor(CryoColors.foreground(tm))
+                    .foregroundColor(Color.textPrimary)
                     .scrollContentBackground(.hidden)
                     .frame(minHeight: 60)
                     .padding(12)
-                    .background(CryoColors.backgroundWarm(tm))
+                    .background(Color.surface)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(CryoColors.border(tm), lineWidth: 1)
+                            .stroke(Color.hairline, lineWidth: 1)
                     )
 
                 if knowledgeQuestion.isEmpty {
                     HStack(spacing: 6) {
-                        Image(systemName: "lightbulb")
-                            .font(.system(size: 11))
-                            .foregroundColor(CryoColors.accent(tm))
+                        AstraIconView(.lightbulb, size: 11)
+                            .foregroundColor(Color.accent)
                         Text(String(localized: "tok.kqPlaceholder"))
                             .font(.system(size: 12))
-                            .foregroundColor(CryoColors.foregroundMuted(tm))
+                            .foregroundColor(Color.textSecondary)
                     }
                 }
             }
         }
         .padding(20)
-        .cryoCardStyle(tm)
+        .astraCardStyle()
         .overlay(
             RoundedRectangle(cornerRadius: 16)
                 .strokeBorder(
-                    CryoColors.crystalBorderGradient(tm),
+                    Color.accent.opacity(0.6),
                     lineWidth: 2
                 )
         )
@@ -158,7 +154,7 @@ struct TOKPlannerView: View {
         HStack(alignment: .top, spacing: 20) {
             // Ways of Knowing
             VStack(alignment: .leading, spacing: 12) {
-                sectionLabel(String(localized: "tok.waysOfKnowing"), icon: "eye")
+                sectionLabel(String(localized: "tok.waysOfKnowing"), icon: .visibility)
 
                 LazyVGrid(columns: [
                     GridItem(.flexible(), spacing: 8),
@@ -179,21 +175,21 @@ struct TOKPlannerView: View {
                         } label: {
                             Text(wok)
                                 .font(.system(size: 12, weight: isSelected ? .semibold : .regular))
-                                .foregroundColor(isSelected ? .white : CryoColors.foreground(tm))
+                                .foregroundColor(isSelected ? .white : Color.textPrimary)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)
                                 .background(
                                     isSelected
-                                        ? CryoColors.primaryGradient(tm)
-                                        : CryoColors.backgroundWarm(tm)
+                                        ? Color.accent
+                                        : Color.surface
                                 )
                                 .clipShape(Capsule())
                                 .overlay(
                                     Capsule()
                                         .stroke(
                                             isSelected
-                                                ? CryoColors.accent(tm)
-                                                : CryoColors.border(tm),
+                                                ? Color.accent
+                                                : Color.hairline,
                                             lineWidth: 1
                                         )
                                 )
@@ -203,11 +199,11 @@ struct TOKPlannerView: View {
                 }
             }
             .padding(20)
-            .cryoCardStyle(tm)
+            .astraCardStyle()
 
             // Areas of Knowledge
             VStack(alignment: .leading, spacing: 12) {
-                sectionLabel(String(localized: "tok.areasOfKnowledge"), icon: "globe")
+                sectionLabel(String(localized: "tok.areasOfKnowledge"), icon: .globe)
 
                 LazyVGrid(columns: [
                     GridItem(.flexible(), spacing: 8),
@@ -226,26 +222,26 @@ struct TOKPlannerView: View {
                         } label: {
                             HStack(spacing: 4) {
                                 Circle()
-                                    .fill(isSelected ? CryoColors.accent(tm) : CryoColors.border(tm))
+                                    .fill(isSelected ? Color.accent : Color.hairline)
                                     .frame(width: 6, height: 6)
                                 Text(aok)
                                     .font(.system(size: 12, weight: isSelected ? .semibold : .regular))
-                                    .foregroundColor(isSelected ? .white : CryoColors.foreground(tm))
+                                    .foregroundColor(isSelected ? .white : Color.textPrimary)
                             }
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
                             .background(
                                 isSelected
-                                    ? CryoColors.primaryGradient(tm)
-                                    : CryoColors.backgroundWarm(tm)
+                                    ? Color.accent
+                                    : Color.surface
                             )
                             .clipShape(Capsule())
                             .overlay(
                                 Capsule()
                                     .stroke(
                                         isSelected
-                                            ? CryoColors.accent(tm)
-                                            : CryoColors.border(tm),
+                                            ? Color.accent
+                                            : Color.hairline,
                                         lineWidth: 1
                                     )
                             )
@@ -255,7 +251,7 @@ struct TOKPlannerView: View {
                 }
             }
             .padding(20)
-            .cryoCardStyle(tm)
+            .astraCardStyle()
         }
     }
 
@@ -263,41 +259,40 @@ struct TOKPlannerView: View {
 
     private var realWorldSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionLabel(String(localized: "tok.realWorldSituation"), icon: "globe.americas")
+            sectionLabel(String(localized: "tok.realWorldSituation"), icon: .public)
 
             TextEditor(text: $realWorldSituation)
                 .font(.system(size: 14))
-                .foregroundColor(CryoColors.foreground(tm))
+                .foregroundColor(Color.textPrimary)
                 .scrollContentBackground(.hidden)
                 .frame(minHeight: 80)
                 .padding(12)
-                .background(CryoColors.backgroundWarm(tm))
+                .background(Color.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(CryoColors.border(tm), lineWidth: 1)
+                        .stroke(Color.hairline, lineWidth: 1)
                 )
 
             if !realWorldSituation.isEmpty {
                 HStack(spacing: 6) {
-                    Image(systemName: "link.circle")
-                        .font(.system(size: 11))
-                        .foregroundColor(CryoColors.accent(tm))
+                    AstraIconView(.link, size: 11)
+                        .foregroundColor(Color.accent)
                     Text(String(localized: "tok.rwsHint"))
                         .font(.system(size: 12))
-                        .foregroundColor(CryoColors.foregroundMuted(tm))
+                        .foregroundColor(Color.textSecondary)
                 }
             }
         }
         .padding(20)
-        .cryoCardStyle(tm)
+        .astraCardStyle()
     }
 
     // MARK: - Analysis Section
 
     private var analysisSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionLabel(String(localized: "tok.analysis"), icon: "pencil.and.outline")
+            sectionLabel(String(localized: "tok.analysis"), icon: .editNote)
 
             HStack(spacing: 16) {
                 // Selected WOK summary
@@ -305,16 +300,16 @@ struct TOKPlannerView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         Text(String(localized: "tok.selectedWOKs"))
                             .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                            .foregroundColor(CryoColors.accentDark(tm))
+                            .foregroundColor(Color.accent)
                             .tracking(0.06)
                         HStack(spacing: 6) {
                             ForEach(Array(selectedWOKs).sorted(), id: \.self) { wok in
                                 Text(wok)
                                     .font(.system(size: 11))
-                                    .foregroundColor(CryoColors.accent(tm))
+                                    .foregroundColor(Color.accent)
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 4)
-                                    .background(CryoColors.accentGlow(tm))
+                                    .background(Color.accentContainer)
                                     .clipShape(Capsule())
                             }
                         }
@@ -325,16 +320,16 @@ struct TOKPlannerView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         Text(String(localized: "tok.selectedAOKs"))
                             .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                            .foregroundColor(CryoColors.accentDark(tm))
+                            .foregroundColor(Color.accent)
                             .tracking(0.06)
                         HStack(spacing: 6) {
                             ForEach(Array(selectedAOKs).sorted(), id: \.self) { aok in
                                 Text(aok)
                                     .font(.system(size: 11))
-                                    .foregroundColor(CryoColors.crystal(tm))
+                                    .foregroundColor(Color.accent.opacity(0.7))
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 4)
-                                    .background(CryoColors.frost(tm))
+                                    .background(Color.accentContainer)
                                     .clipShape(Capsule())
                             }
                         }
@@ -344,15 +339,15 @@ struct TOKPlannerView: View {
 
             TextEditor(text: $analysisText)
                 .font(.system(size: 14))
-                .foregroundColor(CryoColors.foreground(tm))
+                .foregroundColor(Color.textPrimary)
                 .scrollContentBackground(.hidden)
                 .frame(minHeight: 120)
                 .padding(12)
-                .background(CryoColors.backgroundWarm(tm))
+                .background(Color.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(CryoColors.border(tm), lineWidth: 1)
+                        .stroke(Color.hairline, lineWidth: 1)
                 )
 
             // Save button
@@ -362,17 +357,16 @@ struct TOKPlannerView: View {
                     saveCurrentNote()
                 } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: "checkmark.circle")
-                            .font(.system(size: 13, weight: .semibold))
+                        AstraIconView(.checkCircle, size: 13)
                         Text(String(localized: "common.save"))
                             .font(.system(size: 13, weight: .semibold))
                     }
                     .foregroundColor(.white)
                     .padding(.horizontal, 20)
                     .padding(.vertical, 10)
-                    .background(CryoColors.primaryGradient(tm))
+                    .background(Color.accent)
                     .clipShape(Capsule())
-                    .shadow(color: CryoColors.shadowGlow(tm), radius: 8, x: 0, y: 2)
+                    .shadow(color: Color.accent.opacity(0.15), radius: 8, x: 0, y: 2)
                 }
                 .buttonStyle(.plain)
                 .disabled(knowledgeQuestion.isEmpty && analysisText.isEmpty)
@@ -380,7 +374,7 @@ struct TOKPlannerView: View {
             }
         }
         .padding(20)
-        .cryoCardStyle(tm)
+        .astraCardStyle()
     }
 
     // MARK: - Related Notes
@@ -388,41 +382,39 @@ struct TOKPlannerView: View {
     private var relatedNotesSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                sectionLabel(String(localized: "tok.notes"), icon: "doc.text")
+                sectionLabel(String(localized: "tok.notes"), icon: .description)
 
                 Spacer()
 
                 // Search field
                 HStack(spacing: 6) {
-                    Image(systemName: "magnifyingglass")
-                        .font(.system(size: 12))
-                        .foregroundColor(CryoColors.foregroundMuted(tm))
+                    AstraIconView(.search, size: 12)
+                        .foregroundColor(Color.textSecondary)
                     TextField(String(localized: "tok.searchNotes"), text: $searchText)
                         .font(.system(size: 13))
                         .textFieldStyle(.plain)
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
-                .background(CryoColors.backgroundWarm(tm))
+                .background(Color.surface)
                 .clipShape(Capsule())
                 .overlay(
                     Capsule()
-                        .stroke(CryoColors.border(tm), lineWidth: 1)
+                        .stroke(Color.hairline, lineWidth: 1)
                 )
                 .frame(width: 200)
             }
 
             if filteredNotes.isEmpty {
                 VStack(spacing: 12) {
-                    Image(systemName: "brain")
-                        .font(.system(size: 32))
-                        .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.3))
+                    AstraIconView(.psychology, size: 32)
+                        .foregroundColor(Color.textSecondary.opacity(0.3))
                     Text(String(localized: "tok.noNotes"))
                         .font(.system(size: 14))
-                        .foregroundColor(CryoColors.foregroundMuted(tm))
+                        .foregroundColor(Color.textSecondary)
                     Text(String(localized: "tok.noNotesHint"))
                         .font(.system(size: 12))
-                        .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.6))
+                        .foregroundColor(Color.textSecondary.opacity(0.6))
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 24)
@@ -448,12 +440,12 @@ struct TOKPlannerView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(note.title)
                         .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(CryoColors.foreground(tm))
+                        .foregroundColor(Color.textPrimary)
                         .lineLimit(1)
 
                     Text(note.knowledgeQuestion)
                         .font(.system(size: 13, weight: .medium, design: .rounded))
-                        .foregroundColor(CryoColors.accent(tm))
+                        .foregroundColor(Color.accent)
                         .lineLimit(2)
                 }
 
@@ -462,10 +454,10 @@ struct TOKPlannerView: View {
                 // Date badge
                 Text(note.dateCreated.shortDateString)
                     .font(.system(size: 10, design: .monospaced))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(CryoColors.frost(tm))
+                    .background(Color.accentContainer)
                     .clipShape(Capsule())
             }
 
@@ -475,10 +467,10 @@ struct TOKPlannerView: View {
                     ForEach(note.waysOfKnowing, id: \.self) { wok in
                         Text(wok)
                             .font(.system(size: 10, weight: .medium))
-                            .foregroundColor(CryoColors.accentDark(tm))
+                            .foregroundColor(Color.accent)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 3)
-                            .background(CryoColors.accentGlow(tm))
+                            .background(Color.accentContainer)
                             .clipShape(Capsule())
                     }
                 }
@@ -490,10 +482,10 @@ struct TOKPlannerView: View {
                     ForEach(note.areasOfKnowledge, id: \.self) { aok in
                         Text(aok)
                             .font(.system(size: 10, weight: .medium))
-                            .foregroundColor(CryoColors.crystal(tm))
+                            .foregroundColor(Color.accent.opacity(0.7))
                             .padding(.horizontal, 8)
                             .padding(.vertical, 3)
-                            .background(CryoColors.frost(tm))
+                            .background(Color.accentContainer)
                             .clipShape(Capsule())
                     }
                 }
@@ -505,24 +497,24 @@ struct TOKPlannerView: View {
                     ForEach(note.tags.prefix(4), id: \.self) { tag in
                         Text("#\(tag)")
                             .font(.system(size: 10))
-                            .foregroundColor(CryoColors.foregroundMuted(tm))
+                            .foregroundColor(Color.textSecondary)
                     }
                     if note.tags.count > 4 {
                         Text("+\(note.tags.count - 4)")
                             .font(.system(size: 10))
-                            .foregroundColor(CryoColors.foregroundMuted(tm))
+                            .foregroundColor(Color.textSecondary)
                     }
                 }
             }
         }
         .padding(16)
-        .cryoCardStyle(tm)
+        .astraCardStyle()
         .overlay(
             RoundedRectangle(cornerRadius: 16)
                 .strokeBorder(
                     selectedNote?.id == note.id
-                        ? CryoColors.crystalBorderGradient(tm)
-                        : CryoColors.border(tm),
+                        ? Color.accent.opacity(0.6)
+                        : Color.hairline,
                     lineWidth: selectedNote?.id == note.id ? 2 : 1
                 )
         )
@@ -534,14 +526,13 @@ struct TOKPlannerView: View {
 
     // MARK: - Helper Views
 
-    private func sectionLabel(_ title: String, icon: String) -> some View {
+    private func sectionLabel(_ title: String, icon: AstraIcon) -> some View {
         HStack(spacing: 6) {
-            Image(systemName: icon)
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(CryoColors.accent(tm))
+            AstraIconView(icon, size: 12)
+                .foregroundColor(Color.accent)
             Text(title)
                 .font(.system(size: 13, weight: .semibold, design: .rounded))
-                .foregroundColor(CryoColors.foreground(tm))
+                .foregroundColor(Color.textPrimary)
                 .tracking(0.02)
         }
     }
@@ -550,7 +541,7 @@ struct TOKPlannerView: View {
 
     private func createNewNote() {
         let note = TOKNote(
-            title: String(localized: "tok.reflectionTitle \(tokNotes.count + 1)"),
+            title: String(format: String(localized: "tok.reflectionTitle"), tokNotes.count + 1),
             knowledgeQuestion: knowledgeQuestion,
             waysOfKnowing: Array(selectedWOKs),
             areasOfKnowledge: Array(selectedAOKs),
@@ -587,6 +578,6 @@ struct TOKPlannerView: View {
 
 #Preview {
     TOKPlannerView()
-        .environment(ThemeManager())
+        
         .modelContainer(for: TOKNote.self, inMemory: true)
 }

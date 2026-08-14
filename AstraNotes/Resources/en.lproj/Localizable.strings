@@ -17,8 +17,13 @@
 "nav.noSubjects" = "No subjects added";
 
 /* Sidebar */
-"sidebar.subjects" = "📚 Subjects";
-"sidebar.ibCore" = "📁 IB Core";
+"sidebar.subjects" = "Subjects";
+"sidebar.ibCore" = "IB Core";
+"sidebar.studio" = "Studio";
+"sidebar.study" = "Study";
+"sidebar.whisperReady" = "Whisper ready";
+"sidebar.deepSeekConnected" = "DeepSeek connected";
+"sidebar.deepSeekNotConfigured" = "DeepSeek not configured";
 
 /* Dashboard */
 "dashboard.welcome" = "Welcome back";
@@ -56,6 +61,8 @@
 "recording.importAudioFile" = "Import an audio file";
 "recording.saved" = "Recording Saved";
 "recording.savedMessage" = "Recording saved to %@";
+"recording.lecture" = "Lecture";
+"recording.transcribeAfterStop" = "Transcribe after stop";
 
 /* Transcription */
 "transcription.title" = "Transcription";
@@ -95,6 +102,8 @@
 
 /* Notes */
 "notes.title" = "Notes";
+"notes.noSelection" = "Select a note from the list";
+"notes.favorite" = "Favorite";
 "notes.edit" = "Edit";
 "notes.preview" = "Preview";
 "notes.noNotes" = "No notes yet";
@@ -230,7 +239,7 @@
 "tok.analysis" = "Analysis";
 "tok.prescribedTitle" = "Prescribed Title";
 "tok.exhibitionObject" = "Exhibition Object";
-"tok.reflectionTitle %d" = "TOK Reflection %d";
+"tok.reflectionTitle" = "TOK Reflection %d";
 
 /* Extended Essay */
 "ee.title" = "Extended Essay Tracker";
@@ -244,7 +253,7 @@
 "ee.wordCount" = "Word Count";
 "ee.maxWords %d" = "/ %d";
 "ee.minWords" = "Min: 0";
-"ee.wordsCount %d %d" = "%d / %d";
+"ee.wordsCount" = "%d / %d";
 "ee.overallProgress" = "Overall Progress";
 "ee.meetingNotes" = "Meeting Notes";
 "ee.noMeetings" = "No supervisor meetings recorded yet";
@@ -369,6 +378,7 @@
 "settings.deepSeekKey" = "DeepSeek API Key";
 "settings.obsidianVault" = "Obsidian Vault";
 "settings.notSelected" = "Not selected";
+"settings.vaultInvalid" = "Not a valid Obsidian vault";
 "settings.chooseVault" = "Choose...";
 "settings.transcription" = "Transcription";
 "settings.whisperLanguage" = "Whisper Language";
@@ -466,3 +476,17 @@
 "error.obsidianCopyResource" = "Failed to copy resource: %@";
 "error.obsidianDeleteNoteDetail" = "Failed to delete note: %@";
 "error.obsidianMoveNote" = "Failed to move note: %@";
+
+/* Format strings (added by redesign) */
+"cas.hoursFormat" = "%@ hrs";
+"cas.outcomesAchieved" = "%d outcomes achieved";
+"ee.defaultTitle" = "Extended Essay %d";
+"ee.maxWords" = "Max %d words";
+"ia.defaultTitle" = "Internal Assessment %d";
+"ia.sectionNumber" = "Section %d";
+"ia.sectionsComplete" = "%d / %d sections complete";
+"ia.wordCountLabel" = "%d words";
+"settings.english" = "English";
+"settings.spanish" = "Spanish";
+"settings.chinese" = "Chinese";
+"cas.titleLabel" = "Title";

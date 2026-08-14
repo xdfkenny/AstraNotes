@@ -2,154 +2,188 @@ import SwiftUI
 import SwiftData
 
 // MARK: - NoteDetailView
-// A split-pane note viewer and editor. The left panel lists all generated
-// notes; the right panel provides an edit/preview toggle with a toolbar
-// of pill-styled CryoButtons. In preview mode the markdown content is
-// rendered in a WebKit-backed MarkdownPreview view with Cryo CSS.
+// Notes library with a list (260pt) and an editor/preview split.
+// Editing persists back to the SwiftData model. Preview renders
+// Mermaid + LaTeX + HTML via the WebKit MarkdownRenderer.
 
 struct NoteDetailView: View {
-    @Environment(\.themeManager) private var tm
+    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.modelContext) private var modelContext
+
     @State private var isEditing: Bool = true
-    @State private var noteContent: String = "# My Note\n\nStart writing..."
+    @State private var noteContent: String = ""
     @State private var selectedNote: GeneratedNote?
-    @Query private var notes: [GeneratedNote]
+
+    @Query(sort: \GeneratedNote.dateGenerated, order: .reverse) private var notes: [GeneratedNote]
 
     var body: some View {
         HStack(spacing: 0) {
-            // Notes list
             notesList
+                .frame(width: 260)
 
             Divider()
-                .background(CryoColors.border(tm))
 
-            // Editor / Preview
-            editorPreviewSplit
+            if let note = selectedNote {
+                editorPreviewSplit(note)
+            } else {
+                EmptyStateView(
+                    icon: .description,
+                    title: String(localized: "notes.title"),
+                    message: String(localized: "notes.noSelection")
+                )
+            }
         }
-        .background(CryoColors.background(tm))
+        .background(Color.surfaceBackground)
+        .onAppear {
+            if selectedNote == nil, let first = notes.first {
+                load(first)
+            }
+        }
     }
 
-    // MARK: - Notes List Panel
+    // MARK: - Notes List
 
     private var notesList: some View {
-        VStack(spacing: 0) {
-            Text(String(localized: "notes.title"))
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(CryoColors.foreground(tm))
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(16)
-
-            Divider()
-                .background(CryoColors.border(tm))
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            SectionHeader(title: String(localized: "notes.title"), icon: .description)
+                .padding(.horizontal, Spacing.md)
 
             ScrollView {
-                LazyVStack(spacing: 4) {
+                LazyVStack(spacing: 2) {
                     ForEach(notes) { note in
                         noteRow(note)
                     }
                 }
-                .padding(8)
+                .padding(.horizontal, Spacing.sm)
             }
         }
-        .frame(width: 260)
-        .background(CryoColors.backgroundWarm(tm))
+        .padding(.vertical, Spacing.sm)
+        .background(Color.surfaceBackground)
     }
 
     private func noteRow(_ note: GeneratedNote) -> some View {
         let isSelected = selectedNote?.id == note.id
 
         return Button {
-            selectedNote = note
-            noteContent = note.content
+            persistCurrentEdit()
+            load(note)
         } label: {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(note.title)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(CryoColors.foreground(tm))
-                    .lineLimit(1)
-                HStack {
+            HStack(spacing: Spacing.sm) {
+                AstraIconView(note.type.astraIcon, size: 12)
+                    .foregroundStyle(isSelected ? Color.accent : Color.textTertiary)
+                    .frame(width: 18)
+
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(note.title)
+                        .font(.astraBody(12, isSelected ? .semibold : .regular))
+                        .foregroundStyle(isSelected ? Color.accent : Color.textPrimary)
+                        .lineLimit(1)
                     Text(note.displayDate)
-                        .font(.system(size: 11, design: .monospaced))
-                        .foregroundColor(CryoColors.foregroundMuted(tm))
-                    Spacer()
-                    if note.isFavorite {
-                        Image(systemName: "star.fill")
-                            .font(.system(size: 10))
-                            .foregroundColor(Color(hex: "#FBBF24"))
-                    }
+                        .font(.astraMono(10))
+                        .foregroundStyle(.textTertiary)
+                }
+                Spacer(minLength: 0)
+                if note.isFavorite {
+                    AstraIconView(.star, size: 9)
+                        .foregroundStyle(Color.semanticWarning)
                 }
             }
-            .padding(10)
-            .background(isSelected ? CryoColors.accent(tm).opacity(0.1) : .clear)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .padding(.horizontal, Spacing.sm)
+            .frame(height: 36)
+            .background(isSelected ? Color.accentContainer : Color.clear)
+            .clipShape(RoundedRectangle(cornerRadius: Radius.control))
+            .overlay(alignment: .leading) {
+                if isSelected {
+                    Rectangle()
+                        .fill(Color.accent)
+                        .frame(width: 3, height: 18)
+                        .clipShape(RoundedRectangle(cornerRadius: 1.5))
+                }
+            }
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
 
-    // MARK: - Editor / Preview Panel
+    // MARK: - Editor / Preview Split
 
-    private var editorPreviewSplit: some View {
+    private func editorPreviewSplit(_ note: GeneratedNote) -> some View {
         VStack(spacing: 0) {
-            // Toolbar
-            toolbar
+            toolbar(note)
 
             Divider()
-                .background(CryoColors.border(tm))
 
             if isEditing {
-                // Markdown text editor
                 TextEditor(text: $noteContent)
-                    .font(.system(size: 14, design: .monospaced))
-                    .foregroundColor(CryoColors.foreground(tm))
+                    .font(.system(size: 13, design: .monospaced))
                     .scrollContentBackground(.hidden)
-                    .padding(16)
-                    .background(CryoColors.backgroundWarm(tm))
+                    .background(Color.surfaceBackground)
+                    .padding(Spacing.lg)
             } else {
-                // Rendered markdown preview
-                MarkdownPreview(markdown: noteContent, isDark: tm.isDark)
+                ScrollView {
+                    MarkdownPreview(markdown: noteContent, isDark: colorScheme == .dark)
+                        .frame(minHeight: 600)
+                }
             }
         }
-        .frame(maxWidth: .infinity)
     }
 
-    // MARK: - Toolbar
-
-    private var toolbar: some View {
-        HStack(spacing: 8) {
-            // Edit / Preview toggle pill group
-            HStack(spacing: 0) {
-                CryoButton(String(localized: "notes.edit"), style: .primary, action: { isEditing = true })
-                CryoButton(String(localized: "notes.preview"), style: .secondary, action: { isEditing = false })
+    private func toolbar(_ note: GeneratedNote) -> some View {
+        HStack(spacing: Spacing.sm) {
+            // Favorite toggle
+            AstraIconButton(
+                icon: .star,
+                help: String(localized: "notes.favorite"),
+                tint: note.isFavorite ? .semanticWarning : .textTertiary
+            ) {
+                note.isFavorite.toggle()
             }
 
             Spacer()
 
-            CryoButton(icon: "paperplane", style: .icon()) {}
-            CryoButton(icon: "arrow.down.doc", style: .icon()) {}
-            CryoButton(icon: "square.and.arrow.up", style: .icon()) {}
+            // Edit / Preview toggle
+            HStack(spacing: 2) {
+                TagChip(
+                    text: String(localized: "notes.edit"),
+                    isSelected: isEditing
+                ) {
+                    persistCurrentEdit()
+                    withAnimation(Motion.stateChange) { isEditing = true }
+                }
+                TagChip(
+                    text: String(localized: "notes.preview"),
+                    isSelected: !isEditing
+                ) {
+                    persistCurrentEdit()
+                    withAnimation(Motion.stateChange) { isEditing = false }
+                }
+            }
+
+            Spacer()
+
+            AstraIconButton(icon: .share, help: String(localized: "common.share")) {}
         }
-        .padding(12)
-        .background(CryoColors.backgroundWarm(tm))
+        .padding(.horizontal, Spacing.lg)
+        .frame(height: 44)
+        .background(Color.surface)
     }
-}
 
-// MARK: - MarkdownPreview
-// A placeholder for the WebKit-backed markdown renderer. In production
-// this would wrap a WKWebView with custom Cryo-themed CSS to render
-// markdown content. For now it displays the raw markdown text as a
-// fallback until the WebKit component is integrated.
+    // MARK: - Actions
 
-struct MarkdownPreview: View {
-    let markdown: String
-    let isDark: Bool
+    private func load(_ note: GeneratedNote) {
+        selectedNote = note
+        noteContent = note.content
+        isEditing = true
+    }
 
-    var body: some View {
-        ScrollView {
-            Text(markdown)
-                .font(.system(size: 14, design: .monospaced))
-                .foregroundColor(isDark ? Color(hex: "#E8F4FC") : Color(hex: "#2C3E50"))
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(20)
+    /// Writes the editor buffer back to the model when switching notes
+    /// or leaving edit mode.
+    private func persistCurrentEdit() {
+        guard let note = selectedNote else { return }
+        if note.content != noteContent {
+            note.content = noteContent
+            note.lastEdited = Date()
+            note.wordCount = noteContent.wordCount
         }
-        .background(isDark ? Color(hex: "#0F1729") : Color(hex: "#F0F7FF"))
     }
 }

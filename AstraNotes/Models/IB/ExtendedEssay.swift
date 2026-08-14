@@ -99,13 +99,13 @@ enum EEStatus: String, Codable, CaseIterable {
         }
     }
 
-    var icon: String {
+    var astraIcon: AstraIcon {
         switch self {
-        case .planning: return "lightbulb"
-        case .researching: return "magnifyingglass"
-        case .drafting: return "pencil"
-        case .reviewing: return "eye"
-        case .submitted: return "checkmark.circle"
+        case .planning: return .lightbulb
+        case .researching: return .search
+        case .drafting: return .edit
+        case .reviewing: return .visibility
+        case .submitted: return .checkCircle
         }
     }
 }

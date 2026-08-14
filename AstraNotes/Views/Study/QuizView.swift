@@ -1,5 +1,5 @@
 // QuizView.swift — AstraNotes
-// Quiz engine with Soft Cryo ice crystal design aesthetic.
+// Quiz engine with the Astra design system.
 // Features: quiz configuration (subject, difficulty, type, question count),
 // timer (pill-shaped, JetBrains Mono), progress bar (6px, cornerRadius full),
 // pill-shaped answer options, results dashboard with hexagonal icons.
@@ -13,7 +13,6 @@ struct QuizView: View {
 
     // MARK: - Environment
 
-    @Environment(\.themeManager) private var tm
     @Environment(\.modelContext) private var modelContext
 
     // MARK: - State
@@ -59,7 +58,7 @@ struct QuizView: View {
 
     var body: some View {
         ZStack {
-            CryoColors.background(tm)
+            Color.surfaceBackground
                 .ignoresSafeArea()
 
             switch quizState {
@@ -93,13 +92,13 @@ struct QuizView: View {
                 Text("❄️")
                     .font(.system(size: 24))
                 Text(String(localized: "quiz.title"))
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundColor(CryoColors.foreground(tm))
+                    .font(TypeScale.title)
+                    .foregroundColor(Color.textPrimary)
             }
 
             Text(String(localized: "quiz.subtitle"))
                 .font(.system(size: 14))
-                .foregroundColor(CryoColors.foregroundMuted(tm))
+                .foregroundColor(Color.textSecondary)
         }
     }
 
@@ -111,7 +110,7 @@ struct QuizView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(String(localized: "quiz.subject"))
                         .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                        .foregroundColor(CryoColors.accentDark(tm))
+                        .foregroundColor(Color.accent)
                         .tracking(0.08)
 
                     ScrollView(.horizontal, showsIndicators: false) {
@@ -124,22 +123,22 @@ struct QuizView: View {
                                 } label: {
                                     Text(subject)
                                         .font(.system(size: 12, weight: .medium))
-                                        .foregroundColor(selectedSubject == subject ? .white : CryoColors.foreground(tm))
+                                        .foregroundColor(selectedSubject == subject ? .white : Color.textPrimary)
                                         .padding(.horizontal, 14)
                                         .padding(.vertical, 7)
                                         .background(
                                             selectedSubject == subject
                                                 ? LinearGradient(
-                                                    colors: [CryoColors.accent(tm), CryoColors.accentDark(tm)],
+                                                    colors: [Color.accent, Color.accent],
                                                     startPoint: .leading,
                                                     endPoint: .trailing
                                                 )
-                                                : CryoColors.backgroundWarm(tm)
+                                                : Color.surface
                                         )
                                         .clipShape(Capsule())
                                         .overlay(
                                             Capsule().stroke(
-                                                selectedSubject == subject ? CryoColors.accent(tm) : CryoColors.border(tm),
+                                                selectedSubject == subject ? Color.accent : Color.hairline,
                                                 lineWidth: 1
                                             )
                                         )
@@ -154,7 +153,7 @@ struct QuizView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(String(localized: "quiz.difficulty"))
                         .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                        .foregroundColor(CryoColors.accentDark(tm))
+                        .foregroundColor(Color.accent)
                         .tracking(0.08)
 
                     HStack(spacing: 8) {
@@ -166,22 +165,22 @@ struct QuizView: View {
                             } label: {
                                 Text(difficulty.rawValue)
                                     .font(.system(size: 13, weight: .bold, design: .monospaced))
-                                    .foregroundColor(selectedDifficulty == difficulty ? .white : CryoColors.foreground(tm))
+                                    .foregroundColor(selectedDifficulty == difficulty ? .white : Color.textPrimary)
                                     .padding(.horizontal, 18)
                                     .padding(.vertical, 8)
                                     .background(
                                         selectedDifficulty == difficulty
                                             ? LinearGradient(
-                                                colors: [CryoColors.accent(tm), CryoColors.accentDark(tm)],
+                                                colors: [Color.accent, Color.accent],
                                                 startPoint: .leading,
                                                 endPoint: .trailing
                                             )
-                                            : CryoColors.backgroundWarm(tm)
+                                            : Color.surface
                                     )
                                     .clipShape(Capsule())
                                     .overlay(
                                         Capsule().stroke(
-                                            selectedDifficulty == difficulty ? CryoColors.accent(tm) : CryoColors.border(tm),
+                                            selectedDifficulty == difficulty ? Color.accent : Color.hairline,
                                             lineWidth: 1
                                         )
                                     )
@@ -195,7 +194,7 @@ struct QuizView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(String(localized: "quiz.questionType"))
                         .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                        .foregroundColor(CryoColors.accentDark(tm))
+                        .foregroundColor(Color.accent)
                         .tracking(0.08)
 
                     HStack(spacing: 8) {
@@ -206,16 +205,16 @@ struct QuizView: View {
                         } label: {
                             Text(String(localized: "quiz.allTypes"))
                                 .font(.system(size: 12, weight: .medium))
-                                .foregroundColor(selectedType == nil ? .white : CryoColors.foreground(tm))
+                                .foregroundColor(selectedType == nil ? .white : Color.textPrimary)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)
                                 .background(
                                     selectedType == nil
-                                        ? CryoColors.accent(tm)
-                                        : CryoColors.backgroundWarm(tm)
+                                        ? Color.accent
+                                        : Color.surface
                                 )
                                 .clipShape(Capsule())
-                                .overlay(Capsule().stroke(selectedType == nil ? CryoColors.accent(tm) : CryoColors.border(tm), lineWidth: 1))
+                                .overlay(Capsule().stroke(selectedType == nil ? Color.accent : Color.hairline, lineWidth: 1))
                         }
                         .buttonStyle(.plain)
 
@@ -227,16 +226,16 @@ struct QuizView: View {
                             } label: {
                                 Text(type.displayName)
                                     .font(.system(size: 12, weight: .medium))
-                                    .foregroundColor(selectedType == type ? .white : CryoColors.foreground(tm))
+                                    .foregroundColor(selectedType == type ? .white : Color.textPrimary)
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 6)
                                     .background(
                                         selectedType == type
-                                            ? CryoColors.accent(tm)
-                                            : CryoColors.backgroundWarm(tm)
+                                            ? Color.accent
+                                            : Color.surface
                                     )
                                     .clipShape(Capsule())
-                                    .overlay(Capsule().stroke(selectedType == type ? CryoColors.accent(tm) : CryoColors.border(tm), lineWidth: 1))
+                                    .overlay(Capsule().stroke(selectedType == type ? Color.accent : Color.hairline, lineWidth: 1))
                             }
                             .buttonStyle(.plain)
                         }
@@ -249,7 +248,7 @@ struct QuizView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text(String(localized: "quiz.questions"))
                             .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                            .foregroundColor(CryoColors.accentDark(tm))
+                            .foregroundColor(Color.accent)
                             .tracking(0.08)
 
                         HStack(spacing: 12) {
@@ -261,22 +260,22 @@ struct QuizView: View {
                                 } label: {
                                     Text("\(count)")
                                         .font(.system(size: 14, weight: .bold, design: .monospaced))
-                                        .foregroundColor(questionCount == count ? .white : CryoColors.foreground(tm))
+                                        .foregroundColor(questionCount == count ? .white : Color.textPrimary)
                                         .padding(.horizontal, 16)
                                         .padding(.vertical, 7)
                                         .background(
                                             questionCount == count
                                                 ? LinearGradient(
-                                                    colors: [CryoColors.accent(tm), CryoColors.accentDark(tm)],
+                                                    colors: [Color.accent, Color.accent],
                                                     startPoint: .leading,
                                                     endPoint: .trailing
                                                 )
-                                                : CryoColors.backgroundWarm(tm)
+                                                : Color.surface
                                         )
                                         .clipShape(Capsule())
                                         .overlay(
                                             Capsule().stroke(
-                                                questionCount == count ? CryoColors.accent(tm) : CryoColors.border(tm),
+                                                questionCount == count ? Color.accent : Color.hairline,
                                                 lineWidth: 1
                                             )
                                         )
@@ -290,13 +289,13 @@ struct QuizView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text(String(localized: "quiz.timer"))
                             .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                            .foregroundColor(CryoColors.accentDark(tm))
+                            .foregroundColor(Color.accent)
                             .tracking(0.08)
 
                         HStack(spacing: 10) {
                             Toggle(String(localized: "quiz.timed"), isOn: $isTimed)
                                 .toggleStyle(.switch)
-                                .tint(CryoColors.accent(tm))
+                                .tint(Color.accent)
 
                             if isTimed {
                                 Picker("", selection: $timeLimit) {
@@ -315,64 +314,63 @@ struct QuizView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(24)
-            .cryoCardStyle(tm)
+            .astraCardStyle()
 
             // Right column: overview stats
             VStack(spacing: 16) {
                 statCard(
-                    icon: "questionmark.circle",
+                    icon: .help,
                     label: String(localized: "quiz.totalQuestions"),
                     value: "\(allQuestions.count)",
-                    color: CryoColors.accent(tm)
+                    color: Color.accent
                 )
                 statCard(
-                    icon: "target",
+                    icon: .target,
                     label: String(localized: "quiz.avgAccuracy"),
                     value: allQuestions.isEmpty ? "--" : String(format: "%.0f%%", averageAccuracy * 100),
-                    color: averageAccuracy >= 0.7 ? CryoColors.success(tm) : CryoColors.warning(tm)
+                    color: averageAccuracy >= 0.7 ? Color.semanticSuccess : Color.semanticWarning
                 )
                 statCard(
-                    icon: "clock",
+                    icon: .schedule,
                     label: String(localized: "quiz.timeLimit"),
-                    value: isTimed ? String(localized: "quiz.timePerQuestion \(timeLimit)") : String(localized: "quiz.untimed"),
-                    color: CryoColors.accentDark(tm)
+                    value: isTimed ? String(format: String(localized: "quiz.timePerQuestion"), timeLimit) : String(localized: "quiz.untimed"),
+                    color: Color.accent
                 )
                 statCard(
-                    icon: "square.stack",
+                    icon: .style,
                     label: String(localized: "quiz.quizSize"),
                     value: "\(questionCount) questions",
-                    color: CryoColors.roseIce(tm)
+                    color: Color.group6.opacity(0.6)
                 )
             }
             .frame(maxWidth: 260)
         }
     }
 
-    private func statCard(icon: String, label: String, value: String, color: Color) -> some View {
+    private func statCard(icon: AstraIcon, label: String, value: String, color: Color) -> some View {
         HStack(spacing: 12) {
             ZStack {
                 Circle()
                     .fill(color.opacity(0.1))
                     .frame(width: 40, height: 40)
 
-                Image(systemName: icon)
-                    .font(.system(size: 16, weight: .semibold))
+                AstraIconView(icon, size: 16)
                     .foregroundColor(color)
             }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)
                     .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
                 Text(value)
                     .font(.system(size: 15, weight: .bold, design: .monospaced))
-                    .foregroundColor(CryoColors.foreground(tm))
+                    .foregroundColor(Color.textPrimary)
             }
 
             Spacer()
         }
         .padding(16)
-        .cryoCardStyle(tm, cornerRadius: 12)
+        .astraCardStyle(cornerRadius: 12)
     }
 
     private var availableQuestionsInfo: some View {
@@ -380,19 +378,18 @@ struct QuizView: View {
         let hasEnough = available >= questionCount
 
         return HStack(spacing: 10) {
-            Image(systemName: hasEnough ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
-                .font(.system(size: 14))
-                .foregroundColor(hasEnough ? CryoColors.success(tm) : CryoColors.warning(tm))
+            AstraIconView(hasEnough ? .checkCircle : .warning, size: 14)
+                .foregroundColor(hasEnough ? Color.semanticSuccess : Color.semanticWarning)
 
             Text(hasEnough
-                 ? String(localized: "quiz.questionsAvailable \(available)")
-                 : String(localized: "quiz.onlyQuestionsAvailable \(available)")
+                 ? String(format: String(localized: "quiz.questionsAvailable"), available)
+                 : String(format: String(localized: "quiz.onlyQuestionsAvailable"), available)
             )
             .font(.system(size: 13))
-            .foregroundColor(CryoColors.foregroundMuted(tm))
+            .foregroundColor(Color.textSecondary)
         }
         .padding(16)
-        .background(hasEnough ? CryoColors.success(tm).opacity(0.06) : CryoColors.warning(tm).opacity(0.06))
+        .background(hasEnough ? Color.semanticSuccess.opacity(0.06) : Color.semanticWarning.opacity(0.06))
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
@@ -401,8 +398,7 @@ struct QuizView: View {
             startQuiz()
         } label: {
             HStack(spacing: 10) {
-                Image(systemName: "play.circle.fill")
-                    .font(.system(size: 18))
+                AstraIconView(.playCircle, size: 18)
                 Text(String(localized: "quiz.startQuiz"))
                     .font(.system(size: 16, weight: .semibold))
             }
@@ -411,13 +407,13 @@ struct QuizView: View {
             .padding(.vertical, 14)
             .background(
                 LinearGradient(
-                    colors: [CryoColors.accent(tm), CryoColors.accentDark(tm)],
+                    colors: [Color.accent, Color.accent],
                     startPoint: .leading,
                     endPoint: .trailing
                 )
             )
             .clipShape(Capsule())
-            .shadow(color: CryoColors.shadowGlow(tm), radius: 12, x: 0, y: 4)
+            .shadow(color: Color.accent.opacity(0.15), radius: 12, x: 0, y: 4)
         }
         .buttonStyle(.plain)
         .disabled(filteredQuestionsForSetup.isEmpty)
@@ -431,9 +427,9 @@ struct QuizView: View {
             // Top bar: progress + timer
             VStack(spacing: 12) {
                 HStack {
-                    Text(String(localized: "quiz.questionOf \(currentIndex + 1) \(quizQuestions.count)"))
+                    Text(String(format: String(localized: "quiz.questionOf"), currentIndex + 1, quizQuestions.count))
                         .font(.system(size: 11, weight: .bold, design: .monospaced))
-                        .foregroundColor(CryoColors.accentDark(tm))
+                        .foregroundColor(Color.accent)
                         .tracking(0.1)
 
                     Spacer()
@@ -444,25 +440,25 @@ struct QuizView: View {
                                 .font(.system(size: 10, weight: .bold, design: .monospaced))
                                 .foregroundColor(
                                     question.difficulty == .hl
-                                        ? CryoColors.warning(tm)
-                                        : CryoColors.accent(tm)
+                                        ? Color.semanticWarning
+                                        : Color.accent
                                 )
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
                                 .background(
                                     (question.difficulty == .hl
-                                        ? CryoColors.warning(tm)
-                                        : CryoColors.accent(tm)
+                                        ? Color.semanticWarning
+                                        : Color.accent
                                     ).opacity(0.1)
                                 )
                                 .clipShape(Capsule())
 
                             Text(question.type.displayName)
                                 .font(.system(size: 10, weight: .semibold, design: .monospaced))
-                                .foregroundColor(CryoColors.foregroundMuted(tm))
+                                .foregroundColor(Color.textSecondary)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
-                                .background(CryoColors.frost(tm))
+                                .background(Color.accentContainer)
                                 .clipShape(Capsule())
                         }
                     }
@@ -472,13 +468,13 @@ struct QuizView: View {
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
                         Capsule()
-                            .fill(CryoColors.frost(tm))
+                            .fill(Color.accentContainer)
                             .frame(height: 6)
 
                         Capsule()
                             .fill(
                                 LinearGradient(
-                                    colors: [CryoColors.accent(tm), CryoColors.accentDark(tm)],
+                                    colors: [Color.accent, Color.accent],
                                     startPoint: .leading,
                                     endPoint: .trailing
                                 )
@@ -495,25 +491,24 @@ struct QuizView: View {
                 Spacer()
                 if isTimed {
                     HStack(spacing: 8) {
-                        Image(systemName: timeRemaining <= 10 ? "timer" : "clock")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(timeRemaining <= 10 ? CryoColors.error(tm) : CryoColors.accent(tm))
+                        AstraIconView(timeRemaining <= 10 ? .timer : .schedule, size: 14)
+                            .foregroundColor(timeRemaining <= 10 ? Color.semanticDanger : Color.accent)
 
                         Text(String(format: "%02d", timeRemaining))
                             .font(.system(size: 20, weight: .bold, design: .monospaced))
-                            .foregroundColor(timeRemaining <= 10 ? CryoColors.error(tm) : CryoColors.foreground(tm))
+                            .foregroundColor(timeRemaining <= 10 ? Color.semanticDanger : Color.textPrimary)
                     }
                     .padding(.horizontal, 20)
                     .padding(.vertical, 8)
                     .background(
                         timeRemaining <= 10
-                            ? CryoColors.error(tm).opacity(0.08)
-                            : CryoColors.backgroundWarm(tm)
+                            ? Color.semanticDanger.opacity(0.08)
+                            : Color.surface
                     )
                     .clipShape(Capsule())
                     .overlay(
                         Capsule().stroke(
-                            timeRemaining <= 10 ? CryoColors.error(tm).opacity(0.3) : CryoColors.border(tm),
+                            timeRemaining <= 10 ? Color.semanticDanger.opacity(0.3) : Color.hairline,
                             lineWidth: 1
                         )
                     )
@@ -545,53 +540,53 @@ struct QuizView: View {
                 if let subject = question.subjectName {
                     Text(subject)
                         .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                        .foregroundColor(CryoColors.accent(tm))
+                        .foregroundColor(Color.accent)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
-                        .background(CryoColors.accentGlow(tm))
+                        .background(Color.accentContainer)
                         .clipShape(Capsule())
                 }
 
                 if !question.topic.isBlank {
                     Text(question.topic)
                         .font(.system(size: 11, weight: .medium))
-                        .foregroundColor(CryoColors.foregroundMuted(tm))
+                        .foregroundColor(Color.textSecondary)
                 }
 
                 Spacer()
 
                 Text(question.type.paperStyle)
                     .font(.system(size: 10, weight: .bold, design: .monospaced))
-                    .foregroundColor(CryoColors.accentDark(tm))
+                    .foregroundColor(Color.accent)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 3)
-                    .background(CryoColors.accentDark(tm).opacity(0.08))
+                    .background(Color.accent.opacity(0.08))
                     .clipShape(Capsule())
             }
 
             Divider()
-                .background(CryoColors.border(tm))
+                .background(Color.hairline)
 
             // Question content
             Text(question.content)
                 .font(.system(size: 18, weight: .medium, design: .rounded))
-                .foregroundColor(CryoColors.foreground(tm))
+                .foregroundColor(Color.textPrimary)
                 .lineSpacing(6)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             // Marks display
             HStack {
-                Text(String(localized: "quiz.marks \(question.maxMarks)"))
+                Text(String(format: String(localized: "quiz.marks"), question.maxMarks))
                     .font(.system(size: 11, weight: .bold, design: .monospaced))
-                    .foregroundColor(CryoColors.accentDark(tm))
+                    .foregroundColor(Color.accent)
                 Spacer()
             }
         }
         .padding(24)
-        .cryoCardStyle(tm)
+        .astraCardStyle()
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(CryoColors.crystalBorderGradient(tm), lineWidth: 1.5)
+                .stroke(Color.accent.opacity(0.6), lineWidth: 1.5)
         )
     }
 
@@ -622,7 +617,7 @@ struct QuizView: View {
                     HStack(spacing: 14) {
                         // Option letter in hexagon
                         ZStack {
-                            HexagonShape()
+                            Circle()
                                 .fill(optionColor(for: option, question: question))
                                 .frame(width: 36, height: 36)
 
@@ -633,20 +628,18 @@ struct QuizView: View {
 
                         Text(option)
                             .font(.system(size: 15, weight: .medium))
-                            .foregroundColor(CryoColors.foreground(tm))
+                            .foregroundColor(Color.textPrimary)
                             .multilineTextAlignment(.leading)
 
                         Spacer()
 
                         if hasAnswered {
                             if option == question.correctAnswer {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .font(.system(size: 18))
-                                    .foregroundColor(CryoColors.success(tm))
+                                AstraIconView(.checkCircle, size: 18)
+                                    .foregroundColor(Color.semanticSuccess)
                             } else if option == selectedAnswer && selectedAnswer != question.correctAnswer {
-                                Image(systemName: "xmark.circle.fill")
-                                    .font(.system(size: 18))
-                                    .foregroundColor(CryoColors.error(tm))
+                                AstraIconView(.cancel, size: 18)
+                                    .foregroundColor(Color.semanticDanger)
                             }
                         }
                     }
@@ -654,7 +647,7 @@ struct QuizView: View {
                     .background(
                         hasAnswered
                             ? answerBackground(for: option, question: question)
-                            : CryoColors.backgroundWarm(tm)
+                            : Color.surface
                     )
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .overlay(
@@ -662,7 +655,7 @@ struct QuizView: View {
                             .stroke(
                                 hasAnswered
                                     ? answerBorderColor(for: option, question: question)
-                                    : CryoColors.border(tm),
+                                    : Color.hairline,
                                 lineWidth: 1
                             )
                     )
@@ -682,7 +675,7 @@ struct QuizView: View {
                     nextQuestion()
                 } label: {
                     HStack(spacing: 8) {
-                        Image(systemName: currentIndex + 1 < quizQuestions.count ? "arrow.right" : "flag.checkered")
+                        AstraIconView(currentIndex + 1 < quizQuestions.count ? .arrowForward : .flag, size: 14)
                         Text(currentIndex + 1 < quizQuestions.count ? String(localized: "quiz.nextQuestion") : String(localized: "quiz.seeResults"))
                     }
                     .font(.system(size: 15, weight: .semibold))
@@ -691,13 +684,13 @@ struct QuizView: View {
                     .padding(.vertical, 10)
                     .background(
                         LinearGradient(
-                            colors: [CryoColors.accent(tm), CryoColors.accentDark(tm)],
+                            colors: [Color.accent, Color.accent],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
                     )
                     .clipShape(Capsule())
-                    .shadow(color: CryoColors.shadowGlow(tm), radius: 8, x: 0, y: 2)
+                    .shadow(color: Color.accent.opacity(0.15), radius: 8, x: 0, y: 2)
                 }
                 .buttonStyle(.plain)
             }
@@ -711,13 +704,13 @@ struct QuizView: View {
             TextField(String(localized: "quiz.typeAnswer"), text: $shortAnswerInput, axis: .vertical)
                 .textFieldStyle(.plain)
                 .font(.system(size: 16))
-                .foregroundColor(CryoColors.foreground(tm))
+                .foregroundColor(Color.textPrimary)
                 .padding(16)
-                .background(CryoColors.frost(tm))
+                .background(Color.accentContainer)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(CryoColors.border(tm), lineWidth: 1)
+                        .stroke(Color.hairline, lineWidth: 1)
                 )
                 .lineLimit(3...6)
                 .disabled(hasAnswered)
@@ -730,7 +723,7 @@ struct QuizView: View {
                         submitShortAnswer(for: question)
                     } label: {
                         HStack(spacing: 8) {
-                            Image(systemName: "checkmark")
+                            AstraIconView(.check)
                             Text(String(localized: "quiz.submitAnswer"))
                         }
                         .font(.system(size: 14, weight: .semibold))
@@ -739,7 +732,7 @@ struct QuizView: View {
                         .padding(.vertical, 9)
                         .background(
                             LinearGradient(
-                                colors: [CryoColors.accent(tm), CryoColors.accentDark(tm)],
+                                colors: [Color.accent, Color.accent],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -758,24 +751,23 @@ struct QuizView: View {
                         }
 
                         HStack(spacing: 8) {
-                            Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
-                                .font(.system(size: 16))
-                                .foregroundColor(isCorrect ? CryoColors.success(tm) : CryoColors.error(tm))
+                            AstraIconView(isCorrect ? .checkCircle : .cancel, size: 16)
+                                .foregroundColor(isCorrect ? Color.semanticSuccess : Color.semanticDanger)
 
                             Text(isCorrect
                                  ? String(localized: "quiz.correctExclamation")
-                                 : String(localized: "quiz.notQuite \(question.correctAnswer)"))
+                                 : String(format: String(localized: "quiz.notQuite"), question.correctAnswer))
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(CryoColors.foreground(tm))
+                                .foregroundColor(Color.textPrimary)
                         }
                         .padding(16)
-                        .cryoCardStyle(tm, cornerRadius: 12)
+                        .astraCardStyle(cornerRadius: 12)
 
                         Button {
                             nextQuestion()
                         } label: {
                             HStack(spacing: 8) {
-                                Image(systemName: currentIndex + 1 < quizQuestions.count ? "arrow.right" : "flag.checkered")
+                                AstraIconView(currentIndex + 1 < quizQuestions.count ? .arrowForward : .flag, size: 14)
                                 Text(currentIndex + 1 < quizQuestions.count ? String(localized: "quiz.nextQuestion") : String(localized: "quiz.seeResults"))
                             }
                             .font(.system(size: 15, weight: .semibold))
@@ -784,7 +776,7 @@ struct QuizView: View {
                             .padding(.vertical, 10)
                             .background(
                                 LinearGradient(
-                                    colors: [CryoColors.accent(tm), CryoColors.accentDark(tm)],
+                                    colors: [Color.accent, Color.accent],
                                     startPoint: .leading,
                                     endPoint: .trailing
                                 )
@@ -804,15 +796,15 @@ struct QuizView: View {
         VStack(spacing: 16) {
             TextEditor(text: $shortAnswerInput)
                 .font(.system(size: 15))
-                .foregroundColor(CryoColors.foreground(tm))
+                .foregroundColor(Color.textPrimary)
                 .scrollContentBackground(.hidden)
                 .frame(minHeight: 160)
                 .padding(16)
-                .background(CryoColors.frost(tm))
+                .background(Color.accentContainer)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(CryoColors.border(tm), lineWidth: 1)
+                        .stroke(Color.hairline, lineWidth: 1)
                 )
                 .disabled(hasAnswered)
 
@@ -820,22 +812,21 @@ struct QuizView: View {
             if let markingScheme = question.markingScheme, !markingScheme.isBlank {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(spacing: 6) {
-                        Image(systemName: "list.clipboard")
-                            .font(.system(size: 11))
-                            .foregroundColor(CryoColors.accentDark(tm))
+                        AstraIconView(.checklist, size: 11)
+                            .foregroundColor(Color.accent)
                         Text(String(localized: "quiz.markingScheme"))
                             .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                            .foregroundColor(CryoColors.accentDark(tm))
+                            .foregroundColor(Color.accent)
                             .tracking(0.08)
                     }
 
                     Text(markingScheme)
                         .font(.system(size: 13))
-                        .foregroundColor(CryoColors.foregroundMuted(tm))
+                        .foregroundColor(Color.textSecondary)
                         .lineSpacing(4)
                 }
                 .padding(16)
-                .background(CryoColors.accentGlow(tm))
+                .background(Color.accentContainer)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             }
 
@@ -847,7 +838,7 @@ struct QuizView: View {
                         submitEssay(for: question)
                     } label: {
                         HStack(spacing: 8) {
-                            Image(systemName: "checkmark")
+                            AstraIconView(.check)
                             Text(String(localized: "quiz.selfAssess"))
                         }
                         .font(.system(size: 14, weight: .semibold))
@@ -856,7 +847,7 @@ struct QuizView: View {
                         .padding(.vertical, 9)
                         .background(
                             LinearGradient(
-                                colors: [CryoColors.accent(tm), CryoColors.accentDark(tm)],
+                                colors: [Color.accent, Color.accent],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -872,7 +863,7 @@ struct QuizView: View {
                         nextQuestion()
                     } label: {
                         HStack(spacing: 8) {
-                            Image(systemName: currentIndex + 1 < quizQuestions.count ? "arrow.right" : "flag.checkered")
+                            AstraIconView(currentIndex + 1 < quizQuestions.count ? .arrowForward : .flag, size: 14)
                             Text(currentIndex + 1 < quizQuestions.count ? String(localized: "quiz.nextQuestion") : String(localized: "quiz.seeResults"))
                         }
                         .font(.system(size: 15, weight: .semibold))
@@ -881,7 +872,7 @@ struct QuizView: View {
                         .padding(.vertical, 10)
                         .background(
                             LinearGradient(
-                                colors: [CryoColors.accent(tm), CryoColors.accentDark(tm)],
+                                colors: [Color.accent, Color.accent],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -900,44 +891,43 @@ struct QuizView: View {
         VStack(spacing: 16) {
             TextEditor(text: $shortAnswerInput)
                 .font(.system(size: 15))
-                .foregroundColor(CryoColors.foreground(tm))
+                .foregroundColor(Color.textPrimary)
                 .scrollContentBackground(.hidden)
                 .frame(minHeight: 200)
                 .padding(16)
-                .background(CryoColors.frost(tm))
+                .background(Color.accentContainer)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(CryoColors.border(tm), lineWidth: 1)
+                        .stroke(Color.hairline, lineWidth: 1)
                 )
                 .disabled(hasAnswered)
 
             if let markingScheme = question.markingScheme, !markingScheme.isBlank {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(spacing: 6) {
-                        Image(systemName: "list.clipboard")
-                            .font(.system(size: 11))
-                            .foregroundColor(CryoColors.accentDark(tm))
+                        AstraIconView(.checklist, size: 11)
+                            .foregroundColor(Color.accent)
                         Text(String(localized: "quiz.markingScheme"))
                             .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                            .foregroundColor(CryoColors.accentDark(tm))
+                            .foregroundColor(Color.accent)
                             .tracking(0.08)
                     }
 
                     Text(markingScheme)
                         .font(.system(size: 13))
-                        .foregroundColor(CryoColors.foregroundMuted(tm))
+                        .foregroundColor(Color.textSecondary)
                         .lineSpacing(4)
                 }
                 .padding(16)
-                .background(CryoColors.accentGlow(tm))
+                .background(Color.accentContainer)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             }
 
             HStack {
                 Text(String(localized: "quiz.selfAssessHint"))
                     .font(.system(size: 12))
-                    .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.6))
+                    .foregroundColor(Color.textSecondary.opacity(0.6))
 
                 Spacer()
 
@@ -946,7 +936,7 @@ struct QuizView: View {
                         submitEssay(for: question)
                     } label: {
                         HStack(spacing: 8) {
-                            Image(systemName: "checkmark")
+                            AstraIconView(.check)
                             Text(String(localized: "quiz.submit"))
                         }
                         .font(.system(size: 14, weight: .semibold))
@@ -955,7 +945,7 @@ struct QuizView: View {
                         .padding(.vertical, 9)
                         .background(
                             LinearGradient(
-                                colors: [CryoColors.accent(tm), CryoColors.accentDark(tm)],
+                                colors: [Color.accent, Color.accent],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -971,7 +961,7 @@ struct QuizView: View {
                         nextQuestion()
                     } label: {
                         HStack(spacing: 8) {
-                            Image(systemName: currentIndex + 1 < quizQuestions.count ? "arrow.right" : "flag.checkered")
+                            AstraIconView(currentIndex + 1 < quizQuestions.count ? .arrowForward : .flag, size: 14)
                             Text(currentIndex + 1 < quizQuestions.count ? String(localized: "quiz.next") : String(localized: "quiz.results"))
                         }
                         .font(.system(size: 14, weight: .semibold))
@@ -980,7 +970,7 @@ struct QuizView: View {
                         .padding(.vertical, 9)
                         .background(
                             LinearGradient(
-                                colors: [CryoColors.accent(tm), CryoColors.accentDark(tm)],
+                                colors: [Color.accent, Color.accent],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -1002,21 +992,20 @@ struct QuizView: View {
                 VStack(spacing: 16) {
                     ZStack {
                         Circle()
-                            .fill(CryoColors.accentGlow(tm))
+                            .fill(Color.accentContainer)
                             .frame(width: 80, height: 80)
 
-                        Image(systemName: score == quizQuestions.count ? "trophy.fill" : "chart.bar")
-                            .font(.system(size: 36, weight: .semibold))
-                            .foregroundColor(CryoColors.accent(tm))
+                        AstraIconView(score == quizQuestions.count ? .emojiEvents : .barChart, size: 36)
+                            .foregroundColor(Color.accent)
                     }
 
                     Text(String(localized: "quiz.quizComplete"))
                         .font(.system(size: 26, weight: .bold, design: .rounded))
-                        .foregroundColor(CryoColors.foreground(tm))
+                        .foregroundColor(Color.textPrimary)
 
-                    Text(String(localized: "quiz.scoredOutOf \(score) \(quizQuestions.count)"))
+                    Text(String(format: String(localized: "quiz.scoredOutOf"), score, quizQuestions.count))
                         .font(.system(size: 16))
-                        .foregroundColor(CryoColors.foregroundMuted(tm))
+                        .foregroundColor(Color.textSecondary)
                 }
 
                 // Score dashboard with hexagonal icons
@@ -1024,53 +1013,53 @@ struct QuizView: View {
                     // Correct
                     VStack(spacing: 10) {
                         ZStack {
-                            HexagonShape()
-                                .fill(CryoColors.success(tm).opacity(0.15))
+                            Circle()
+                                .fill(Color.semanticSuccess.opacity(0.15))
                                 .frame(width: 56, height: 56)
 
                             Text("\(score)")
                                 .font(.system(size: 22, weight: .bold, design: .monospaced))
-                                .foregroundColor(CryoColors.success(tm))
+                                .foregroundColor(Color.semanticSuccess)
                         }
 
                         Text(String(localized: "quiz.correctAnswer"))
                             .font(.system(size: 12, weight: .medium, design: .monospaced))
-                            .foregroundColor(CryoColors.foregroundMuted(tm))
+                            .foregroundColor(Color.textSecondary)
                             .tracking(0.06)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
-                    .cryoCardStyle(tm)
+                    .astraCardStyle()
 
                     // Incorrect
                     VStack(spacing: 10) {
                         ZStack {
-                            HexagonShape()
-                                .fill(CryoColors.error(tm).opacity(0.15))
+                            Circle()
+                                .fill(Color.semanticDanger.opacity(0.15))
                                 .frame(width: 56, height: 56)
 
                             Text("\(quizQuestions.count - score)")
                                 .font(.system(size: 22, weight: .bold, design: .monospaced))
-                                .foregroundColor(CryoColors.error(tm))
+                                .foregroundColor(Color.semanticDanger)
                         }
 
                         Text(String(localized: "quiz.incorrectAnswer"))
                             .font(.system(size: 12, weight: .medium, design: .monospaced))
-                            .foregroundColor(CryoColors.foregroundMuted(tm))
+                            .foregroundColor(Color.textSecondary)
                             .tracking(0.06)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
-                    .cryoCardStyle(tm)
+                    .astraCardStyle()
 
                     // Percentage
                     VStack(spacing: 10) {
                         ZStack {
-                            HexagonShape()
+                            Circle()
                                 .fill(
                                     scorePercentage >= 0.7
-                                        ? CryoColors.success(tm).opacity(0.15)
-                                        : CryoColors.warning(tm).opacity(0.15)
+                                        ? Color.semanticSuccess.opacity(0.15)
+                                        : Color.semanticWarning.opacity(0.15)
                                 )
                                 .frame(width: 56, height: 56)
 
@@ -1078,47 +1067,46 @@ struct QuizView: View {
                                 .font(.system(size: 22, weight: .bold, design: .monospaced))
                                 .foregroundColor(
                                     scorePercentage >= 0.7
-                                        ? CryoColors.success(tm)
-                                        : CryoColors.warning(tm)
+                                        ? Color.semanticSuccess
+                                        : Color.semanticWarning
                                 )
                         }
 
                         Text(String(localized: "quiz.score"))
                             .font(.system(size: 12, weight: .medium, design: .monospaced))
-                            .foregroundColor(CryoColors.foregroundMuted(tm))
+                            .foregroundColor(Color.textSecondary)
                             .tracking(0.06)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
-                    .cryoCardStyle(tm)
+                    .astraCardStyle()
 
                     // Time
                     VStack(spacing: 10) {
                         ZStack {
-                            HexagonShape()
-                                .fill(CryoColors.accent(tm).opacity(0.15))
+                            Circle()
+                                .fill(Color.accent.opacity(0.15))
                                 .frame(width: 56, height: 56)
 
-                            Image(systemName: "clock")
-                                .font(.system(size: 22, weight: .semibold))
-                                .foregroundColor(CryoColors.accent(tm))
+                            AstraIconView(.schedule, size: 22)
+                                .foregroundColor(Color.accent)
                         }
 
                         Text(quizElapsedTime)
                             .font(.system(size: 12, weight: .medium, design: .monospaced))
-                            .foregroundColor(CryoColors.foregroundMuted(tm))
+                            .foregroundColor(Color.textSecondary)
                             .tracking(0.06)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
-                    .cryoCardStyle(tm)
+                    .astraCardStyle()
                 }
 
                 // Question-by-question review
                 VStack(alignment: .leading, spacing: 12) {
                     Text(String(localized: "quiz.questionReview"))
                         .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                        .foregroundColor(CryoColors.accentDark(tm))
+                        .foregroundColor(Color.accent)
                         .tracking(0.08)
 
                     ForEach(Array(answers.enumerated()), id: \.offset) { index, answer in
@@ -1132,16 +1120,16 @@ struct QuizView: View {
                         quizState = .setup
                     } label: {
                         HStack(spacing: 8) {
-                            Image(systemName: "gearshape")
+                            AstraIconView(.settings)
                             Text(String(localized: "quiz.newQuiz"))
                         }
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(CryoColors.accentDark(tm))
+                        .foregroundColor(Color.accent)
                         .padding(.horizontal, 24)
                         .padding(.vertical, 10)
-                        .background(CryoColors.backgroundWarm(tm))
+                        .background(Color.surface)
                         .clipShape(Capsule())
-                        .overlay(Capsule().stroke(CryoColors.border(tm), lineWidth: 1))
+                        .overlay(Capsule().stroke(Color.hairline, lineWidth: 1))
                     }
                     .buttonStyle(.plain)
 
@@ -1151,7 +1139,7 @@ struct QuizView: View {
                         retryQuiz()
                     } label: {
                         HStack(spacing: 8) {
-                            Image(systemName: "arrow.triangle.2.circlepath")
+                            AstraIconView(.refresh)
                             Text(String(localized: "quiz.retryQuestions"))
                         }
                         .font(.system(size: 14, weight: .semibold))
@@ -1160,7 +1148,7 @@ struct QuizView: View {
                         .padding(.vertical, 10)
                         .background(
                             LinearGradient(
-                                colors: [CryoColors.accent(tm), CryoColors.accentDark(tm)],
+                                colors: [Color.accent, Color.accent],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -1194,35 +1182,34 @@ struct QuizView: View {
     private func answerReviewRow(index: Int, answer: QuizAnswer) -> some View {
         HStack(spacing: 14) {
             ZStack {
-                HexagonShape()
-                    .fill(answer.isCorrect ? CryoColors.success(tm).opacity(0.15) : CryoColors.error(tm).opacity(0.15))
+                Circle()
+                    .fill(answer.isCorrect ? Color.semanticSuccess.opacity(0.15) : Color.semanticDanger.opacity(0.15))
                     .frame(width: 32, height: 32)
 
                 Text("\(index + 1)")
                     .font(.system(size: 12, weight: .bold, design: .monospaced))
-                    .foregroundColor(answer.isCorrect ? CryoColors.success(tm) : CryoColors.error(tm))
+                    .foregroundColor(answer.isCorrect ? Color.semanticSuccess : Color.semanticDanger)
             }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(answer.questionContent)
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(CryoColors.foreground(tm))
+                    .foregroundColor(Color.textPrimary)
                     .lineLimit(1)
 
-                Text(String(localized: "quiz.yourAnswer \(answer.userAnswer)"))
+                Text(String(format: String(localized: "quiz.yourAnswer"), answer.userAnswer))
                     .font(.system(size: 11))
-                    .foregroundColor(answer.userAnswer.isBlank ? CryoColors.foregroundMuted(tm) : CryoColors.foregroundMuted(tm).opacity(0.7))
+                    .foregroundColor(answer.userAnswer.isBlank ? Color.textSecondary : Color.textSecondary.opacity(0.7))
                     .lineLimit(1)
             }
 
             Spacer()
 
-            Image(systemName: answer.isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
-                .font(.system(size: 18))
-                .foregroundColor(answer.isCorrect ? CryoColors.success(tm) : CryoColors.error(tm))
+            AstraIconView(answer.isCorrect ? .checkCircle : .cancel, size: 18)
+                .foregroundColor(answer.isCorrect ? Color.semanticSuccess : Color.semanticDanger)
         }
         .padding(14)
-        .cryoCardStyle(tm, cornerRadius: 12)
+        .astraCardStyle(cornerRadius: 12)
     }
 
     // MARK: - Explanation Card
@@ -1230,22 +1217,21 @@ struct QuizView: View {
     private func explanationCard(_ explanation: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
-                Image(systemName: "lightbulb.fill")
-                    .font(.system(size: 12))
-                    .foregroundColor(CryoColors.accent(tm))
+                AstraIconView(.lightbulb, size: 12)
+                    .foregroundColor(Color.accent)
                 Text(String(localized: "quiz.explanation"))
                     .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                    .foregroundColor(CryoColors.accentDark(tm))
+                    .foregroundColor(Color.accent)
                     .tracking(0.08)
             }
 
             Text(explanation)
                 .font(.system(size: 14))
-                .foregroundColor(CryoColors.foreground(tm))
+                .foregroundColor(Color.textPrimary)
                 .lineSpacing(4)
         }
         .padding(16)
-        .background(CryoColors.accentGlow(tm))
+        .background(Color.accentContainer)
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
@@ -1253,11 +1239,11 @@ struct QuizView: View {
 
     private func optionColor(for option: String, question: QuizQuestion) -> Color {
         guard hasAnswered else {
-            return option == selectedAnswer ? CryoColors.accent(tm) : CryoColors.accentDark(tm)
+            return option == selectedAnswer ? Color.accent : Color.accent
         }
-        if option == question.correctAnswer { return CryoColors.success(tm) }
-        if option == selectedAnswer { return CryoColors.error(tm) }
-        return CryoColors.foregroundMuted(tm).opacity(0.3)
+        if option == question.correctAnswer { return Color.semanticSuccess }
+        if option == selectedAnswer { return Color.semanticDanger }
+        return Color.textSecondary.opacity(0.3)
     }
 
     private func optionLetter(_ index: Int) -> String {
@@ -1265,15 +1251,15 @@ struct QuizView: View {
     }
 
     private func answerBackground(for option: String, question: QuizQuestion) -> Color {
-        if option == question.correctAnswer { return CryoColors.success(tm).opacity(0.08) }
-        if option == selectedAnswer && selectedAnswer != question.correctAnswer { return CryoColors.error(tm).opacity(0.08) }
-        return CryoColors.backgroundWarm(tm)
+        if option == question.correctAnswer { return Color.semanticSuccess.opacity(0.08) }
+        if option == selectedAnswer && selectedAnswer != question.correctAnswer { return Color.semanticDanger.opacity(0.08) }
+        return Color.surface
     }
 
     private func answerBorderColor(for option: String, question: QuizQuestion) -> Color {
-        if option == question.correctAnswer { return CryoColors.success(tm).opacity(0.4) }
-        if option == selectedAnswer && selectedAnswer != question.correctAnswer { return CryoColors.error(tm).opacity(0.4) }
-        return CryoColors.border(tm)
+        if option == question.correctAnswer { return Color.semanticSuccess.opacity(0.4) }
+        if option == selectedAnswer && selectedAnswer != question.correctAnswer { return Color.semanticDanger.opacity(0.4) }
+        return Color.hairline
     }
 
     // MARK: - Computed Helpers
@@ -1465,6 +1451,6 @@ struct QuizAnswer: Identifiable {
 
 #Preview {
     QuizView()
-        .environment(ThemeManager())
+        
         .modelContainer(for: QuizQuestion.self, inMemory: true)
 }

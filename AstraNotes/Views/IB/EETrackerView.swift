@@ -1,7 +1,7 @@
 // EETrackerView.swift — AstraNotes
 // Extended Essay progress tracker with ice-blue gradient progress bars,
 // RPPF reflection cards, meeting notes, and word count display
-// using JetBrains Mono. Designed with the Soft Cryo aesthetic.
+// with the Astra design system.
 
 import SwiftUI
 import SwiftData
@@ -12,7 +12,6 @@ struct EETrackerView: View {
 
     // MARK: - Environment
 
-    @Environment(\.themeManager) private var tm
     @Environment(\.modelContext) private var modelContext
 
     // MARK: - State
@@ -50,7 +49,7 @@ struct EETrackerView: View {
             .padding(32)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(CryoColors.background(tm))
+        .background(Color.surfaceBackground)
     }
 
     // MARK: - Header
@@ -58,39 +57,37 @@ struct EETrackerView: View {
     private var headerSection: some View {
         VStack(spacing: 8) {
             HStack(spacing: 8) {
-                Text("graduationcap")
-                    .font(.system(size: 22))
-                    .foregroundStyle(CryoColors.accent(tm))
+                AstraIconView(.school, size: 22)
+                    .foregroundStyle(Color.accent)
                 Text(String(localized: "ee.title"))
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundColor(CryoColors.foreground(tm))
+                    .font(TypeScale.title)
+                    .foregroundColor(Color.textPrimary)
             }
 
             Text(String(localized: "ee.subtitle"))
                 .font(.system(size: 14))
-                .foregroundColor(CryoColors.foregroundMuted(tm))
+                .foregroundColor(Color.textSecondary)
 
             HStack {
                 Spacer()
                 Text("^[\(essays.count) essay](inflect: true)")
                     .font(.system(size: 12, design: .monospaced))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
 
                 Button {
                     createNewEE()
                 } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 12, weight: .semibold))
+                        AstraIconView(.add, size: 12)
                         Text(String(localized: "ee.newEssay"))
                             .font(.system(size: 13, weight: .medium))
                     }
                     .foregroundColor(.white)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
-                    .background(CryoColors.primaryGradient(tm))
+                    .background(Color.accent)
                     .clipShape(Capsule())
-                    .shadow(color: CryoColors.shadowGlow(tm), radius: 8, x: 0, y: 2)
+                    .shadow(color: Color.accent.opacity(0.15), radius: 8, x: 0, y: 2)
                 }
                 .buttonStyle(.plain)
             }
@@ -103,15 +100,14 @@ struct EETrackerView: View {
         VStack(spacing: 16) {
             if essays.isEmpty {
                 VStack(spacing: 16) {
-                    Image(systemName: "graduationcap")
-                        .font(.system(size: 40))
-                        .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.3))
+                    AstraIconView(.school, size: 40)
+                        .foregroundColor(Color.textSecondary.opacity(0.3))
                     Text(String(localized: "ee.noEssays"))
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(CryoColors.foreground(tm))
+                        .foregroundColor(Color.textPrimary)
                     Text(String(localized: "ee.noEssaysHint"))
                         .font(.system(size: 13))
-                        .foregroundColor(CryoColors.foregroundMuted(tm))
+                        .foregroundColor(Color.textSecondary)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 48)
@@ -130,7 +126,7 @@ struct EETrackerView: View {
             HStack {
                 Text(ee.title)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(CryoColors.foreground(tm))
+                    .foregroundColor(Color.textPrimary)
 
                 Spacer()
 
@@ -146,33 +142,33 @@ struct EETrackerView: View {
             if !ee.researchQuestion.isEmpty {
                 Text(ee.researchQuestion)
                     .font(.system(size: 13, design: .rounded))
-                    .foregroundColor(CryoColors.accent(tm))
+                    .foregroundColor(Color.accent)
                     .lineLimit(2)
             }
 
             HStack(spacing: 16) {
-                Label(ee.subject, systemImage: "book")
+                Label { Text(ee.subject) } icon: { AstraIconView(.menuBook, size: 12) }
                     .font(.system(size: 12))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
 
                 if let supervisor = ee.supervisor, !supervisor.isEmpty {
-                    Label(supervisor, systemImage: "person")
+                    Label { Text(supervisor) } icon: { AstraIconView(.person, size: 12) }
                         .font(.system(size: 12))
-                        .foregroundColor(CryoColors.foregroundMuted(tm))
+                        .foregroundColor(Color.textSecondary)
                 }
 
                 Spacer()
 
                 Text("\(ee.wordCount) / \(ee.maxWordCount)")
-                    .font(.system(size: 12, weight: .medium, design: .monospaced, family: "JetBrains Mono"))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .font(.astraMono(12, .medium))
+                    .foregroundColor(Color.textSecondary)
             }
 
             // Progress bar
             progressBar(for: ee.progress)
         }
         .padding(16)
-        .cryoCardStyle(tm)
+        .astraCardStyle()
         .onTapGesture {
             selectedEE = ee
             loadEE(ee)
@@ -208,19 +204,18 @@ struct EETrackerView: View {
                 selectedEE = nil
             } label: {
                 HStack(spacing: 6) {
-                    Image(systemName: "arrow.left")
-                        .font(.system(size: 12, weight: .semibold))
+                    AstraIconView(.arrowBack, size: 12)
                     Text(String(localized: "ee.backToAllEssays"))
                         .font(.system(size: 13, weight: .medium))
                 }
-                .foregroundColor(CryoColors.accentDark(tm))
+                .foregroundColor(Color.accent)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .background(CryoColors.backgroundWarm(tm))
+                .background(Color.surface)
                 .clipShape(Capsule())
                 .overlay(
                     Capsule()
-                        .stroke(CryoColors.border(tm), lineWidth: 1)
+                        .stroke(Color.hairline, lineWidth: 1)
                 )
             }
             .buttonStyle(.plain)
@@ -232,54 +227,51 @@ struct EETrackerView: View {
     private func researchQuestionCard(_ ee: ExtendedEssay) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 6) {
-                Image(systemName: "questionmark.circle")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(CryoColors.accent(tm))
+                AstraIconView(.help, size: 12)
+                    .foregroundColor(Color.accent)
                 Text(String(localized: "ee.researchQuestion"))
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
-                    .foregroundColor(CryoColors.foreground(tm))
+                    .foregroundColor(Color.textPrimary)
             }
 
             TextEditor(text: $researchQuestion)
                 .font(.system(size: 15, weight: .medium, design: .rounded))
-                .foregroundColor(CryoColors.foreground(tm))
+                .foregroundColor(Color.textPrimary)
                 .scrollContentBackground(.hidden)
                 .frame(minHeight: 48)
                 .padding(12)
-                .background(CryoColors.backgroundWarm(tm))
+                .background(Color.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(CryoColors.border(tm), lineWidth: 1)
+                        .stroke(Color.hairline, lineWidth: 1)
                 )
 
             // Subject + supervisor badges
             HStack(spacing: 8) {
                 if !ee.subject.isEmpty {
                     HStack(spacing: 4) {
-                        Image(systemName: "book")
-                            .font(.system(size: 10))
+                        AstraIconView(.menuBook, size: 10)
                         Text(ee.subject)
                             .font(.system(size: 12))
                     }
-                    .foregroundColor(CryoColors.accentDark(tm))
+                    .foregroundColor(Color.accent)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 4)
-                    .background(CryoColors.accentGlow(tm))
+                    .background(Color.accentContainer)
                     .clipShape(Capsule())
                 }
 
                 if let supervisor = ee.supervisor, !supervisor.isEmpty {
                     HStack(spacing: 4) {
-                        Image(systemName: "person")
-                            .font(.system(size: 10))
+                        AstraIconView(.person, size: 10)
                         Text(supervisor)
                             .font(.system(size: 12))
                     }
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 4)
-                    .background(CryoColors.frost(tm))
+                    .background(Color.accentContainer)
                     .clipShape(Capsule())
                 }
 
@@ -295,10 +287,10 @@ struct EETrackerView: View {
             }
         }
         .padding(20)
-        .cryoCardStyle(tm)
+        .astraCardStyle()
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .strokeBorder(CryoColors.crystalBorderGradient(tm), lineWidth: 2)
+                .strokeBorder(Color.accent.opacity(0.6), lineWidth: 2)
         )
     }
 
@@ -309,13 +301,13 @@ struct EETrackerView: View {
             HStack {
                 Text(String(localized: "ee.overallProgress"))
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
-                    .foregroundColor(CryoColors.foreground(tm))
+                    .foregroundColor(Color.textPrimary)
 
                 Spacer()
 
                 Text("\(Int(ee.progress * 100))%")
-                    .font(.system(size: 14, weight: .bold, design: .monospaced, family: "JetBrains Mono"))
-                    .foregroundColor(CryoColors.accent(tm))
+                    .font(.astraMono(14, .bold))
+                    .foregroundColor(Color.accent)
             }
 
             progressBar(for: ee.progress)
@@ -333,26 +325,25 @@ struct EETrackerView: View {
                     }
                 } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: tab.icon)
-                            .font(.system(size: 12, weight: .semibold))
+                        AstraIconView(tab.astraIcon, size: 12)
                         Text(tab.displayName)
                             .font(.system(size: 13, weight: selectedTab == tab ? .semibold : .regular))
                     }
-                    .foregroundColor(selectedTab == tab ? .white : CryoColors.foreground(tm))
+                    .foregroundColor(selectedTab == tab ? .white : Color.textPrimary)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
                     .background(
                         selectedTab == tab
-                            ? CryoColors.primaryGradient(tm)
-                            : CryoColors.backgroundWarm(tm)
+                            ? Color.accent
+                            : Color.surface
                     )
                     .clipShape(Capsule())
                     .overlay(
                         Capsule()
                             .stroke(
                                 selectedTab == tab
-                                    ? CryoColors.accent(tm)
-                                    : CryoColors.border(tm),
+                                    ? Color.accent
+                                    : Color.hairline,
                                 lineWidth: 1
                             )
                     )
@@ -382,7 +373,7 @@ struct EETrackerView: View {
 
     private func explorationTab(_ ee: ExtendedEssay) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionLabel(String(localized: "ee.explorationPlanning"), icon: "lightbulb")
+            sectionLabel(String(localized: "ee.explorationPlanning"), icon: .lightbulb)
 
             VStack(alignment: .leading, spacing: 8) {
                 checklistItem(String(localized: "ee.checkDefineRQ"), isComplete: !ee.researchQuestion.isEmpty)
@@ -395,35 +386,35 @@ struct EETrackerView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text(String(localized: "ee.rppfInitial"))
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(CryoColors.accent(tm))
+                    .foregroundColor(Color.accent)
 
                 TextEditor(text: $rppfInitialText)
                     .font(.system(size: 14))
-                    .foregroundColor(CryoColors.foreground(tm))
+                    .foregroundColor(Color.textPrimary)
                     .scrollContentBackground(.hidden)
                     .frame(minHeight: 100)
                     .padding(12)
-                    .background(CryoColors.backgroundWarm(tm))
+                    .background(Color.surface)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(CryoColors.border(tm), lineWidth: 1)
+                            .stroke(Color.hairline, lineWidth: 1)
                     )
 
                 Text(String(localized: "ee.rppfInitialHint"))
                     .font(.system(size: 11))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
             }
         }
         .padding(20)
-        .cryoCardStyle(tm)
+        .astraCardStyle()
     }
 
     // MARK: - Research Tab
 
     private func researchTab(_ ee: ExtendedEssay) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionLabel(String(localized: "ee.researchAnalysis"), icon: "magnifyingglass")
+            sectionLabel(String(localized: "ee.researchAnalysis"), icon: .search)
 
             VStack(alignment: .leading, spacing: 8) {
                 checklistItem(String(localized: "ee.checkGatherPrimary"), isComplete: ee.status == .researching || ee.status == .drafting || ee.status == .reviewing || ee.status == .submitted)
@@ -436,56 +427,56 @@ struct EETrackerView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text(String(localized: "ee.rppfMidterm"))
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(CryoColors.accent(tm))
+                    .foregroundColor(Color.accent)
 
                 TextEditor(text: $rppfMidtermText)
                     .font(.system(size: 14))
-                    .foregroundColor(CryoColors.foreground(tm))
+                    .foregroundColor(Color.textPrimary)
                     .scrollContentBackground(.hidden)
                     .frame(minHeight: 100)
                     .padding(12)
-                    .background(CryoColors.backgroundWarm(tm))
+                    .background(Color.surface)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(CryoColors.border(tm), lineWidth: 1)
+                            .stroke(Color.hairline, lineWidth: 1)
                     )
 
                 Text(String(localized: "ee.rppfMidtermHint"))
                     .font(.system(size: 11))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
             }
         }
         .padding(20)
-        .cryoCardStyle(tm)
+        .astraCardStyle()
     }
 
     // MARK: - Drafting Tab
 
     private func draftingTab(_ ee: ExtendedEssay) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionLabel(String(localized: "ee.drafting"), icon: "pencil")
+            sectionLabel(String(localized: "ee.drafting"), icon: .edit)
 
             TextEditor(text: $essayContent)
                 .font(.system(size: 14))
-                .foregroundColor(CryoColors.foreground(tm))
+                .foregroundColor(Color.textPrimary)
                 .scrollContentBackground(.hidden)
                 .frame(minHeight: 250)
                 .padding(12)
-                .background(CryoColors.backgroundWarm(tm))
+                .background(Color.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(CryoColors.border(tm), lineWidth: 1)
+                        .stroke(Color.hairline, lineWidth: 1)
                 )
 
             HStack {
-                Text(String(localized: "ee.wordsCount \(essayContent.wordCount) \(ee.maxWordCount)"))
-                    .font(.system(size: 13, weight: .medium, design: .monospaced, family: "JetBrains Mono"))
+                Text(String(format: String(localized: "ee.wordsCount"), essayContent.wordCount, ee.maxWordCount))
+                    .font(.astraMono(13, .medium))
                     .foregroundColor(
                         essayContent.wordCount > ee.maxWordCount
-                            ? CryoColors.error(tm)
-                            : CryoColors.foregroundMuted(tm)
+                            ? Color.semanticDanger
+                            : Color.textSecondary
                     )
 
                 Spacer()
@@ -494,29 +485,28 @@ struct EETrackerView: View {
                     updateStatus(ee, to: .drafting)
                 } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 11, weight: .semibold))
+                        AstraIconView(.check, size: 11)
                         Text(String(localized: "ee.saveDraft"))
                             .font(.system(size: 12, weight: .semibold))
                     }
                     .foregroundColor(.white)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 6)
-                    .background(CryoColors.primaryGradient(tm))
+                    .background(Color.accent)
                     .clipShape(Capsule())
                 }
                 .buttonStyle(.plain)
             }
         }
         .padding(20)
-        .cryoCardStyle(tm)
+        .astraCardStyle()
     }
 
     // MARK: - Review Tab
 
     private func reviewTab(_ ee: ExtendedEssay) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionLabel(String(localized: "ee.reviewSubmission"), icon: "eye")
+            sectionLabel(String(localized: "ee.reviewSubmission"), icon: .visibility)
 
             VStack(alignment: .leading, spacing: 8) {
                 checklistItem(String(localized: "ee.checkProofread"), isComplete: ee.status == .reviewing || ee.status == .submitted)
@@ -529,24 +519,24 @@ struct EETrackerView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text(String(localized: "ee.rppfFinal"))
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(CryoColors.accent(tm))
+                    .foregroundColor(Color.accent)
 
                 TextEditor(text: $rppfFinalText)
                     .font(.system(size: 14))
-                    .foregroundColor(CryoColors.foreground(tm))
+                    .foregroundColor(Color.textPrimary)
                     .scrollContentBackground(.hidden)
                     .frame(minHeight: 100)
                     .padding(12)
-                    .background(CryoColors.backgroundWarm(tm))
+                    .background(Color.surface)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(CryoColors.border(tm), lineWidth: 1)
+                        .stroke(Color.hairline, lineWidth: 1)
                     )
 
                 Text(String(localized: "ee.rppfFinalHint"))
                     .font(.system(size: 11))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
             }
 
             // Submit button
@@ -556,63 +546,60 @@ struct EETrackerView: View {
                     updateStatus(ee, to: .submitted)
                 } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: "paperplane")
-                            .font(.system(size: 13, weight: .semibold))
+                        AstraIconView(.send, size: 13)
                         Text(String(localized: "ee.markSubmitted"))
                             .font(.system(size: 13, weight: .semibold))
                     }
                     .foregroundColor(.white)
                     .padding(.horizontal, 20)
                     .padding(.vertical, 10)
-                    .background(CryoColors.primaryGradient(tm))
+                    .background(Color.accent)
                     .clipShape(Capsule())
-                    .shadow(color: CryoColors.shadowGlow(tm), radius: 8, x: 0, y: 2)
+                    .shadow(color: Color.accent.opacity(0.15), radius: 8, x: 0, y: 2)
                 }
                 .buttonStyle(.plain)
             }
         }
         .padding(20)
-        .cryoCardStyle(tm)
+        .astraCardStyle()
     }
 
     // MARK: - RPPF Reflection Section
 
     private func rppfReflectionSection(_ ee: ExtendedEssay) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionLabel(String(localized: "ee.rppfReflections"), icon: "text.book.closed")
+            sectionLabel(String(localized: "ee.rppfReflections"), icon: .menuBook)
 
             HStack(spacing: 12) {
-                rppfCard(ee.rppfInitial, title: String(localized: "ee.rppfInitialShort"), icon: "1.circle", color: CryoColors.accent(tm))
-                rppfCard(ee.rppfMidterm, title: String(localized: "ee.rppfMidtermShort"), icon: "2.circle", color: CryoColors.accentLight(tm))
-                rppfCard(ee.rppfFinal, title: String(localized: "ee.rppfFinalShort"), icon: "3.circle", color: CryoColors.crystal(tm))
+                rppfCard(ee.rppfInitial, title: String(localized: "ee.rppfInitialShort"), icon: .looksOne, color: Color.accent)
+                rppfCard(ee.rppfMidterm, title: String(localized: "ee.rppfMidtermShort"), icon: .looksTwo, color: Color.accent.opacity(0.8))
+                rppfCard(ee.rppfFinal, title: String(localized: "ee.rppfFinalShort"), icon: .looks_3, color: Color.accent.opacity(0.7))
             }
         }
     }
 
-    private func rppfCard(_ text: String?, title: String, icon: String, color: Color) -> some View {
+    private func rppfCard(_ text: String?, title: String, icon: AstraIcon, color: Color) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
-                Image(systemName: icon)
-                    .font(.system(size: 14, weight: .bold))
+                AstraIconView(icon, size: 14)
                     .foregroundColor(color)
                 Text(title)
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(CryoColors.foreground(tm))
+                    .foregroundColor(Color.textPrimary)
             }
 
             if let text = text, !text.isEmpty {
                 Text(text)
                     .font(.system(size: 13))
-                    .foregroundColor(CryoColors.foreground(tm))
+                    .foregroundColor(Color.textPrimary)
                     .lineLimit(4)
             } else {
                 HStack(spacing: 6) {
-                    Image(systemName: "pencil.circle")
-                        .font(.system(size: 11))
-                        .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.4))
+                    AstraIconView(.edit, size: 11)
+                        .foregroundColor(Color.textSecondary.opacity(0.4))
                     Text(String(localized: "ee.notYetWritten"))
                         .font(.system(size: 12))
-                        .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.5))
+                        .foregroundColor(Color.textSecondary.opacity(0.5))
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 8)
@@ -620,7 +607,7 @@ struct EETrackerView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
-        .cryoCardStyle(tm)
+        .astraCardStyle()
     }
 
     // MARK: - Meeting Notes Section
@@ -628,7 +615,7 @@ struct EETrackerView: View {
     private func meetingNotesSection(_ ee: ExtendedEssay) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                sectionLabel(String(localized: "ee.meetingNotes"), icon: "person.2")
+                sectionLabel(String(localized: "ee.meetingNotes"), icon: .group)
 
                 Spacer()
 
@@ -636,19 +623,18 @@ struct EETrackerView: View {
                     addMeetingNote(to: ee)
                 } label: {
                     HStack(spacing: 4) {
-                        Image(systemName: "plus.circle")
-                            .font(.system(size: 13))
+                        AstraIconView(.addCircle, size: 13)
                         Text(String(localized: "ee.addMeeting"))
                             .font(.system(size: 12, weight: .medium))
                     }
-                    .foregroundColor(CryoColors.accentDark(tm))
+                    .foregroundColor(Color.accent)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
-                    .background(CryoColors.backgroundWarm(tm))
+                    .background(Color.surface)
                     .clipShape(Capsule())
                     .overlay(
                         Capsule()
-                            .stroke(CryoColors.border(tm), lineWidth: 1)
+                            .stroke(Color.hairline, lineWidth: 1)
                     )
                 }
                 .buttonStyle(.plain)
@@ -656,12 +642,11 @@ struct EETrackerView: View {
 
             if ee.meetingNotes.isEmpty {
                 VStack(spacing: 8) {
-                    Image(systemName: "person.2")
-                        .font(.system(size: 24))
-                        .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.3))
+                    AstraIconView(.group, size: 24)
+                        .foregroundColor(Color.textSecondary.opacity(0.3))
                     Text(String(localized: "ee.noMeetings"))
                         .font(.system(size: 13))
-                        .foregroundColor(CryoColors.foregroundMuted(tm))
+                        .foregroundColor(Color.textSecondary)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
@@ -681,15 +666,15 @@ struct EETrackerView: View {
             VStack(spacing: 8) {
                 TextEditor(text: $meetingSummary)
                     .font(.system(size: 13))
-                    .foregroundColor(CryoColors.foreground(tm))
+                    .foregroundColor(Color.textPrimary)
                     .scrollContentBackground(.hidden)
                     .frame(minHeight: 60)
                     .padding(10)
-                    .background(CryoColors.backgroundWarm(tm))
+                    .background(Color.surface)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(CryoColors.border(tm), lineWidth: 1)
+                            .stroke(Color.hairline, lineWidth: 1)
                     )
 
                 HStack(spacing: 8) {
@@ -698,27 +683,26 @@ struct EETrackerView: View {
                         .textFieldStyle(.plain)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
-                        .background(CryoColors.backgroundWarm(tm))
+                        .background(Color.surface)
                         .clipShape(Capsule())
                         .overlay(
                             Capsule()
-                                .stroke(CryoColors.border(tm), lineWidth: 1)
+                                .stroke(Color.hairline, lineWidth: 1)
                         )
 
                     Button {
                         newMeetingNotes.append(meetingActionItem)
                         meetingActionItem = ""
                     } label: {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.system(size: 16))
-                            .foregroundColor(CryoColors.accent(tm))
+                        AstraIconView(.addCircle, size: 16)
+                            .foregroundColor(Color.accent)
                     }
                     .buttonStyle(.plain)
                 }
             }
         }
         .padding(20)
-        .cryoCardStyle(tm)
+        .astraCardStyle()
     }
 
     // MARK: - Word Count Section
@@ -726,21 +710,21 @@ struct EETrackerView: View {
     private func wordCountSection(_ ee: ExtendedEssay) -> some View {
         VStack(spacing: 16) {
             HStack {
-                sectionLabel(String(localized: "ee.wordCount"), icon: "textformat")
+                sectionLabel(String(localized: "ee.wordCount"), icon: .textFields)
 
                 Spacer()
 
                 Text("\(essayContent.wordCount)")
-                    .font(.system(size: 36, weight: .bold, design: .monospaced, family: "JetBrains Mono"))
+                    .font(.astraMono(36, .bold))
                     .foregroundColor(
                         essayContent.wordCount > ee.maxWordCount
-                            ? CryoColors.error(tm)
-                            : CryoColors.accent(tm)
+                            ? Color.semanticDanger
+                            : Color.accent
                     )
 
                 Text("/ \(ee.maxWordCount)")
-                    .font(.system(size: 18, weight: .regular, design: .monospaced, family: "JetBrains Mono"))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .font(.astraMono(18, .regular))
+                    .foregroundColor(Color.textSecondary)
             }
 
             // Progress bar toward max word count
@@ -748,26 +732,26 @@ struct EETrackerView: View {
             progressBar(for: ratio)
 
             HStack(spacing: 16) {
-                Label(String(localized: "ee.minWords"), systemImage: "arrow.down.to.line")
+                Label { Text(String(localized: "ee.minWords")) } icon: { AstraIconView(.arrowDownward, size: 12) }
                     .font(.system(size: 11, design: .monospaced))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
 
                 Spacer()
 
-                Label(String(localized: "ee.maxWords \(ee.maxWordCount)"), systemImage: "arrow.up.to.line")
+                Label { Text(String(format: String(localized: "ee.maxWords"), ee.maxWordCount)) } icon: { AstraIconView(.arrowUpward, size: 12) }
                     .font(.system(size: 11, design: .monospaced))
                     .foregroundColor(
                         essayContent.wordCount > ee.maxWordCount
-                            ? CryoColors.error(tm)
-                            : CryoColors.foregroundMuted(tm)
+                            ? Color.semanticDanger
+                            : Color.textSecondary
                     )
             }
         }
         .padding(20)
-        .cryoCardStyle(tm)
+        .astraCardStyle()
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .strokeBorder(CryoColors.crystalBorderGradient(tm), lineWidth: 2)
+                .strokeBorder(Color.accent.opacity(0.6), lineWidth: 2)
         )
     }
 
@@ -778,14 +762,14 @@ struct EETrackerView: View {
             ZStack(alignment: .leading) {
                 // Track
                 RoundedRectangle(cornerRadius: 4)
-                    .fill(CryoColors.frost(tm))
+                    .fill(Color.accentContainer)
                     .frame(height: 8)
 
                 // Fill with ice-blue gradient
                 RoundedRectangle(cornerRadius: 4)
                     .fill(
                         LinearGradient(
-                            colors: [CryoColors.accent(tm), CryoColors.accentDark(tm)],
+                            colors: [Color.accent, Color.accent],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
@@ -796,7 +780,7 @@ struct EETrackerView: View {
                 RoundedRectangle(cornerRadius: 4)
                     .fill(
                         LinearGradient(
-                            colors: [CryoColors.accentLight(tm).opacity(0.6), CryoColors.accent(tm).opacity(0.3)],
+                            colors: [Color.accent.opacity(0.8).opacity(0.6), Color.accent.opacity(0.3)],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
@@ -809,14 +793,13 @@ struct EETrackerView: View {
 
     private func checklistItem(_ label: String, isComplete: Bool) -> some View {
         HStack(spacing: 10) {
-            Image(systemName: isComplete ? "checkmark.circle.fill" : "circle")
-                .font(.system(size: 14))
-                .foregroundColor(isComplete ? CryoColors.accent(tm) : CryoColors.foregroundMuted(tm).opacity(0.4))
+            AstraIconView(isComplete ? .checkCircle : .circle, size: 14)
+                .foregroundColor(isComplete ? Color.accent : Color.textSecondary.opacity(0.4))
 
             Text(label)
                 .font(.system(size: 13))
-                .foregroundColor(isComplete ? CryoColors.foreground(tm) : CryoColors.foregroundMuted(tm).opacity(0.6))
-                .strikethrough(isComplete, color: CryoColors.foregroundMuted(tm))
+                .foregroundColor(isComplete ? Color.textPrimary : Color.textSecondary.opacity(0.6))
+                .strikethrough(isComplete, color: Color.textSecondary)
         }
     }
 
@@ -824,20 +807,19 @@ struct EETrackerView: View {
         VStack(alignment: .leading, spacing: 6) {
             Button(action: toggle) {
                 HStack {
-                    Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundColor(CryoColors.accent(tm))
+                    AstraIconView(isExpanded ? .expandMore : .chevronRight, size: 11)
+                        .foregroundColor(Color.accent)
 
                     Text(meeting.date.shortDateString)
                         .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(CryoColors.foreground(tm))
+                        .foregroundColor(Color.textPrimary)
 
                     Spacer()
 
                     if !meeting.actionItems.isEmpty {
                         Text("^[\(meeting.actionItems.count) action](inflect: true)")
                             .font(.system(size: 11, design: .monospaced))
-                            .foregroundColor(CryoColors.foregroundMuted(tm))
+                            .foregroundColor(Color.textSecondary)
                     }
                 }
             }
@@ -846,19 +828,18 @@ struct EETrackerView: View {
             if isExpanded {
                 Text(meeting.summary)
                     .font(.system(size: 13))
-                    .foregroundColor(CryoColors.foreground(tm))
+                    .foregroundColor(Color.textPrimary)
                     .padding(.leading, 20)
 
                 if !meeting.actionItems.isEmpty {
                     VStack(alignment: .leading, spacing: 4) {
                         ForEach(meeting.actionItems, id: \.self) { item in
                             HStack(spacing: 6) {
-                                Image(systemName: "arrow.triangle.right")
-                                    .font(.system(size: 9))
-                                    .foregroundColor(CryoColors.accent(tm))
+                                AstraIconView(.playArrow, size: 9)
+                                    .foregroundColor(Color.accent)
                                 Text(item)
                                     .font(.system(size: 12))
-                                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                                    .foregroundColor(Color.textSecondary)
                             }
                             .padding(.leading, 20)
                         }
@@ -869,25 +850,24 @@ struct EETrackerView: View {
         .padding(.vertical, 4)
     }
 
-    private func sectionLabel(_ title: String, icon: String) -> some View {
+    private func sectionLabel(_ title: String, icon: AstraIcon) -> some View {
         HStack(spacing: 6) {
-            Image(systemName: icon)
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(CryoColors.accent(tm))
+            AstraIconView(icon, size: 12)
+                .foregroundColor(Color.accent)
             Text(title)
                 .font(.system(size: 13, weight: .semibold, design: .rounded))
-                .foregroundColor(CryoColors.foreground(tm))
+                .foregroundColor(Color.textPrimary)
                 .tracking(0.02)
         }
     }
 
     private func statusColor(_ status: EEStatus) -> Color {
         switch status {
-        case .planning:    return CryoColors.warning(tm)
-        case .researching: return CryoColors.accent(tm)
-        case .drafting:    return CryoColors.accentLight(tm)
-        case .reviewing:   return CryoColors.crystal(tm)
-        case .submitted:   return CryoColors.success(tm)
+        case .planning:    return Color.semanticWarning
+        case .researching: return Color.accent
+        case .drafting:    return Color.accent.opacity(0.8)
+        case .reviewing:   return Color.accent.opacity(0.7)
+        case .submitted:   return Color.semanticSuccess
         }
     }
 
@@ -895,7 +875,7 @@ struct EETrackerView: View {
 
     private func createNewEE() {
         let ee = ExtendedEssay(
-            title: String(localized: "ee.defaultTitle \(essays.count + 1)"),
+            title: String(format: String(localized: "ee.defaultTitle"), essays.count + 1),
             subject: "",
             researchQuestion: "",
             content: "",
@@ -963,12 +943,12 @@ enum EESectionTab: String, CaseIterable, Identifiable {
         }
     }
 
-    var icon: String {
+    var astraIcon: AstraIcon {
         switch self {
-        case .exploration: return "lightbulb"
-        case .research:    return "magnifyingglass"
-        case .drafting:    return "pencil"
-        case .review:      return "eye"
+        case .exploration: return .lightbulb
+        case .research:    return .search
+        case .drafting:    return .edit
+        case .review:      return .visibility
         }
     }
 }
@@ -977,6 +957,6 @@ enum EESectionTab: String, CaseIterable, Identifiable {
 
 #Preview {
     EETrackerView()
-        .environment(ThemeManager())
+        
         .modelContainer(for: ExtendedEssay.self, inMemory: true)
 }

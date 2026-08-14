@@ -1,7 +1,7 @@
 // TranscriptionView.swift — AstraNotes
-// Transcription UI with Soft Cryo dashboard-style design.
-// Features: real-time transcription display, hexagon progress indicator,
-// speaker segmentation badges, editable text, and pill-button export options.
+// Transcription UI with the Astra design system.
+// Features: Whisper status panel, recording selector, segmented
+// transcription display with speaker badges, export options.
 
 import SwiftUI
 import SwiftData
@@ -19,7 +19,6 @@ struct TranscriptionView: View {
 
     // MARK: - Environment
 
-    @Environment(\.themeManager) private var tm
     @Environment(\.modelContext) private var modelContext
 
     // MARK: - State
@@ -27,13 +26,9 @@ struct TranscriptionView: View {
     @State private var whisperService = WhisperService()
     @State private var editableText: String = ""
     @State private var selectedRecording: RecordingSession?
-    @State private var selectedLanguage: String? = nil
     @State private var isTranscribing: Bool = false
     @State private var transcriptionResult: TranscriptionResult?
-    @State private var showExportOptions: Bool = false
-    @State private var showLanguagePicker: Bool = false
     @State private var isEditing: Bool = false
-    @State private var searchText: String = ""
     @State private var copiedToClipboard: Bool = false
 
     // MARK: - Queries
@@ -44,7 +39,7 @@ struct TranscriptionView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 24) {
+            VStack(alignment: .leading, spacing: Spacing.xl) {
                 headerSection
                 statusSection
 
@@ -55,14 +50,15 @@ struct TranscriptionView: View {
                     recordingSelectorSection
                 }
             }
-            .padding(32)
+            .padding(Spacing.xxl)
+            .frame(maxWidth: Layout.contentMaxWidth + 240, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .top)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(CryoColors.background(tm))
+        .background(Color.surfaceBackground)
         .task {
             // Pre-check if model is already downloaded.
             if whisperService.isModelDownloaded {
-                // Model files exist; initialize in background.
                 Task {
                     await whisperService.initializeModel()
                 }
@@ -73,49 +69,38 @@ struct TranscriptionView: View {
     // MARK: - Header Section
 
     private var headerSection: some View {
-        VStack(spacing: 8) {
-            HStack(spacing: 8) {
-                Text("📝")
-                    .font(.system(size: 24))
-                Text(String(localized: "transcription.title"))
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundColor(CryoColors.foreground(tm))
-            }
-
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            Text(String(localized: "transcription.title"))
+                .font(TypeScale.title)
+                .foregroundStyle(.textPrimary)
             Text(String(localized: "transcription.subtitle"))
-                .font(.system(size: 14))
-                .foregroundColor(CryoColors.foregroundMuted(tm))
+                .font(TypeScale.body)
+                .foregroundStyle(.textSecondary)
         }
     }
 
     // MARK: - Status Section
 
     private var statusSection: some View {
-        CryoCard(manager: tm, style: .standard) {
-            HStack(spacing: 16) {
-                // Hexagon status indicator
-                HexagonBadge(size: 40, manager: tm) {
-                    Image(systemName: statusIcon)
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.white)
-                }
+        AstraCard {
+            HStack(spacing: Spacing.lg) {
+                // Status adornment
+                AstraAdornment(icon: statusIcon, tint: statusColor)
 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 2) {
                     Text(statusTitle)
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(CryoColors.foreground(tm))
-
+                        .font(TypeScale.subheading)
+                        .foregroundStyle(.textPrimary)
                     Text(statusSubtitle)
-                        .font(.system(size: 12, design: .monospaced))
-                        .foregroundColor(CryoColors.foregroundMuted(tm))
+                        .font(.astraMono(12))
+                        .foregroundStyle(.textSecondary)
+                        .lineLimit(1)
                 }
 
                 Spacer()
 
-                // Progress indicator for active operations
                 statusProgressView
             }
-            .padding(16)
         }
     }
 
@@ -123,73 +108,70 @@ struct TranscriptionView: View {
     private var statusProgressView: some View {
         switch whisperService.state {
         case .downloadingModel(let progress):
-            VStack(alignment: .trailing, spacing: 4) {
-                Text(String(localized: "transcription.downloading"))
-                    .font(.system(size: 11, design: .monospaced))
-                    .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.6))
-
-                ProgressView(value: progress)
-                    .progressViewStyle(.linear)
-                    .frame(width: 140)
-                    .tint(CryoColors.accent(tm))
-
-                Text(String(format: "%.0f%%", progress * 100))
-                    .font(.system(size: 12, weight: .semibold, design: .monospaced))
-                    .foregroundColor(CryoColors.accent(tm))
-            }
-
+            progressBlock(
+                label: String(localized: "transcription.downloading"),
+                progress: progress
+            )
         case .transcribing(let progress):
-            VStack(alignment: .trailing, spacing: 4) {
-                Text(String(localized: "transcription.transcribing"))
-                    .font(.system(size: 11, design: .monospaced))
-                    .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.6))
-
-                ProgressView(value: progress)
-                    .progressViewStyle(.linear)
-                    .frame(width: 140)
-                    .tint(CryoColors.accent(tm))
-
-                Text(String(format: "%.0f%%", progress * 100))
-                    .font(.system(size: 12, weight: .semibold, design: .monospaced))
-                    .foregroundColor(CryoColors.accent(tm))
-            }
+            progressBlock(
+                label: String(localized: "transcription.transcribing"),
+                progress: progress
+            )
 
         case .failed(let error):
-            VStack(alignment: .trailing, spacing: 4) {
+            VStack(alignment: .trailing, spacing: Spacing.xs) {
                 Text(String(localized: "transcription.error"))
-                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                    .foregroundColor(.red.opacity(0.8))
+                    .font(.astraMono(11, .semibold))
+                    .foregroundStyle(Color.semanticDanger)
                 Text(error)
-                    .font(.system(size: 11, design: .monospaced))
-                    .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.5))
+                    .font(.astraMono(11))
+                    .foregroundStyle(.textTertiary)
                     .frame(width: 140, alignment: .trailing)
                     .lineLimit(2)
             }
 
         default:
-            // Idle or completed — show a ready indicator.
-            VStack(alignment: .trailing, spacing: 4) {
-                HStack(spacing: 4) {
-                    Circle()
-                        .fill(CryoColors.accent(tm))
-                        .frame(width: 6, height: 6)
-                    Text(String(localized: "transcription.ready"))
-                        .font(.system(size: 11, design: .monospaced))
-                        .foregroundColor(CryoColors.accent(tm))
-                }
+            // Idle or completed — ready indicator.
+            HStack(spacing: Spacing.xs) {
+                StatusDot(kind: whisperService.isReady ? .ready : .idle)
+                Text(String(localized: "transcription.ready"))
+                    .font(.astraMono(11))
+                    .foregroundStyle(Color.accent)
             }
+        }
+    }
+
+    private func progressBlock(label: String, progress: Double) -> some View {
+        VStack(alignment: .trailing, spacing: Spacing.xs) {
+            Text(label)
+                .font(.astraMono(11))
+                .foregroundStyle(.textTertiary)
+            ProgressHairline(progress: progress)
+                .frame(width: 140)
+            Text(String(format: "%.0f%%", progress * 100))
+                .font(.astraMono(12, .semibold))
+                .foregroundStyle(Color.accent)
         }
     }
 
     // MARK: - Status Computed Properties
 
-    private var statusIcon: String {
+    private var statusIcon: AstraIcon {
         switch whisperService.state {
-        case .idle:                   return "mic"
-        case .downloadingModel:      return "arrow.down.circle"
-        case .transcribing:          return "waveform"
-        case .completed:             return "checkmark.circle"
-        case .failed:                 return "exclamationmark.triangle"
+        case .idle:                   return .mic
+        case .downloadingModel:      return .download
+        case .transcribing:          return .graphicEq
+        case .completed:             return .checkCircle
+        case .failed:                 return .warning
+        }
+    }
+
+    private var statusColor: Color {
+        switch whisperService.state {
+        case .idle, .completed:      return .accent
+        case .downloadingModel:      return .semanticWarning
+        case .transcribing:          return .accent
+        case .failed:                 return .semanticDanger
         }
     }
 
@@ -210,12 +192,12 @@ struct TranscriptionView: View {
                 ? String(localized: "transcription.modelReady")
                 : String(localized: "transcription.modelNotDownloaded")
         case .downloadingModel(let progress):
-            return String(format: "Downloading large-v3-turbo %.0f%%", progress * 100)
+            return String(format: "large-v3-turbo %.0f%%", progress * 100)
         case .transcribing(let progress):
-            return String(format: "Processing audio %.0f%%", progress * 100)
+            return String(format: "%.0f%%", progress * 100)
         case .completed:
             let count = transcriptionResult?.segments.count ?? 0
-            return String(localized: "transcription.segmentsTranscribed \(count)")
+            return String(format: String(localized: "transcription.segmentsTranscribed"), count)
         case .failed(let error):
             return error
         }
@@ -224,34 +206,22 @@ struct TranscriptionView: View {
     // MARK: - Recording Selector
 
     private var recordingSelectorSection: some View {
-        CryoCard(manager: tm, style: .standard) {
-            VStack(spacing: 16) {
-                HStack {
-                    Text(String(localized: "transcription.selectRecording"))
-                        .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                        .foregroundColor(CryoColors.accentDark(tm))
-                        .tracking(0.08)
-                    Spacer()
-                }
+        AstraCard {
+            VStack(spacing: Spacing.lg) {
+                SectionHeader(
+                    title: String(localized: "transcription.selectRecording"),
+                    icon: .mic
+                )
 
                 if recordings.isEmpty {
-                    VStack(spacing: 12) {
-                        Image(systemName: "waveform.badge.mic")
-                            .font(.system(size: 32))
-                            .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.3))
-                        Text(String(localized: "transcription.noRecordings"))
-                            .font(.system(size: 14))
-                            .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.5))
-                        Text(String(localized: "transcription.noRecordingsHint"))
-                            .font(.system(size: 12))
-                            .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.4))
-                            .multilineTextAlignment(.center)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(24)
+                    EmptyStateView(
+                        icon: .mic,
+                        title: String(localized: "transcription.noRecordings"),
+                        message: String(localized: "transcription.noRecordingsHint")
+                    )
                 } else {
                     ScrollView {
-                        VStack(spacing: 8) {
+                        VStack(spacing: Spacing.xs) {
                             ForEach(recordings) { recording in
                                 recordingRow(recording)
                             }
@@ -260,68 +230,60 @@ struct TranscriptionView: View {
                     .frame(maxHeight: 300)
                 }
             }
-            .padding(20)
         }
     }
 
     private func recordingRow(_ recording: RecordingSession) -> some View {
-        Button {
+        let isSelected = selectedRecording?.id == recording.id
+
+        return Button {
             selectedRecording = recording
             startTranscription(for: recording)
         } label: {
-            HStack(spacing: 12) {
-                // Hexagon icon
-                HexagonBadge(size: 32, manager: tm) {
-                    Image(systemName: "waveform")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(.white)
-                }
+            HStack(spacing: Spacing.md) {
+                AstraAdornment(icon: .graphicEq, tint: .accent)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(recording.audioFileURL)
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(CryoColors.foreground(tm))
+                    Text(recording.title)
+                        .font(.astraBody(13, .medium))
+                        .foregroundStyle(.textPrimary)
                         .lineLimit(1)
                         .truncationMode(.middle)
 
-                    HStack(spacing: 8) {
+                    HStack(spacing: Spacing.sm) {
                         Text(formatDuration(recording.duration))
-                            .font(.system(size: 11, design: .monospaced))
-                            .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.6))
+                            .font(.astraMono(11))
+                            .foregroundStyle(.textTertiary)
 
-                        if !recording.subject.isEmpty && recording.subject != "No Subject" {
-                            Text(recording.subject)
-                                .font(.system(size: 11, design: .monospaced))
-                                .foregroundColor(CryoColors.accent(tm).opacity(0.7))
+                        if let subject = recording.subjectName {
+                            Text(subject)
+                                .font(.astraMono(11))
+                                .foregroundStyle(Color.accent.opacity(0.8))
                         }
                     }
                 }
 
                 Spacer()
 
-                if selectedRecording?.id == recording.id && isTranscribing {
+                if isSelected && isTranscribing {
                     ProgressView()
-                        .progressViewStyle(.circular)
-                        .scaleEffect(0.7)
-                        .tint(CryoColors.accent(tm))
+                        .controlSize(.small)
+                        .tint(Color.accent)
                 } else {
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.3))
+                    AstraIconView(.chevronRight, size: 11)
+                        .foregroundStyle(.textTertiary.opacity(0.5))
                 }
             }
-            .padding(10)
+            .padding(Spacing.md)
             .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(selectedRecording?.id == recording.id ? CryoColors.accentGlow(tm) : .clear)
+                RoundedRectangle(cornerRadius: Radius.control)
+                    .fill(isSelected ? Color.accentContainer : Color.clear)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(
-                        selectedRecording?.id == recording.id ? CryoColors.accent(tm).opacity(0.3) : CryoColors.border(tm).opacity(0.5),
-                        lineWidth: 1
-                    )
+                RoundedRectangle(cornerRadius: Radius.control)
+                    .stroke(isSelected ? Color.accent.opacity(0.3) : Color.hairline.opacity(0.5), lineWidth: 1)
             )
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .disabled(isTranscribing)
@@ -330,192 +292,149 @@ struct TranscriptionView: View {
     // MARK: - Transcription Content Section
 
     private func transcriptionContentSection(result: TranscriptionResult) -> some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Spacing.lg) {
             // Statistics row
             statisticsRow(result: result)
 
             // Transcription text area
-            CryoCard(manager: tm, style: .standard) {
-                VStack(spacing: 12) {
+            AstraCard {
+                VStack(spacing: Spacing.md) {
                     // Header with edit/copy actions
-                    HStack {
-                        Text(String(localized: "transcription.transcription"))
-                            .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                            .foregroundColor(CryoColors.accentDark(tm))
-                            .tracking(0.08)
+                    HStack(spacing: Spacing.sm) {
+                        SectionHeader(
+                            title: String(localized: "transcription.transcription"),
+                            icon: .notes
+                        )
 
                         Spacer()
 
                         // Language badge
-                        if let lang = result.language, lang != "auto" {
-                            languageBadge(lang)
+                        if result.language != "auto" {
+                            languageBadge(result.language)
                         }
 
                         // Copy button
-                        Button {
+                        TagChip(
+                            text: copiedToClipboard ? String(localized: "transcription.copied") : String(localized: "common.copy"),
+                            isSelected: copiedToClipboard
+                        ) {
                             copyToClipboard(text: editableText)
-                        } label: {
-                            HStack(spacing: 4) {
-                                Image(systemName: copiedToClipboard ? "checkmark" : "doc.on.doc")
-                                    .font(.system(size: 11, weight: .semibold))
-                                Text(copiedToClipboard ? String(localized: "transcription.copied") : String(localized: "common.copy"))
-                                    .font(.system(size: 11, weight: .medium))
-                            }
-                            .foregroundColor(CryoColors.accentDark(tm))
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(CryoColors.frost(tm))
-                            .clipShape(Capsule())
-                            .overlay(
-                                Capsule().stroke(CryoColors.border(tm), lineWidth: 1)
-                            )
                         }
-                        .buttonStyle(.plain)
 
                         // Edit/Save toggle
-                        Button {
-                            withAnimation(.easeInOut(duration: 0.2)) {
+                        TagChip(
+                            text: isEditing ? String(localized: "transcription.done") : String(localized: "transcription.edit"),
+                            isSelected: isEditing
+                        ) {
+                            withAnimation(Motion.stateChange) {
                                 isEditing.toggle()
                             }
-                        } label: {
-                            HStack(spacing: 4) {
-                                Image(systemName: isEditing ? "checkmark.circle" : "pencil")
-                                    .font(.system(size: 11, weight: .semibold))
-                                Text(isEditing ? String(localized: "transcription.done") : String(localized: "transcription.edit"))
-                                    .font(.system(size: 11, weight: .medium))
-                            }
-                            .foregroundColor(CryoColors.accentDark(tm))
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(CryoColors.frost(tm))
-                            .clipShape(Capsule())
-                            .overlay(
-                                Capsule().stroke(CryoColors.border(tm), lineWidth: 1)
-                            )
                         }
-                        .buttonStyle(.plain)
                     }
 
                     // Segmented transcription display
                     ScrollView {
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: Spacing.sm) {
                             ForEach(Array(result.segments.enumerated()), id: \.offset) { index, segment in
                                 segmentView(segment: segment, index: index)
                             }
                         }
-                        .padding(16)
+                        .padding(Spacing.lg)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(CryoColors.backgroundWarm(tm))
-                        )
+                        .background(Color.surfaceBackground)
+                        .clipShape(RoundedRectangle(cornerRadius: Radius.card))
                         .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(CryoColors.border(tm), lineWidth: 1)
+                            RoundedRectangle(cornerRadius: Radius.card)
+                                .stroke(Color.hairline, lineWidth: 1)
                         )
                     }
                     .frame(maxHeight: 400)
                 }
-                .padding(20)
             }
         }
     }
 
     private func statisticsRow(result: TranscriptionResult) -> some View {
-        HStack(spacing: 12) {
+        HStack(spacing: Spacing.md) {
             statBadge(
-                icon: "text.alignleft",
+                icon: .notes,
                 value: "\(result.wordCount)",
                 label: String(localized: "transcription.words")
             )
             statBadge(
-                icon: "clock",
+                icon: .schedule,
                 value: result.segments.first.map { formatTime($0.startTime) } ?? "--:--",
                 label: String(localized: "transcription.start")
             )
             statBadge(
-                icon: "clock.arrow.2.circlepath",
+                icon: .history,
                 value: result.segments.last.map { formatTime($0.endTime) } ?? "--:--",
                 label: String(localized: "transcription.end")
             )
             statBadge(
-                icon: "chart.bar",
+                icon: .barChart,
                 value: String(format: "%.1f%%", result.confidence * 100),
                 label: String(localized: "transcription.confidence")
             )
-
             Spacer()
-
-            // Language badge
-            if let lang = result.language {
-                languageBadge(lang)
-            }
         }
     }
 
-    private func statBadge(icon: String, value: String, label: String) -> some View {
-        HStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(CryoColors.accent(tm))
+    private func statBadge(icon: AstraIcon, value: String, label: String) -> some View {
+        HStack(spacing: Spacing.sm) {
+            AstraIconView(icon, size: 12)
+                .foregroundStyle(Color.accent)
 
             VStack(alignment: .leading, spacing: 1) {
                 Text(value)
-                    .font(.system(size: 14, weight: .semibold, design: .monospaced))
-                    .foregroundColor(CryoColors.foreground(tm))
-
+                    .font(.astraMono(14, .semibold))
+                    .foregroundStyle(.textPrimary)
                 Text(label)
-                    .font(.system(size: 10, design: .monospaced))
-                    .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.6))
+                    .font(TypeScale.micro)
                     .textCase(.uppercase)
-                    .tracking(0.06)
+                    .tracking(0.6)
+                    .foregroundStyle(.textTertiary)
             }
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        .background(
-            LinearGradient(
-                colors: [CryoColors.backgroundWarm(tm), CryoColors.frost(tm)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .padding(.horizontal, Spacing.md)
+        .padding(.vertical, Spacing.sm)
+        .background(Color.surface)
+        .clipShape(RoundedRectangle(cornerRadius: Radius.control))
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(CryoColors.border(tm), lineWidth: 1)
+            RoundedRectangle(cornerRadius: Radius.control)
+                .stroke(Color.hairline, lineWidth: 1)
         )
     }
 
     private func segmentView(segment: TranscriptionSegment, index: Int) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 8) {
+            HStack(spacing: Spacing.sm) {
                 // Segment index badge
                 Text(String(format: "%02d", index + 1))
-                    .font(.system(size: 10, weight: .bold, design: .monospaced))
-                    .foregroundColor(CryoColors.accent(tm))
+                    .font(.astraMono(10, .bold))
+                    .foregroundStyle(Color.accent)
                     .frame(width: 28, height: 20)
-                    .background(CryoColors.frost(tm))
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .background(Color.accentContainer)
+                    .clipShape(RoundedRectangle(cornerRadius: Radius.micro))
 
                 // Timestamp
-                Text("\(formatTime(segment.startTime)) — \(formatTime(segment.endTime))")
-                    .font(.system(size: 10, design: .monospaced))
-                    .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.5))
+                Text("\(formatTime(segment.startTime)) - \(formatTime(segment.endTime))")
+                    .font(.astraMono(10))
+                    .foregroundStyle(.textTertiary)
 
                 // Confidence
                 Text(String(format: "%.0f%%", segment.confidence * 100))
-                    .font(.system(size: 10, design: .monospaced))
-                    .foregroundColor(
-                        segment.confidence > 0.8 ? CryoColors.accent(tm).opacity(0.6) : Color.orange.opacity(0.6)
+                    .font(.astraMono(10))
+                    .foregroundStyle(
+                        segment.confidence > 0.8 ? Color.accent.opacity(0.7) : Color.semanticWarning.opacity(0.8)
                     )
 
                 // Speaker badge (if available)
                 if let speakerID = segment.speakerID {
-                    Text(String(localized: "transcription.speaker \(speakerID)"))
-                        .font(.system(size: 10, weight: .medium))
-                        .foregroundColor(speakerColor(for: speakerID))
-                        .padding(.horizontal, 8)
+                    Text(String(format: String(localized: "transcription.speaker"), speakerID))
+                        .font(.astraBody(10, .medium))
+                        .foregroundStyle(speakerColor(for: speakerID))
+                        .padding(.horizontal, Spacing.sm)
                         .padding(.vertical, 2)
                         .background(speakerColor(for: speakerID).opacity(0.12))
                         .clipShape(Capsule())
@@ -524,123 +443,62 @@ struct TranscriptionView: View {
 
             // Segment text
             Text(segment.text)
-                .font(.system(size: 14))
-                .foregroundColor(CryoColors.foreground(tm))
+                .font(TypeScale.bodyLarge)
+                .foregroundStyle(.textPrimary)
                 .lineSpacing(4)
         }
     }
 
     private func languageBadge(_ code: String) -> some View {
         let name = WhisperService.supportedLanguages.first(where: { $0.code == code })?.name ?? code.uppercased()
-        return Text(name)
-            .font(.system(size: 10, weight: .semibold, design: .monospaced))
-            .foregroundColor(CryoColors.accentDark(tm))
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(CryoColors.frost(tm))
-            .clipShape(Capsule())
-            .overlay(
-                Capsule().stroke(CryoColors.border(tm), lineWidth: 1)
-            )
+        return TagChip(text: name, isSelected: true)
     }
 
     // MARK: - Export Section
 
     private var exportSection: some View {
-        CryoCard(manager: tm, style: .standard) {
-            VStack(spacing: 16) {
-                HStack {
-                    Text(String(localized: "transcription.exportOptions"))
-                        .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                        .foregroundColor(CryoColors.accentDark(tm))
-                        .tracking(0.08)
-                    Spacer()
-                }
+        AstraCard {
+            VStack(alignment: .leading, spacing: Spacing.lg) {
+                SectionHeader(
+                    title: String(localized: "transcription.exportOptions"),
+                    icon: .share
+                )
 
-                HStack(spacing: 12) {
+                HStack(spacing: Spacing.md) {
                     // Primary: Generate Note
-                    exportPillButton(
+                    AstraButton(
                         title: String(localized: "transcription.generateNote"),
-                        icon: "sparkles",
-                        isPrimary: true
+                        icon: .autoAwesome,
+                        style: .primary
                     ) {
                         // TODO: Navigate to note generation with transcription result.
                     }
 
-                    // Copy Plain Text
-                    exportPillButton(
+                    AstraButton(
                         title: String(localized: "transcription.copyText"),
-                        icon: "doc.on.doc",
-                        isPrimary: false
+                        style: .secondary
                     ) {
                         if let result = transcriptionResult {
                             copyToClipboard(text: result.fullText)
                         }
                     }
 
-                    // Export as Markdown
-                    exportPillButton(
+                    AstraButton(
                         title: String(localized: "transcription.markdown"),
-                        icon: "doc.richtext",
-                        isPrimary: false
+                        style: .secondary
                     ) {
                         exportAsMarkdown()
                     }
 
-                    // Export SRT
-                    exportPillButton(
+                    AstraButton(
                         title: String(localized: "transcription.srt"),
-                        icon: "captions.bubble",
-                        isPrimary: false
+                        style: .secondary
                     ) {
                         exportAsSRT()
                     }
                 }
             }
-            .padding(20)
         }
-    }
-
-    private func exportPillButton(
-        title: String,
-        icon: String,
-        isPrimary: Bool,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            HStack(spacing: 6) {
-                Image(systemName: icon)
-                    .font(.system(size: 12, weight: .semibold))
-                Text(title)
-                    .font(.system(size: 13, weight: .semibold))
-            }
-            .foregroundColor(isPrimary ? .white : CryoColors.accentDark(tm))
-            .padding(.horizontal, 18)
-            .padding(.vertical, 10)
-            .background(
-                isPrimary
-                    ? LinearGradient(
-                        colors: [CryoColors.accent(tm), CryoColors.accentDark(tm)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                    : CryoColors.backgroundWarm(tm)
-            )
-            .clipShape(Capsule())
-            .overlay(
-                Capsule().stroke(
-                    isPrimary ? Color.clear : CryoColors.border(tm),
-                    lineWidth: 1
-                )
-            )
-            .shadow(
-                color: isPrimary ? CryoColors.shadowGlow(tm) : Color.clear,
-                radius: isPrimary ? 8 : 0,
-                x: 0,
-                y: isPrimary ? 2 : 0
-            )
-        }
-        .buttonStyle(.plain)
     }
 
     // MARK: - Actions
@@ -649,7 +507,11 @@ struct TranscriptionView: View {
         guard !isTranscribing else { return }
         isTranscribing = true
 
-        let audioURL = URL(fileURLWithPath: recording.audioFileURL)
+        guard let filePath = recording.filePath?.path else {
+            isTranscribing = false
+            return
+        }
+        let audioURL = URL(fileURLWithPath: filePath)
 
         Task {
             do {
@@ -750,8 +612,8 @@ struct TranscriptionView: View {
     private func buildMarkdown(from result: TranscriptionResult) -> String {
         var md = "# Transcription\n\n"
 
-        if let lang = result.language, lang != "auto" {
-            md += "**Language:** \(lang)\n"
+        if result.language != "auto" {
+            md += "**Language:** \(result.language)\n"
         }
         md += "**Word Count:** \(result.wordCount)\n"
         md += "**Confidence:** \(String(format: "%.1f%%", result.confidence * 100))\n\n---\n\n"
@@ -759,10 +621,10 @@ struct TranscriptionView: View {
         for (index, segment) in result.segments.enumerated() {
             let startTime = formatTimeSRT(segment.startTime)
             let endTime = formatTimeSRT(segment.endTime)
-            md += "**[\(startTime) → \(endTime)]** \(segment.text)\n\n"
+            md += "**[\(startTime) -> \(endTime)]** \(segment.text)\n\n"
         }
 
-        md += "\n---\n*Generated by AstraNotes · \(formattedDateNow)*\n"
+        md += "\n---\n*Generated by AstraNotes \(formattedDateNow)*\n"
         return md
     }
 
@@ -778,14 +640,14 @@ struct TranscriptionView: View {
 
     // MARK: - Color Helpers
 
-    /// Deterministic color for a speaker ID, drawn from a Cryo-compatible palette.
+    /// Deterministic color for a speaker ID, drawn from the semantic palette.
     private func speakerColor(for speakerID: Int) -> Color {
         let palette: [Color] = [
-            CryoColors.accent(tm),
-            Color(red: 0.65, green: 0.55, blue: 0.85), // lavender
-            Color(red: 0.55, green: 0.80, blue: 0.70), // mint
-            Color(red: 0.85, green: 0.65, blue: 0.55), // rose
-            Color(red: 0.70, green: 0.78, blue: 0.55), // sage
+            .accent,
+            Color(light: "#5A5CA8", dark: "#A2A4E8"), // indigo
+            Color(light: "#2E7D6E", dark: "#6FC3B2"), // teal
+            Color(light: "#B4574E", dark: "#D98A83"), // rose
+            Color(light: "#8A6D2F", dark: "#C9A85C"), // gold
         ]
         return palette[speakerID % palette.count]
     }
@@ -831,5 +693,4 @@ struct TranscriptionView: View {
 
 #Preview {
     TranscriptionView()
-        .environment(ThemeManager())
 }

@@ -112,11 +112,11 @@ enum CASCategory: String, Codable, CaseIterable {
     case activity = "Activity"
     case service = "Service"
 
-    var icon: String {
+    var astraIcon: AstraIcon {
         switch self {
-        case .creativity: return "paintbrush"
-        case .activity: return "figure.run"
-        case .service: return "heart"
+        case .creativity: return .brush
+        case .activity: return .directionsRun
+        case .service: return .favorite
         }
     }
 

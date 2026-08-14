@@ -1,5 +1,5 @@
 // CASJournalView.swift — AstraNotes
-// CAS activity journal with Soft Cryo ice crystal design aesthetic.
+// CAS activity journal with the Astra design system.
 // Features: statistics dashboard with circular progress indicators,
 // activity log with category/status pills, add activity form,
 // learning outcomes checklist, reflection area with timeline.
@@ -13,7 +13,6 @@ struct CASJournalView: View {
 
     // MARK: - Environment
 
-    @Environment(\.themeManager) private var tm
     @Environment(\.modelContext) private var modelContext
 
     // MARK: - State
@@ -119,7 +118,7 @@ struct CASJournalView: View {
             .padding(32)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(CryoColors.background(tm))
+        .background(Color.surfaceBackground)
         .sheet(isPresented: $showAddActivity) {
             addActivitySheet
         }
@@ -137,13 +136,13 @@ struct CASJournalView: View {
                     Text("❄️")
                         .font(.system(size: 24))
                     Text(String(localized: "cas.title"))
-                        .font(.system(size: 28, weight: .bold, design: .rounded))
-                        .foregroundColor(CryoColors.foreground(tm))
+                        .font(TypeScale.title)
+                        .foregroundColor(Color.textPrimary)
                 }
 
                 Text(String(localized: "cas.subtitle"))
                     .font(.system(size: 14))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
             }
 
             Spacer()
@@ -153,16 +152,16 @@ struct CASJournalView: View {
                     showOutcomesPanel = true
                 } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: "checkmark.seal")
+                        AstraIconView(.verified)
                         Text(String(localized: "cas.outcomes"))
                     }
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(CryoColors.accentDark(tm))
+                    .foregroundColor(Color.accent)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
-                    .background(CryoColors.backgroundWarm(tm))
+                    .background(Color.surface)
                     .clipShape(Capsule())
-                    .overlay(Capsule().stroke(CryoColors.border(tm), lineWidth: 1))
+                    .overlay(Capsule().stroke(Color.hairline, lineWidth: 1))
                 }
                 .buttonStyle(.plain)
 
@@ -170,7 +169,7 @@ struct CASJournalView: View {
                     showAddActivity = true
                 } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: "plus")
+                        AstraIconView(.add)
                         Text(String(localized: "cas.newActivity"))
                     }
                     .font(.system(size: 13, weight: .semibold))
@@ -179,13 +178,13 @@ struct CASJournalView: View {
                     .padding(.vertical, 8)
                     .background(
                         LinearGradient(
-                            colors: [CryoColors.accent(tm), CryoColors.accentDark(tm)],
+                            colors: [Color.accent, Color.accent],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
                     )
                     .clipShape(Capsule())
-                    .shadow(color: CryoColors.shadowGlow(tm), radius: 8, x: 0, y: 2)
+                    .shadow(color: Color.accent.opacity(0.15), radius: 8, x: 0, y: 2)
                 }
                 .buttonStyle(.plain)
             }
@@ -201,8 +200,8 @@ struct CASJournalView: View {
                 title: String(localized: "cas.creativity"),
                 hours: totalCreativityHours,
                 goal: 50,
-                icon: "paintbrush",
-                color: Color(hex: "#A8D8EA")
+                icon: .brush,
+                color: .group6
             )
 
             // Activity circle
@@ -210,8 +209,8 @@ struct CASJournalView: View {
                 title: String(localized: "cas.activity"),
                 hours: totalActivityHours,
                 goal: 50,
-                icon: "figure.run",
-                color: Color(hex: "#7EC8E3")
+                icon: .directionsRun,
+                color: .accent
             )
 
             // Service circle
@@ -219,57 +218,57 @@ struct CASJournalView: View {
                 title: String(localized: "cas.service"),
                 hours: totalServiceHours,
                 goal: 50,
-                icon: "heart",
-                color: Color(hex: "#E8D5E0")
+                icon: .favorite,
+                color: .group6.opacity(0.7)
             )
 
             // Total Activities
             VStack(spacing: 12) {
                 Text(entries.count)
                     .font(.system(size: 36, weight: .bold, design: .rounded))
-                    .foregroundColor(CryoColors.accent(tm))
+                    .foregroundColor(Color.accent)
 
                 Text(String(localized: "cas.activities"))
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
                     .textCase(.uppercase)
                     .tracking(0.06)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 24)
-            .cryoCardStyle(tm)
+            .astraCardStyle()
 
             // Outcomes Achieved
             VStack(spacing: 12) {
                 Text("\(achievedOutcomeCount)/7")
                     .font(.system(size: 36, weight: .bold, design: .rounded))
-                    .foregroundColor(CryoColors.roseIce(tm))
+                    .foregroundColor(Color.group6.opacity(0.6))
 
                 Text(String(localized: "cas.outcomes"))
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
                     .textCase(.uppercase)
                     .tracking(0.06)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 24)
-            .cryoCardStyle(tm)
+            .astraCardStyle()
 
             // Completed
             VStack(spacing: 12) {
                 Text(completedCount)
                     .font(.system(size: 36, weight: .bold, design: .rounded))
-                    .foregroundColor(CryoColors.success(tm))
+                    .foregroundColor(Color.semanticSuccess)
 
                 Text(String(localized: "cas.completed"))
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
                     .textCase(.uppercase)
                     .tracking(0.06)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 24)
-            .cryoCardStyle(tm)
+            .astraCardStyle()
         }
     }
 
@@ -279,7 +278,7 @@ struct CASJournalView: View {
         title: String,
         hours: Double,
         goal: Double,
-        icon: String,
+        icon: AstraIcon,
         color: Color
     ) -> some View {
         let progress = min(hours / goal, 1.0)
@@ -288,7 +287,7 @@ struct CASJournalView: View {
             ZStack {
                 // Background ring
                 Circle()
-                    .stroke(CryoColors.frost(tm), lineWidth: 6)
+                    .stroke(Color.accentContainer, lineWidth: 6)
                     .frame(width: 80, height: 80)
 
                 // Progress ring
@@ -309,27 +308,26 @@ struct CASJournalView: View {
                 VStack(spacing: 2) {
                     Text(String(format: "%.0f", hours))
                         .font(.system(size: 18, weight: .bold, design: .rounded))
-                        .foregroundColor(CryoColors.foreground(tm))
+                        .foregroundColor(Color.textPrimary)
                     Text(String(localized: "cas.hrs"))
                         .font(.system(size: 9, weight: .medium, design: .monospaced))
-                        .foregroundColor(CryoColors.foregroundMuted(tm))
+                        .foregroundColor(Color.textSecondary)
                         .textCase(.uppercase)
                         .tracking(0.06)
                 }
             }
 
             HStack(spacing: 4) {
-                Image(systemName: icon)
-                    .font(.system(size: 11))
+                AstraIconView(icon, size: 11)
                     .foregroundColor(color)
                 Text(title)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
             }
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 20)
-        .cryoCardStyle(tm)
+        .astraCardStyle()
     }
 
     // MARK: - Filters Section
@@ -340,7 +338,7 @@ struct CASJournalView: View {
             HStack(spacing: 8) {
                 Text(String(localized: "cas.category"))
                     .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
                     .tracking(0.08)
 
                 ForEach(CASCategoryFilter.allCases, id: \.self) { filter in
@@ -351,24 +349,24 @@ struct CASJournalView: View {
                     } label: {
                         Text(filter.displayName)
                             .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(selectedCategory == filter ? .white : CryoColors.foreground(tm))
+                            .foregroundColor(selectedCategory == filter ? .white : Color.textPrimary)
                             .padding(.horizontal, 14)
                             .padding(.vertical, 6)
                             .background(
                                 selectedCategory == filter
                                     ? LinearGradient(
-                                        colors: [CryoColors.accent(tm), CryoColors.accentDark(tm)],
+                                        colors: [Color.accent, Color.accent],
                                         startPoint: .leading,
                                         endPoint: .trailing
                                     )
-                                    : CryoColors.backgroundWarm(tm)
+                                    : Color.surface
                             )
                             .clipShape(Capsule())
                             .overlay(
                                 Capsule().stroke(
                                     selectedCategory == filter
-                                        ? CryoColors.accent(tm)
-                                        : CryoColors.border(tm),
+                                        ? Color.accent
+                                        : Color.hairline,
                                     lineWidth: 1
                                 )
                             )
@@ -387,20 +385,20 @@ struct CASJournalView: View {
                     } label: {
                         Text(filter.displayName)
                             .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(selectedStatus == filter ? .white : CryoColors.foregroundMuted(tm))
+                            .foregroundColor(selectedStatus == filter ? .white : Color.textSecondary)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
                             .background(
                                 selectedStatus == filter
-                                    ? CryoColors.accent(tm)
-                                    : CryoColors.backgroundWarm(tm)
+                                    ? Color.accent
+                                    : Color.surface
                             )
                             .clipShape(Capsule())
                             .overlay(
                                 Capsule().stroke(
                                     selectedStatus == filter
-                                        ? CryoColors.accent(tm)
-                                        : CryoColors.border(tm),
+                                        ? Color.accent
+                                        : Color.hairline,
                                     lineWidth: 1
                                 )
                             )
@@ -411,31 +409,29 @@ struct CASJournalView: View {
 
             // Search bar
             HStack(spacing: 8) {
-                Image(systemName: "magnifyingglass")
-                    .font(.system(size: 13))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                AstraIconView(.search, size: 13)
+                    .foregroundColor(Color.textSecondary)
 
                 TextField(String(localized: "common.search"), text: $searchText)
                     .textFieldStyle(.plain)
                     .font(.system(size: 14))
-                    .foregroundColor(CryoColors.foreground(tm))
+                    .foregroundColor(Color.textPrimary)
 
                 if !searchText.isBlank {
                     Button {
                         searchText = ""
                     } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 14))
-                            .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.5))
+                        AstraIconView(.cancel, size: 14)
+                            .foregroundColor(Color.textSecondary.opacity(0.5))
                     }
                     .buttonStyle(.plain)
                 }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
-            .background(CryoColors.backgroundWarm(tm))
+            .background(Color.surface)
             .clipShape(Capsule())
-            .overlay(Capsule().stroke(CryoColors.border(tm), lineWidth: 1))
+            .overlay(Capsule().stroke(Color.hairline, lineWidth: 1))
         }
     }
 
@@ -443,24 +439,23 @@ struct CASJournalView: View {
 
     private var emptyState: some View {
         VStack(spacing: 16) {
-            Image(systemName: "heart.circle")
-                .font(.system(size: 48))
-                .foregroundColor(CryoColors.frost(tm))
+            AstraIconView(.favorite, size: 48)
+                .foregroundColor(Color.accentContainer)
 
             Text(String(localized: "cas.noActivities"))
                 .font(.system(size: 18, weight: .medium))
-                .foregroundColor(CryoColors.foregroundMuted(tm))
+                .foregroundColor(Color.textSecondary)
 
             Text(String(localized: "cas.noActivitiesHint"))
                 .font(.system(size: 14))
-                .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.7))
+                .foregroundColor(Color.textSecondary.opacity(0.7))
                 .multilineTextAlignment(.center)
 
             Button {
                 showAddActivity = true
             } label: {
                 HStack(spacing: 6) {
-                    Image(systemName: "plus")
+                    AstraIconView(.add)
                     Text(String(localized: "cas.addFirstActivity"))
                 }
                 .font(.system(size: 14, weight: .semibold))
@@ -469,13 +464,13 @@ struct CASJournalView: View {
                 .padding(.vertical, 10)
                 .background(
                     LinearGradient(
-                        colors: [CryoColors.accent(tm), CryoColors.accentDark(tm)],
+                        colors: [Color.accent, Color.accent],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
                 )
                 .clipShape(Capsule())
-                .shadow(color: CryoColors.shadowGlow(tm), radius: 8, x: 0, y: 2)
+                .shadow(color: Color.accent.opacity(0.15), radius: 8, x: 0, y: 2)
             }
             .buttonStyle(.plain)
         }
@@ -512,8 +507,7 @@ struct CASJournalView: View {
                             .fill(Color(hex: entry.casCategory.color).opacity(0.15))
                             .frame(width: 44, height: 44)
 
-                        Image(systemName: entry.casCategory.icon)
-                            .font(.system(size: 18))
+                        AstraIconView(entry.casCategory.astraIcon, size: 18)
                             .foregroundColor(Color(hex: entry.casCategory.color))
                     }
 
@@ -522,15 +516,15 @@ struct CASJournalView: View {
                         HStack(spacing: 8) {
                             Text(entry.title)
                                 .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(CryoColors.foreground(tm))
+                                .foregroundColor(Color.textPrimary)
 
                             if entry.isOngoing {
                                 Text(String(localized: "cas.ongoing"))
                                     .font(.system(size: 9, weight: .bold, design: .monospaced))
-                                    .foregroundColor(CryoColors.accent(tm))
+                                    .foregroundColor(Color.accent)
                                     .padding(.horizontal, 6)
                                     .padding(.vertical, 2)
-                                    .background(CryoColors.accentGlow(tm))
+                                    .background(Color.accentContainer)
                                     .clipShape(Capsule())
                             }
                         }
@@ -538,20 +532,19 @@ struct CASJournalView: View {
                         HStack(spacing: 12) {
                             Text(entry.startDate.shortDateString)
                                 .font(.system(size: 12))
-                                .foregroundColor(CryoColors.foregroundMuted(tm))
+                                .foregroundColor(Color.textSecondary)
 
-                            Text(String(localized: "cas.hoursFormat \(String(format: "%.1f", entry.hoursSpent))"))
+                            Text(String(format: String(localized: "cas.hoursFormat"), String(format: "%.1f", entry.hoursSpent)))
                                 .font(.system(size: 12, weight: .medium, design: .monospaced))
-                                .foregroundColor(CryoColors.accentDark(tm))
+                                .foregroundColor(Color.accent)
 
                             if let supervisor = entry.supervisor, !supervisor.isBlank {
                                 HStack(spacing: 4) {
-                                    Image(systemName: "person")
-                                        .font(.system(size: 10))
+                                    AstraIconView(.person, size: 10)
                                     Text(supervisor)
                                         .font(.system(size: 12))
                                 }
-                                .foregroundColor(CryoColors.foregroundMuted(tm))
+                                .foregroundColor(Color.textSecondary)
                             }
 
                             Spacer()
@@ -561,9 +554,8 @@ struct CASJournalView: View {
 
                             // Supervisor approved badge
                             if entry.supervisorApproved {
-                                Image(systemName: "checkmark.seal.fill")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(CryoColors.success(tm))
+                                AstraIconView(.verified, size: 14)
+                                    .foregroundColor(Color.semanticSuccess)
                             }
                         }
                     }
@@ -578,10 +570,10 @@ struct CASJournalView: View {
                     .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .cryoCardStyle(tm)
+        .astraCardStyle()
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(CryoColors.crystalBorderGradient(tm), lineWidth: isExpanded ? 1.5 : 0)
+                .stroke(Color.accent.opacity(0.6), lineWidth: isExpanded ? 1.5 : 0)
         )
     }
 
@@ -590,19 +582,19 @@ struct CASJournalView: View {
     private func expandedDetail(_ entry: CASEntry) -> some View {
         VStack(alignment: .leading, spacing: 20) {
             Divider()
-                .background(CryoColors.border(tm))
+                .background(Color.hairline)
                 .padding(.horizontal, 20)
 
             // Description
             VStack(alignment: .leading, spacing: 8) {
                 Text(String(localized: "cas.description"))
                     .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                    .foregroundColor(CryoColors.accentDark(tm))
+                    .foregroundColor(Color.accent)
                     .tracking(0.08)
 
                 Text(entry.description)
                     .font(.system(size: 14))
-                    .foregroundColor(CryoColors.foreground(tm))
+                    .foregroundColor(Color.textPrimary)
                     .lineSpacing(4)
             }
             .padding(.horizontal, 20)
@@ -613,10 +605,10 @@ struct CASJournalView: View {
                     ForEach(entry.tags, id: \.self) { tag in
                         Text("#\(tag)")
                             .font(.system(size: 11))
-                            .foregroundColor(CryoColors.accent(tm))
+                            .foregroundColor(Color.accent)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 4)
-                            .background(CryoColors.accentGlow(tm))
+                            .background(Color.accentContainer)
                             .clipShape(Capsule())
                     }
                 }
@@ -628,23 +620,22 @@ struct CASJournalView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(String(localized: "cas.learningOutcomes"))
                         .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                        .foregroundColor(CryoColors.accentDark(tm))
+                        .foregroundColor(Color.accent)
                         .tracking(0.08)
 
                     FlowLayout(spacing: 8) {
                         ForEach(entry.achievedOutcomes, id: \.self) { outcomeID in
                             if let outcome = CASEntry.allOutcomes.first(where: { $0.id == outcomeID }) {
                                 HStack(spacing: 4) {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .font(.system(size: 11))
-                                        .foregroundColor(CryoColors.success(tm))
+                                    AstraIconView(.checkCircle, size: 11)
+                                        .foregroundColor(Color.semanticSuccess)
                                     Text(outcome.name)
                                         .font(.system(size: 11, weight: .medium))
-                                        .foregroundColor(CryoColors.foreground(tm))
+                                        .foregroundColor(Color.textPrimary)
                                 }
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 5)
-                                .background(CryoColors.success(tm).opacity(0.08))
+                                .background(Color.semanticSuccess.opacity(0.08))
                                 .clipShape(Capsule())
                             }
                         }
@@ -658,24 +649,23 @@ struct CASJournalView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(String(localized: "cas.evidence"))
                         .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                        .foregroundColor(CryoColors.accentDark(tm))
+                        .foregroundColor(Color.accent)
                         .tracking(0.08)
 
                     ForEach(entry.evidence, id: \.self) { evidencePath in
                         HStack(spacing: 8) {
-                            Image(systemName: "doc.fill")
-                                .font(.system(size: 12))
-                                .foregroundColor(CryoColors.crystal(tm))
+                            AstraIconView(.description, size: 12)
+                                .foregroundColor(Color.accent.opacity(0.7))
                             Text(URL(fileURLWithPath: evidencePath).lastPathComponent)
                                 .font(.system(size: 12))
-                                .foregroundColor(CryoColors.foreground(tm))
+                                .foregroundColor(Color.textPrimary)
                                 .lineLimit(1)
                                 .truncationMode(.middle)
                             Spacer()
                         }
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
-                        .background(CryoColors.frost(tm))
+                        .background(Color.accentContainer)
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                     }
                 }
@@ -695,16 +685,16 @@ struct CASJournalView: View {
                     cycleStatus(entry)
                 } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: "arrow.triangle.2.circlepath")
+                        AstraIconView(.refresh)
                         Text(String(localized: "cas.changeStatus"))
                     }
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(CryoColors.accentDark(tm))
+                    .foregroundColor(Color.accent)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 7)
-                    .background(CryoColors.backgroundWarm(tm))
+                    .background(Color.surface)
                     .clipShape(Capsule())
-                    .overlay(Capsule().stroke(CryoColors.border(tm), lineWidth: 1))
+                    .overlay(Capsule().stroke(Color.hairline, lineWidth: 1))
                 }
                 .buttonStyle(.plain)
 
@@ -713,18 +703,18 @@ struct CASJournalView: View {
                     entry.supervisorApproved.toggle()
                 } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: entry.supervisorApproved ? "checkmark.seal.fill" : "checkmark.seal")
+                        AstraIconView(.verified, size: 14)
                         Text(entry.supervisorApproved ? String(localized: "cas.approved") : String(localized: "cas.markApproved"))
                     }
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(entry.supervisorApproved ? CryoColors.success(tm) : CryoColors.foregroundMuted(tm))
+                    .foregroundColor(entry.supervisorApproved ? Color.semanticSuccess : Color.textSecondary)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 7)
-                    .background(entry.supervisorApproved ? CryoColors.success(tm).opacity(0.1) : CryoColors.backgroundWarm(tm))
+                    .background(entry.supervisorApproved ? Color.semanticSuccess.opacity(0.1) : Color.surface)
                     .clipShape(Capsule())
                     .overlay(
                         Capsule().stroke(
-                            entry.supervisorApproved ? CryoColors.success(tm) : CryoColors.border(tm),
+                            entry.supervisorApproved ? Color.semanticSuccess : Color.hairline,
                             lineWidth: 1
                         )
                     )
@@ -738,14 +728,14 @@ struct CASJournalView: View {
                     deleteEntry(entry)
                 } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: "trash")
+                        AstraIconView(.delete)
                         Text(String(localized: "common.delete"))
                     }
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(CryoColors.error(tm))
+                    .foregroundColor(Color.semanticDanger)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 7)
-                    .background(CryoColors.error(tm).opacity(0.08))
+                    .background(Color.semanticDanger.opacity(0.08))
                     .clipShape(Capsule())
                 }
                 .buttonStyle(.plain)
@@ -761,17 +751,16 @@ struct CASJournalView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(String(localized: "cas.reflections"))
                 .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                .foregroundColor(CryoColors.accentDark(tm))
+                .foregroundColor(Color.accent)
                 .tracking(0.08)
 
             if entry.reflections.isEmpty {
                 HStack(spacing: 8) {
-                    Image(systemName: "text.quote")
-                        .font(.system(size: 12))
-                        .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.5))
+                    AstraIconView(.formatQuote, size: 12)
+                        .foregroundColor(Color.textSecondary.opacity(0.5))
                     Text(String(localized: "cas.noReflectionsYet"))
                         .font(.system(size: 13))
-                        .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.5))
+                        .foregroundColor(Color.textSecondary.opacity(0.5))
                 }
             } else {
                 ForEach(entry.reflections) { reflection in
@@ -779,10 +768,10 @@ struct CASJournalView: View {
                         // Timeline dot
                         VStack(spacing: 4) {
                             Circle()
-                                .fill(CryoColors.accent(tm))
+                                .fill(Color.accent)
                                 .frame(width: 10, height: 10)
                             Rectangle()
-                                .fill(CryoColors.border(tm))
+                                .fill(Color.hairline)
                                 .frame(width: 2, height: 20)
                         }
                         .frame(width: 10)
@@ -790,11 +779,11 @@ struct CASJournalView: View {
                         VStack(alignment: .leading, spacing: 6) {
                             Text(reflection.date.shortDateString)
                                 .font(.system(size: 11, weight: .medium, design: .monospaced))
-                                .foregroundColor(CryoColors.foregroundMuted(tm))
+                                .foregroundColor(Color.textSecondary)
 
                             Text(reflection.content)
                                 .font(.system(size: 14))
-                                .foregroundColor(CryoColors.foreground(tm))
+                                .foregroundColor(Color.textPrimary)
                                 .lineSpacing(4)
 
                             // Linked outcomes in reflection
@@ -804,10 +793,10 @@ struct CASJournalView: View {
                                         if let outcome = CASEntry.allOutcomes.first(where: { $0.id == outcomeID }) {
                                             Text(outcome.name)
                                                 .font(.system(size: 10, weight: .medium))
-                                                .foregroundColor(CryoColors.accentDark(tm))
+                                                .foregroundColor(Color.accent)
                                                 .padding(.horizontal, 8)
                                                 .padding(.vertical, 3)
-                                                .background(CryoColors.accentGlow(tm))
+                                                .background(Color.accentContainer)
                                                 .clipShape(Capsule())
                                         }
                                     }
@@ -827,26 +816,25 @@ struct CASJournalView: View {
     private func addReflectionInput(_ entry: CASEntry) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
-                Image(systemName: "pencil.and.outline")
-                    .font(.system(size: 12))
-                    .foregroundColor(CryoColors.accent(tm))
+                AstraIconView(.editNote, size: 12)
+                    .foregroundColor(Color.accent)
                 Text(String(localized: "cas.addReflection"))
                     .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                    .foregroundColor(CryoColors.accentDark(tm))
+                    .foregroundColor(Color.accent)
                     .tracking(0.08)
             }
 
             TextEditor(text: $newReflectionText)
                 .font(.system(size: 14))
-                .foregroundColor(CryoColors.foreground(tm))
+                .foregroundColor(Color.textPrimary)
                 .scrollContentBackground(.hidden)
                 .frame(minHeight: 80)
                 .padding(12)
-                .background(CryoColors.frost(tm))
+                .background(Color.accentContainer)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
-                        .stroke(CryoColors.border(tm), lineWidth: 1)
+                        .stroke(Color.hairline, lineWidth: 1)
                 )
 
             HStack {
@@ -855,7 +843,7 @@ struct CASJournalView: View {
                     saveReflection(for: entry)
                 } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: "checkmark")
+                        AstraIconView(.check)
                         Text(String(localized: "cas.saveReflection"))
                     }
                     .font(.system(size: 12, weight: .semibold))
@@ -864,7 +852,7 @@ struct CASJournalView: View {
                     .padding(.vertical, 7)
                     .background(
                         LinearGradient(
-                            colors: [CryoColors.accent(tm), CryoColors.accentDark(tm)],
+                            colors: [Color.accent, Color.accent],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
@@ -883,10 +871,10 @@ struct CASJournalView: View {
 
     private func statusPill(_ status: CASStatus) -> some View {
         let color: Color = switch status {
-        case .planned:     CryoColors.foregroundMuted(tm)
-        case .inProgress:  CryoColors.accent(tm)
-        case .completed:   CryoColors.success(tm)
-        case .needsReview: CryoColors.warning(tm)
+        case .planned:     Color.textSecondary
+        case .inProgress:  Color.accent
+        case .completed:   Color.semanticSuccess
+        case .needsReview: Color.semanticWarning
         }
 
         return Text(status.displayName)
@@ -906,13 +894,13 @@ struct CASJournalView: View {
             HStack {
                 Text(String(localized: "cas.newActivitySheetTitle"))
                     .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundColor(CryoColors.foreground(tm))
+                    .foregroundColor(Color.textPrimary)
                 Spacer()
                 Button(String(localized: "common.cancel")) {
                     showAddActivity = false
                 }
                 .font(.system(size: 14))
-                .foregroundColor(CryoColors.foregroundMuted(tm))
+                .foregroundColor(Color.textSecondary)
                 .buttonStyle(.plain)
             }
 
@@ -920,19 +908,19 @@ struct CASJournalView: View {
             VStack(alignment: .leading, spacing: 6) {
                     Text(String(localized: "cas.titleLabel"))
                         .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                        .foregroundColor(CryoColors.accentDark(tm))
+                        .foregroundColor(Color.accent)
                         .tracking(0.08)
 
                 TextField(String(localized: "cas.activityTitlePlaceholder"), text: $newTitle)
                     .textFieldStyle(.plain)
                     .font(.system(size: 15))
-                    .foregroundColor(CryoColors.foreground(tm))
+                    .foregroundColor(Color.textPrimary)
                     .padding(12)
-                    .background(CryoColors.frost(tm))
+                    .background(Color.accentContainer)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(CryoColors.border(tm), lineWidth: 1)
+                            .stroke(Color.hairline, lineWidth: 1)
                     )
             }
 
@@ -940,20 +928,20 @@ struct CASJournalView: View {
             VStack(alignment: .leading, spacing: 6) {
                     Text(String(localized: "cas.description"))
                         .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                        .foregroundColor(CryoColors.accentDark(tm))
+                        .foregroundColor(Color.accent)
                         .tracking(0.08)
 
                 TextEditor(text: $newDescription)
                     .font(.system(size: 14))
-                    .foregroundColor(CryoColors.foreground(tm))
+                    .foregroundColor(Color.textPrimary)
                     .scrollContentBackground(.hidden)
                     .frame(minHeight: 100)
                     .padding(12)
-                    .background(CryoColors.frost(tm))
+                    .background(Color.accentContainer)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(CryoColors.border(tm), lineWidth: 1)
+                            .stroke(Color.hairline, lineWidth: 1)
                     )
             }
 
@@ -961,7 +949,7 @@ struct CASJournalView: View {
             VStack(alignment: .leading, spacing: 8) {
                     Text(String(localized: "cas.category"))
                         .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                        .foregroundColor(CryoColors.accentDark(tm))
+                        .foregroundColor(Color.accent)
                         .tracking(0.08)
 
                 HStack(spacing: 12) {
@@ -972,27 +960,26 @@ struct CASJournalView: View {
                             }
                         } label: {
                             HStack(spacing: 6) {
-                                Image(systemName: category.icon)
-                                    .font(.system(size: 13))
+                                AstraIconView(category.astraIcon, size: 13)
                                 Text(category.rawValue)
                                     .font(.system(size: 13, weight: .medium))
                             }
-                            .foregroundColor(newCategory == category ? .white : CryoColors.foreground(tm))
+                            .foregroundColor(newCategory == category ? .white : Color.textPrimary)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 8)
                             .background(
                                 newCategory == category
                                     ? LinearGradient(
-                                        colors: [CryoColors.accent(tm), CryoColors.accentDark(tm)],
+                                        colors: [Color.accent, Color.accent],
                                         startPoint: .leading,
                                         endPoint: .trailing
                                     )
-                                    : CryoColors.backgroundWarm(tm)
+                                    : Color.surface
                             )
                             .clipShape(Capsule())
                             .overlay(
                                 Capsule().stroke(
-                                    newCategory == category ? CryoColors.accent(tm) : CryoColors.border(tm),
+                                    newCategory == category ? Color.accent : Color.hairline,
                                     lineWidth: 1
                                 )
                             )
@@ -1008,22 +995,22 @@ struct CASJournalView: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(String(localized: "cas.hoursLabel"))
                         .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                        .foregroundColor(CryoColors.accentDark(tm))
+                        .foregroundColor(Color.accent)
                         .tracking(0.08)
 
                     HStack(spacing: 8) {
                         TextField("0", value: $newHours, format: .number)
                             .textFieldStyle(.plain)
                             .font(.system(size: 15, weight: .medium, design: .monospaced))
-                            .foregroundColor(CryoColors.foreground(tm))
+                            .foregroundColor(Color.textPrimary)
                             .multilineTextAlignment(.trailing)
                             .frame(width: 60)
                             .padding(10)
-                            .background(CryoColors.frost(tm))
+                            .background(Color.accentContainer)
                             .clipShape(RoundedRectangle(cornerRadius: 8))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
-                                    .stroke(CryoColors.border(tm), lineWidth: 1)
+                                    .stroke(Color.hairline, lineWidth: 1)
                             )
 
                         Stepper("", value: $newHours, in: 0...100, step: 0.5)
@@ -1035,19 +1022,19 @@ struct CASJournalView: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(String(localized: "cas.supervisorLabel"))
                         .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                        .foregroundColor(CryoColors.accentDark(tm))
+                        .foregroundColor(Color.accent)
                         .tracking(0.08)
 
                     TextField(String(localized: "cas.supervisorPlaceholder"), text: $newSupervisor)
                         .textFieldStyle(.plain)
                         .font(.system(size: 14))
-                        .foregroundColor(CryoColors.foreground(tm))
+                        .foregroundColor(Color.textPrimary)
                         .padding(10)
-                        .background(CryoColors.frost(tm))
+                        .background(Color.accentContainer)
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                         .overlay(
                             RoundedRectangle(cornerRadius: 8)
-                                .stroke(CryoColors.border(tm), lineWidth: 1)
+                                .stroke(Color.hairline, lineWidth: 1)
                         )
                 }
 
@@ -1055,12 +1042,12 @@ struct CASJournalView: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(String(localized: "cas.ongoingLabel"))
                         .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                        .foregroundColor(CryoColors.accentDark(tm))
+                        .foregroundColor(Color.accent)
                         .tracking(0.08)
 
                     Toggle("", isOn: $newIsOngoing)
                         .toggleStyle(.switch)
-                        .tint(CryoColors.accent(tm))
+                        .tint(Color.accent)
                 }
             }
 
@@ -1071,7 +1058,7 @@ struct CASJournalView: View {
                     saveNewActivity()
                 } label: {
                     HStack(spacing: 8) {
-                        Image(systemName: "plus.circle.fill")
+                        AstraIconView(.addCircle)
                         Text(String(localized: "cas.createActivity"))
                     }
                     .font(.system(size: 15, weight: .semibold))
@@ -1080,13 +1067,13 @@ struct CASJournalView: View {
                     .padding(.vertical, 10)
                     .background(
                         LinearGradient(
-                            colors: [CryoColors.accent(tm), CryoColors.accentDark(tm)],
+                            colors: [Color.accent, Color.accent],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
                     )
                     .clipShape(Capsule())
-                    .shadow(color: CryoColors.shadowGlow(tm), radius: 10, x: 0, y: 3)
+                    .shadow(color: Color.accent.opacity(0.15), radius: 10, x: 0, y: 3)
                 }
                 .buttonStyle(.plain)
                 .disabled(newTitle.isBlank)
@@ -1095,13 +1082,13 @@ struct CASJournalView: View {
         }
         .padding(28)
         .frame(width: 520)
-        .background(CryoColors.backgroundWarm(tm))
+        .background(Color.surface)
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .overlay(
             RoundedRectangle(cornerRadius: 20)
-                .stroke(CryoColors.crystalBorderGradient(tm), lineWidth: 1.5)
+                .stroke(Color.accent.opacity(0.6), lineWidth: 1.5)
         )
-        .shadow(color: CryoColors.shadowGlow(tm), radius: 16, x: 0, y: 4)
+        .shadow(color: Color.accent.opacity(0.15), radius: 16, x: 0, y: 4)
     }
 
     // MARK: - Outcomes Checklist Sheet
@@ -1111,19 +1098,19 @@ struct CASJournalView: View {
             HStack {
                 Text(String(localized: "cas.learningOutcomes"))
                     .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundColor(CryoColors.foreground(tm))
+                    .foregroundColor(Color.textPrimary)
                 Spacer()
                 Button(String(localized: "common.close")) {
                     showOutcomesPanel = false
                 }
                 .font(.system(size: 14))
-                .foregroundColor(CryoColors.foregroundMuted(tm))
+                .foregroundColor(Color.textSecondary)
                 .buttonStyle(.plain)
             }
 
             Text(String(localized: "cas.outcomesNote"))
                 .font(.system(size: 13))
-                .foregroundColor(CryoColors.foregroundMuted(tm))
+                .foregroundColor(Color.textSecondary)
                 .multilineTextAlignment(.leading)
 
             // Outcomes list with aggregate status
@@ -1135,22 +1122,21 @@ struct CASJournalView: View {
                     HStack(spacing: 10) {
                         ZStack {
                             Circle()
-                                .fill(isAchieved ? CryoColors.success(tm).opacity(0.15) : CryoColors.frost(tm))
+                                .fill(isAchieved ? Color.semanticSuccess.opacity(0.15) : Color.accentContainer)
                                 .frame(width: 28, height: 28)
 
-                            Image(systemName: isAchieved ? "checkmark" : "circle")
-                                .font(.system(size: 13, weight: isAchieved ? .bold : .regular))
-                                .foregroundColor(isAchieved ? CryoColors.success(tm) : CryoColors.foregroundMuted(tm))
+                            AstraIconView(isAchieved ? .check : .circle, size: 13)
+                                .foregroundColor(isAchieved ? Color.semanticSuccess : Color.textSecondary)
                         }
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text(outcome.name)
                                 .font(.system(size: 15, weight: .semibold))
-                                .foregroundColor(CryoColors.foreground(tm))
+                                .foregroundColor(Color.textPrimary)
 
                             Text(outcome.description)
                                 .font(.system(size: 12))
-                                .foregroundColor(CryoColors.foregroundMuted(tm))
+                                .foregroundColor(Color.textSecondary)
                         }
 
                         Spacer()
@@ -1158,10 +1144,10 @@ struct CASJournalView: View {
                         if isAchieved {
                             Text("\(achievingEntries.count)")
                                 .font(.system(size: 12, weight: .bold, design: .monospaced))
-                                .foregroundColor(CryoColors.success(tm))
+                                .foregroundColor(Color.semanticSuccess)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 3)
-                                .background(CryoColors.success(tm).opacity(0.1))
+                                .background(Color.semanticSuccess.opacity(0.1))
                                 .clipShape(Capsule())
                         }
                     }
@@ -1171,15 +1157,15 @@ struct CASJournalView: View {
                         HStack(spacing: 6) {
                             Text(String(localized: "cas.achievedIn"))
                                 .font(.system(size: 11))
-                                .foregroundColor(CryoColors.foregroundMuted(tm))
+                                .foregroundColor(Color.textSecondary)
 
                             ForEach(achievingEntries) { entry in
                                 Text(entry.title)
                                     .font(.system(size: 11, weight: .medium))
-                                    .foregroundColor(CryoColors.accent(tm))
+                                    .foregroundColor(Color.accent)
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 2)
-                                    .background(CryoColors.accentGlow(tm))
+                                    .background(Color.accentContainer)
                                     .clipShape(Capsule())
                             }
                         }
@@ -1191,10 +1177,10 @@ struct CASJournalView: View {
 
             // Summary bar
             HStack {
-                Text(String(localized: "cas.outcomesAchieved \(achievedOutcomeCount)"))
+                Text(String(format: String(localized: "cas.outcomesAchieved"), achievedOutcomeCount))
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(
-                        achievedOutcomeCount == 7 ? CryoColors.success(tm) : CryoColors.foregroundMuted(tm)
+                        achievedOutcomeCount == 7 ? Color.semanticSuccess : Color.textSecondary
                     )
 
                 Spacer()
@@ -1203,15 +1189,15 @@ struct CASJournalView: View {
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
                         RoundedRectangle(cornerRadius: 4)
-                            .fill(CryoColors.frost(tm))
+                            .fill(Color.accentContainer)
                             .frame(height: 8)
 
                         RoundedRectangle(cornerRadius: 4)
                             .fill(
                                 LinearGradient(
                                     colors: [
-                                        achievedOutcomeCount == 7 ? CryoColors.success(tm) : CryoColors.accent(tm),
-                                        achievedOutcomeCount == 7 ? CryoColors.success(tm).opacity(0.7) : CryoColors.accentDark(tm)
+                                        achievedOutcomeCount == 7 ? Color.semanticSuccess : Color.accent,
+                                        achievedOutcomeCount == 7 ? Color.semanticSuccess.opacity(0.7) : Color.accent
                                     ],
                                     startPoint: .leading,
                                     endPoint: .trailing
@@ -1223,18 +1209,18 @@ struct CASJournalView: View {
                 .frame(width: 160, height: 8)
             }
             .padding(16)
-            .background(CryoColors.frost(tm).opacity(0.5))
+            .background(Color.accentContainer.opacity(0.5))
             .clipShape(RoundedRectangle(cornerRadius: 10))
         }
         .padding(28)
         .frame(width: 560)
-        .background(CryoColors.backgroundWarm(tm))
+        .background(Color.surface)
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .overlay(
             RoundedRectangle(cornerRadius: 20)
-                .stroke(CryoColors.crystalBorderGradient(tm), lineWidth: 1.5)
+                .stroke(Color.accent.opacity(0.6), lineWidth: 1.5)
         )
-        .shadow(color: CryoColors.shadowGlow(tm), radius: 16, x: 0, y: 4)
+        .shadow(color: Color.accent.opacity(0.15), radius: 16, x: 0, y: 4)
     }
 
     // MARK: - Actions
@@ -1405,6 +1391,6 @@ struct FlowLayout: Layout {
 
 #Preview {
     CASJournalView()
-        .environment(ThemeManager())
+        
         .modelContainer(for: CASEntry.self, inMemory: true)
 }

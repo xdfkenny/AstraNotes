@@ -1,5 +1,5 @@
 // StudyGuideView.swift — AstraNotes
-// Study guide generator and viewer with Soft Cryo ice crystal design aesthetic.
+// Study guide generator and viewer with the Astra design system.
 // Features: collapsible topic sections, formula/key concept table,
 // review checklist, topic summary cards in a grid, and markdown rendering.
 
@@ -12,7 +12,6 @@ struct StudyGuideView: View {
 
     // MARK: - Environment
 
-    @Environment(\.themeManager) private var tm
     @Environment(\.modelContext) private var modelContext
 
     // MARK: - State
@@ -89,7 +88,7 @@ struct StudyGuideView: View {
             .padding(32)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(CryoColors.background(tm))
+        .background(Color.surfaceBackground)
     }
 
     // MARK: - Header Section
@@ -101,13 +100,13 @@ struct StudyGuideView: View {
                     Text("❄️")
                         .font(.system(size: 24))
                     Text(String(localized: "studyGuide.title"))
-                        .font(.system(size: 28, weight: .bold, design: .rounded))
-                        .foregroundColor(CryoColors.foreground(tm))
+                        .font(TypeScale.title)
+                        .foregroundColor(Color.textPrimary)
                 }
 
                 Text(String(localized: "studyGuide.subtitle"))
                     .font(.system(size: 14))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
             }
 
             Spacer()
@@ -117,31 +116,30 @@ struct StudyGuideView: View {
                 HStack(spacing: 6) {
                     Text("\(studyGuides.count)")
                         .font(.system(size: 14, weight: .bold, design: .monospaced))
-                        .foregroundColor(CryoColors.accent(tm))
+                        .foregroundColor(Color.accent)
                     Text(String(localized: "studyGuide.guides"))
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(CryoColors.foregroundMuted(tm))
+                        .foregroundColor(Color.textSecondary)
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 6)
-                .background(CryoColors.backgroundWarm(tm))
+                .background(Color.surface)
                 .clipShape(Capsule())
-                .overlay(Capsule().stroke(CryoColors.border(tm), lineWidth: 1))
+                .overlay(Capsule().stroke(Color.hairline, lineWidth: 1))
 
                 // Total word count
                 HStack(spacing: 6) {
-                    Image(systemName: "textformat.abc")
-                        .font(.system(size: 11))
-                        .foregroundColor(CryoColors.accentDark(tm))
+                    AstraIconView(.abc, size: 11)
+                        .foregroundColor(Color.accent)
                     Text(totalWordCount)
                         .font(.system(size: 12, weight: .bold, design: .monospaced))
-                        .foregroundColor(CryoColors.foreground(tm))
+                        .foregroundColor(Color.textPrimary)
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 6)
-                .background(CryoColors.backgroundWarm(tm))
+                .background(Color.surface)
                 .clipShape(Capsule())
-                .overlay(Capsule().stroke(CryoColors.border(tm), lineWidth: 1))
+                .overlay(Capsule().stroke(Color.hairline, lineWidth: 1))
             }
         }
     }
@@ -169,23 +167,23 @@ struct StudyGuideView: View {
                         HStack {
                             Text(subject)
                             if selectedSubject == subject {
-                                Image(systemName: "checkmark")
+                                AstraIconView(.check)
                             }
                         }
                     }
                 }
             } label: {
                 HStack(spacing: 6) {
-                    Image(systemName: "book")
+                    AstraIconView(.menuBook)
                     Text(selectedSubject)
                 }
                 .font(.system(size: 13, weight: .medium))
-                .foregroundColor(CryoColors.foreground(tm))
+                .foregroundColor(Color.textPrimary)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .background(CryoColors.backgroundWarm(tm))
+                .background(Color.surface)
                 .clipShape(Capsule())
-                .overlay(Capsule().stroke(CryoColors.border(tm), lineWidth: 1))
+                .overlay(Capsule().stroke(Color.hairline, lineWidth: 1))
             }
             #if os(macOS)
             .menuStyle(.borderlessButton)
@@ -207,20 +205,19 @@ struct StudyGuideView: View {
 
             // Search
             HStack(spacing: 6) {
-                Image(systemName: "magnifyingglass")
-                    .font(.system(size: 12))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                AstraIconView(.search, size: 12)
+                    .foregroundColor(Color.textSecondary)
                 TextField(String(localized: "studyGuide.searchGuides"), text: $searchText)
                     .textFieldStyle(.plain)
                     .font(.system(size: 13))
-                    .foregroundColor(CryoColors.foreground(tm))
+                    .foregroundColor(Color.textPrimary)
                     .frame(width: 180)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 8)
-            .background(CryoColors.backgroundWarm(tm))
+            .background(Color.surface)
             .clipShape(Capsule())
-            .overlay(Capsule().stroke(CryoColors.border(tm), lineWidth: 1))
+            .overlay(Capsule().stroke(Color.hairline, lineWidth: 1))
         }
     }
 
@@ -228,22 +225,22 @@ struct StudyGuideView: View {
         Button(action: action) {
             Text(label)
                 .font(.system(size: 12, weight: .medium))
-                .foregroundColor(isActive ? .white : CryoColors.foreground(tm))
+                .foregroundColor(isActive ? .white : Color.textPrimary)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 6)
                 .background(
                     isActive
                         ? LinearGradient(
-                            colors: [CryoColors.accent(tm), CryoColors.accentDark(tm)],
+                            colors: [Color.accent, Color.accent],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
-                        : CryoColors.backgroundWarm(tm)
+                        : Color.surface
                 )
                 .clipShape(Capsule())
                 .overlay(
                     Capsule().stroke(
-                        isActive ? CryoColors.accent(tm) : CryoColors.border(tm),
+                        isActive ? Color.accent : Color.hairline,
                         lineWidth: 1
                     )
                 )
@@ -255,17 +252,16 @@ struct StudyGuideView: View {
 
     private var emptyState: some View {
         VStack(spacing: 16) {
-            Image(systemName: "book.closed")
-                .font(.system(size: 48))
-                .foregroundColor(CryoColors.frost(tm))
+            AstraIconView(.menuBook, size: 48)
+                .foregroundColor(Color.accentContainer)
 
             Text(String(localized: "studyGuide.noGuides"))
                 .font(.system(size: 18, weight: .medium))
-                .foregroundColor(CryoColors.foregroundMuted(tm))
+                .foregroundColor(Color.textSecondary)
 
             Text(String(localized: "studyGuide.noGuidesHint"))
                 .font(.system(size: 14))
-                .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.7))
+                .foregroundColor(Color.textSecondary.opacity(0.7))
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 400)
         }
@@ -278,19 +274,18 @@ struct StudyGuideView: View {
     private var topicSummaryGrid: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 6) {
-                Image(systemName: "square.grid.2x2")
-                    .font(.system(size: 12))
-                    .foregroundColor(CryoColors.accentDark(tm))
+                AstraIconView(.gridView, size: 12)
+                    .foregroundColor(Color.accent)
                 Text(String(localized: "studyGuide.topicSummaries"))
                     .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                    .foregroundColor(CryoColors.accentDark(tm))
+                    .foregroundColor(Color.accent)
                     .tracking(0.08)
 
                 Spacer()
 
                 Text("\(studyGuides.count) \(String(localized: "studyGuide.guides"))")
                     .font(.system(size: 11, weight: .medium, design: .monospaced))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
             }
 
             LazyVGrid(columns: [
@@ -311,24 +306,23 @@ struct StudyGuideView: View {
                 // Type icon
                 ZStack {
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(CryoColors.accentGlow(tm))
+                        .fill(Color.accentContainer)
                         .frame(width: 36, height: 36)
 
-                    Image(systemName: note.type.icon)
-                        .font(.system(size: 16))
-                        .foregroundColor(CryoColors.accent(tm))
+                    AstraIconView(note.type.astraIcon, size: 16)
+                        .foregroundColor(Color.accent)
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(note.title)
                         .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(CryoColors.foreground(tm))
+                        .foregroundColor(Color.textPrimary)
                         .lineLimit(1)
 
                     if let subject = note.subjectName {
                         Text(subject)
                             .font(.system(size: 11, weight: .medium))
-                            .foregroundColor(CryoColors.foregroundMuted(tm))
+                            .foregroundColor(Color.textSecondary)
                     }
                 }
 
@@ -336,16 +330,15 @@ struct StudyGuideView: View {
 
                 // Favorite indicator
                 if note.isFavorite {
-                    Image(systemName: "star.fill")
-                        .font(.system(size: 12))
-                        .foregroundColor(CryoColors.warning(tm))
+                    AstraIconView(.star, size: 12)
+                        .foregroundColor(Color.semanticWarning)
                 }
             }
 
             // Preview text
             Text(contentPreview(note.content))
                 .font(.system(size: 13))
-                .foregroundColor(CryoColors.foregroundMuted(tm))
+                .foregroundColor(Color.textSecondary)
                 .lineLimit(3)
                 .lineSpacing(3)
 
@@ -355,17 +348,17 @@ struct StudyGuideView: View {
                     ForEach(note.tags.prefix(3), id: \.self) { tag in
                         Text("#\(tag)")
                             .font(.system(size: 10, weight: .medium))
-                            .foregroundColor(CryoColors.accent(tm))
+                            .foregroundColor(Color.accent)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 2)
-                            .background(CryoColors.accentGlow(tm))
+                            .background(Color.accentContainer)
                             .clipShape(Capsule())
                     }
 
                     if note.tags.count > 3 {
                         Text("+\(note.tags.count - 3)")
                             .font(.system(size: 10))
-                            .foregroundColor(CryoColors.foregroundMuted(tm))
+                            .foregroundColor(Color.textSecondary)
                     }
                 }
             }
@@ -374,26 +367,26 @@ struct StudyGuideView: View {
             HStack {
                 Text(note.displayDate)
                     .font(.system(size: 11, design: .monospaced))
-                    .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.6))
+                    .foregroundColor(Color.textSecondary.opacity(0.6))
 
                 Spacer()
 
                 Text(formatWordCount(note.wordCount))
                     .font(.system(size: 11, weight: .medium, design: .monospaced))
-                    .foregroundColor(CryoColors.accentDark(tm))
+                    .foregroundColor(Color.accent)
 
                 if !note.sourceModel.isBlank {
                     Text(note.sourceModel)
                         .font(.system(size: 10))
-                        .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.4))
+                        .foregroundColor(Color.textSecondary.opacity(0.4))
                 }
             }
         }
         .padding(20)
-        .cryoCardStyle(tm)
+        .astraCardStyle()
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(CryoColors.crystalBorderGradient(tm), lineWidth: note.isFavorite ? 1.5 : 0)
+                .stroke(Color.accent.opacity(0.6), lineWidth: note.isFavorite ? 1.5 : 0)
         )
         #if os(macOS)
         .onHover { isHovered in
@@ -430,12 +423,11 @@ struct StudyGuideView: View {
     private var collapsibleSections: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 6) {
-                Image(systemName: "list.bullet.indent")
-                    .font(.system(size: 12))
-                    .foregroundColor(CryoColors.accentDark(tm))
+                AstraIconView(.list, size: 12)
+                    .foregroundColor(Color.accent)
                 Text(String(localized: "studyGuide.guideContent"))
                     .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                    .foregroundColor(CryoColors.accentDark(tm))
+                    .foregroundColor(Color.accent)
                     .tracking(0.08)
             }
 
@@ -464,15 +456,14 @@ struct StudyGuideView: View {
             } label: {
                 HStack(spacing: 12) {
                     // Chevron
-                    Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(CryoColors.accent(tm))
+                    AstraIconView(isExpanded ? .expandMore : .chevronRight, size: 12)
+                        .foregroundColor(Color.accent)
                         .frame(width: 16)
 
                     // Title
                     Text(note.title)
                         .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(CryoColors.foreground(tm))
+                        .foregroundColor(Color.textPrimary)
 
                     Spacer()
 
@@ -480,11 +471,11 @@ struct StudyGuideView: View {
                     HStack(spacing: 8) {
                         Text(formatWordCount(note.wordCount))
                             .font(.system(size: 10, weight: .medium, design: .monospaced))
-                            .foregroundColor(CryoColors.foregroundMuted(tm))
+                            .foregroundColor(Color.textSecondary)
 
                         Text(String(format: String(localized: "studyGuide.sections"), parsedSections.count))
                             .font(.system(size: 10, weight: .medium, design: .monospaced))
-                            .foregroundColor(CryoColors.accentDark(tm))
+                            .foregroundColor(Color.accent)
                     }
                 }
                 .padding(16)
@@ -495,7 +486,7 @@ struct StudyGuideView: View {
             if isExpanded && !parsedSections.isEmpty {
                 VStack(spacing: 12) {
                     Divider()
-                        .background(CryoColors.border(tm))
+                        .background(Color.hairline)
                         .padding(.horizontal, 16)
 
                     ForEach(Array(parsedSections.enumerated()), id: \.offset) { index, section in
@@ -503,19 +494,19 @@ struct StudyGuideView: View {
                             // Section heading
                             Text(section.heading)
                                 .font(.system(size: 13, weight: .bold))
-                                .foregroundColor(CryoColors.accent(tm))
+                                .foregroundColor(Color.accent)
                                 .padding(.horizontal, 4)
 
                             // Section content
                             Text(section.content)
                                 .font(.system(size: 13))
-                                .foregroundColor(CryoColors.foreground(tm))
+                                .foregroundColor(Color.textPrimary)
                                 .lineSpacing(4)
                                 .fixedSize(horizontal: false, vertical: true)
 
                             if index < parsedSections.count - 1 {
                                 Divider()
-                                    .background(CryoColors.frost(tm))
+                                    .background(Color.accentContainer)
                             }
                         }
                         .padding(.horizontal, 16)
@@ -527,14 +518,14 @@ struct StudyGuideView: View {
                         showGuideDetail = true
                     } label: {
                         HStack(spacing: 6) {
-                            Image(systemName: "doc.richtext")
+                            AstraIconView(.article)
                             Text(String(localized: "studyGuide.viewFullMarkdown"))
                         }
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(CryoColors.accent(tm))
+                        .foregroundColor(Color.accent)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 6)
-                        .background(CryoColors.accentGlow(tm))
+                        .background(Color.accentContainer)
                         .clipShape(Capsule())
                     }
                     .buttonStyle(.plain)
@@ -543,7 +534,7 @@ struct StudyGuideView: View {
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .cryoCardStyle(tm)
+        .astraCardStyle()
     }
 
     // MARK: - Formula Table
@@ -556,19 +547,18 @@ struct StudyGuideView: View {
         return AnyView(
             VStack(alignment: .leading, spacing: 16) {
                 HStack(spacing: 6) {
-                    Image(systemName: "function")
-                        .font(.system(size: 12))
-                        .foregroundColor(CryoColors.accentDark(tm))
+                    AstraIconView(.functions, size: 12)
+                        .foregroundColor(Color.accent)
                     Text(String(localized: "studyGuide.keyFormulas"))
                         .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                        .foregroundColor(CryoColors.accentDark(tm))
+                        .foregroundColor(Color.accent)
                         .tracking(0.08)
 
                     Spacer()
 
                     Text(String(format: String(localized: "studyGuide.items"), formulas.count))
                         .font(.system(size: 11, weight: .medium, design: .monospaced))
-                        .foregroundColor(CryoColors.foregroundMuted(tm))
+                        .foregroundColor(Color.textSecondary)
                 }
 
                 // Table
@@ -583,33 +573,33 @@ struct StudyGuideView: View {
                             .frame(width: 160, alignment: .leading)
                     }
                     .font(.system(size: 11, weight: .bold, design: .monospaced))
-                    .foregroundColor(CryoColors.accentDark(tm))
+                    .foregroundColor(Color.accent)
                     .tracking(0.06)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
-                    .background(CryoColors.frost(tm))
+                    .background(Color.accentContainer)
 
-                    Divider().background(CryoColors.border(tm))
+                    Divider().background(Color.hairline)
 
                     ForEach(Array(formulas.enumerated()), id: \.offset) { index, formula in
                         HStack(spacing: 0) {
                             Text(formula.content)
                                 .font(.system(size: 13, weight: .medium, design: .monospaced))
-                                .foregroundColor(CryoColors.foreground(tm))
+                                .foregroundColor(Color.textPrimary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
 
                             Text(formula.subject)
                                 .font(.system(size: 12, weight: .medium))
-                                .foregroundColor(CryoColors.accentDark(tm))
+                                .foregroundColor(Color.accent)
                                 .frame(width: 140, alignment: .center)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 4)
-                                .background(CryoColors.accentGlow(tm))
+                                .background(Color.accentContainer)
                                 .clipShape(Capsule())
 
                             Text(formula.source)
                                 .font(.system(size: 12))
-                                .foregroundColor(CryoColors.foregroundMuted(tm))
+                                .foregroundColor(Color.textSecondary)
                                 .frame(width: 160, alignment: .leading)
                                 .lineLimit(1)
                                 .truncationMode(.tail)
@@ -619,15 +609,15 @@ struct StudyGuideView: View {
 
                         if index < formulas.count - 1 {
                             Divider()
-                                .background(CryoColors.frost(tm))
+                                .background(Color.accentContainer)
                                 .padding(.horizontal, 16)
                         }
                     }
                 }
-                .cryoCardStyle(tm, cornerRadius: 12)
+                .astraCardStyle(cornerRadius: 12)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(CryoColors.border(tm), lineWidth: 1)
+                        .stroke(Color.hairline, lineWidth: 1)
                 )
             }
         )
@@ -638,12 +628,11 @@ struct StudyGuideView: View {
     private var reviewChecklist: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 6) {
-                Image(systemName: "checklist")
-                    .font(.system(size: 12))
-                    .foregroundColor(CryoColors.accentDark(tm))
+                AstraIconView(.checklist, size: 12)
+                    .foregroundColor(Color.accent)
                 Text(String(localized: "studyGuide.reviewChecklist"))
                     .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                    .foregroundColor(CryoColors.accentDark(tm))
+                    .foregroundColor(Color.accent)
                     .tracking(0.08)
 
                 Spacer()
@@ -656,7 +645,7 @@ struct StudyGuideView: View {
 
                 Text(String(format: String(localized: "studyGuide.reviewed"), checkedCount, totalItems))
                     .font(.system(size: 11, weight: .medium, design: .monospaced))
-                    .foregroundColor(CryoColors.foregroundMuted(tm))
+                    .foregroundColor(Color.textSecondary)
             }
 
             LazyVStack(spacing: 10) {
@@ -677,48 +666,46 @@ struct StudyGuideView: View {
                 // Progress indicator
                 ZStack {
                     Circle()
-                        .stroke(CryoColors.frost(tm), lineWidth: 3)
+                        .stroke(Color.accentContainer, lineWidth: 3)
                         .frame(width: 32, height: 32)
 
                     Circle()
                         .trim(from: 0, to: Double(completedCount) / Double(items.count))
                         .stroke(
-                            completedCount == items.count ? CryoColors.success(tm) : CryoColors.accent(tm),
+                            completedCount == items.count ? Color.semanticSuccess : Color.accent,
                             style: StrokeStyle(lineWidth: 3, lineCap: .round)
                         )
                         .frame(width: 32, height: 32)
                         .rotationEffect(.degrees(-90))
 
                     if completedCount == items.count {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundColor(CryoColors.success(tm))
+                        AstraIconView(.check, size: 10)
+                            .foregroundColor(Color.semanticSuccess)
                     } else {
                         Text("\(completedCount)")
                             .font(.system(size: 10, weight: .bold, design: .monospaced))
-                            .foregroundColor(CryoColors.accent(tm))
+                            .foregroundColor(Color.accent)
                     }
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(note.title)
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(CryoColors.foreground(tm))
+                        .foregroundColor(Color.textPrimary)
                         .lineLimit(1)
 
                     if let subject = note.subjectName {
                         Text(subject)
                             .font(.system(size: 11))
-                            .foregroundColor(CryoColors.foregroundMuted(tm))
+                            .foregroundColor(Color.textSecondary)
                     }
                 }
 
                 Spacer()
 
                 if completedCount == items.count {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 18))
-                        .foregroundColor(CryoColors.success(tm))
+                    AstraIconView(.checkCircle, size: 18)
+                        .foregroundColor(Color.semanticSuccess)
                 }
             }
 
@@ -733,19 +720,18 @@ struct StudyGuideView: View {
                         HStack(spacing: 6) {
                             ZStack {
                                 RoundedRectangle(cornerRadius: 4)
-                                    .stroke(isChecked ? CryoColors.accent(tm) : CryoColors.border(tm), lineWidth: 1.5)
+                                    .stroke(isChecked ? Color.accent : Color.hairline, lineWidth: 1.5)
                                     .frame(width: 18, height: 18)
 
                                 if isChecked {
-                                    Image(systemName: "checkmark")
-                                        .font(.system(size: 10, weight: .bold))
-                                        .foregroundColor(CryoColors.accent(tm))
+                                    AstraIconView(.check, size: 10)
+                                        .foregroundColor(Color.accent)
                                 }
                             }
 
                             Text(item.label)
                                 .font(.system(size: 11, weight: .medium))
-                                .foregroundColor(isChecked ? CryoColors.accent(tm) : CryoColors.foregroundMuted(tm))
+                                .foregroundColor(isChecked ? Color.accent : Color.textSecondary)
                         }
                     }
                     .buttonStyle(.plain)
@@ -754,11 +740,11 @@ struct StudyGuideView: View {
             .padding(.leading, 42)
         }
         .padding(16)
-        .background(CryoColors.backgroundWarm(tm))
+        .background(Color.surface)
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(CryoColors.border(tm), lineWidth: 1)
+                .stroke(Color.hairline, lineWidth: 1)
         )
     }
 
@@ -941,6 +927,6 @@ struct ChecklistItem: Identifiable {
 
 #Preview {
     StudyGuideView()
-        .environment(ThemeManager())
+        
         .modelContainer(for: GeneratedNote.self, inMemory: true)
 }

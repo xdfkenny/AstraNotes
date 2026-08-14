@@ -81,17 +81,17 @@ enum NoteType: String, Codable, CaseIterable {
         }
     }
 
-    var icon: String {
+    var astraIcon: AstraIcon {
         switch self {
-        case .lecture: return "doc.text"
-        case .flashcards: return "square.stack"
-        case .quiz: return "questionmark.circle"
-        case .studyGuide: return "book"
-        case .tok: return "brain"
-        case .ee: return "graduationcap"
-        case .ia: return "chart.bar"
-        case .cas: return "heart.circle"
-        case .summary: return "list.clipboard"
+        case .lecture: return .description
+        case .flashcards: return .style
+        case .quiz: return .help
+        case .studyGuide: return .menuBook
+        case .tok: return .psychology
+        case .ee: return .school
+        case .ia: return .barChart
+        case .cas: return .favorite
+        case .summary: return .checklist
         }
     }
 }

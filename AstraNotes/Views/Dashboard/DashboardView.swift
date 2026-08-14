@@ -2,205 +2,318 @@ import SwiftUI
 import SwiftData
 
 // MARK: - DashboardView
-// The main dashboard displaying a welcome header, a 3-column statistics
-// grid (recordings, notes, flashcards, subjects, due cards, HL subjects),
-// recent activity list, and quick-action buttons. All styled with the
-// Soft Cryo aesthetic using CryoCard and CryoButton components.
+// Main dashboard with the Astra bento layout (asymmetric 2fr/1fr grid):
+// a hero recording cell, a Today column, recent activity list,
+// number cells, and an IB progress strip. Four distinct cell families,
+// no repeated equal-card rows.
 
 struct DashboardView: View {
-    @Environment(\.themeManager) private var tm
+    /// Allows quick actions to navigate the sidebar.
+    var onNavigate: ((NavigationDestination) -> Void)?
+
     @Query private var recordings: [RecordingSession]
     @Query private var notes: [GeneratedNote]
     @Query private var flashcards: [Flashcard]
     @Query private var subjects: [Subject]
+    @Query private var essays: [ExtendedEssay]
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 32) {
-                // Welcome header
+            VStack(alignment: .leading, spacing: Spacing.xl) {
                 welcomeSection
 
-                // Stats grid
-                statsGrid
+                // Row 1: hero + Today column (asymmetric)
+                HStack(alignment: .top, spacing: Spacing.xl) {
+                    heroCell
+                        .frame(maxWidth: .infinity)
+                    todayCell
+                        .frame(width: 240)
+                }
 
-                // Recent activity
-                recentActivitySection
+                // Row 2: recent activity + number cells
+                HStack(alignment: .top, spacing: Spacing.xl) {
+                    recentActivitySection
+                        .frame(maxWidth: .infinity)
+                    numberColumn
+                        .frame(width: 240)
+                }
 
-                // Quick actions
-                quickActionsSection
+                // Row 3: IB progress strip
+                ibProgressSection
             }
-            .padding(32)
+            .padding(Spacing.xxl)
         }
-        .background(CryoColors.background(tm))
+        .background(Color.surfaceBackground)
     }
 
     // MARK: - Welcome Section
 
     private var welcomeSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 8) {
-                Text("\u{2744}\u{FE0F}")
-                    .font(.system(size: 32))
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(String(localized: "dashboard.welcome"))
-                        .font(.system(size: 14))
-                        .foregroundColor(CryoColors.foregroundMuted(tm))
-                    Text(String(localized: "dashboard.title"))
-                        .font(.system(size: 28, weight: .bold, design: .rounded))
-                        .foregroundColor(CryoColors.foreground(tm))
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            Text(String(localized: "dashboard.welcome"))
+                .font(TypeScale.body)
+                .foregroundStyle(.textSecondary)
+            Text(String(localized: "dashboard.title"))
+                .font(TypeScale.display)
+                .foregroundStyle(.textPrimary)
+        }
+    }
+
+    // MARK: - Hero Cell
+
+    private var heroCell: some View {
+        AstraCard(tint: Color.accent.opacity(0.06)) {
+            VStack(alignment: .leading, spacing: Spacing.lg) {
+                HStack(spacing: Spacing.sm) {
+                    AstraAdornment(icon: .mic, tint: .accent)
+                    Text(String(localized: "dashboard.startRecording"))
+                        .font(TypeScale.heading)
+                        .foregroundStyle(.textPrimary)
+                    Spacer()
+                    if let last = recordings.sorted(by: { $0.date > $1.date }).first {
+                        Text(last.formattedDuration)
+                            .font(.astraMono(11))
+                            .foregroundStyle(.textTertiary)
+                    }
                 }
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
 
-    // MARK: - Stats Grid
-
-    private var statsGrid: some View {
-        LazyVGrid(
-            columns: [
-                GridItem(.flexible(), spacing: 16),
-                GridItem(.flexible(), spacing: 16),
-                GridItem(.flexible(), spacing: 16)
-            ],
-            spacing: 16
-        ) {
-            statCard(
-                String(localized: "dashboard.recordings"),
-                value: "\(recordings.count)",
-                icon: "mic.circle",
-                color: Color(hex: "#7EC8E3")
-            )
-            statCard(
-                String(localized: "dashboard.notes"),
-                value: "\(notes.count)",
-                icon: "doc.text",
-                color: Color(hex: "#A8D8EA")
-            )
-            statCard(
-                String(localized: "dashboard.flashcards"),
-                value: "\(flashcards.count)",
-                icon: "square.stack",
-                color: Color(hex: "#4A9ECF")
-            )
-            statCard(
-                String(localized: "dashboard.subjects"),
-                value: "\(subjects.count)",
-                icon: "book",
-                color: Color(hex: "#B8E3F5")
-            )
-            statCard(
-                String(localized: "dashboard.dueCards"),
-                value: "\(flashcards.filter(\.isDue).count)",
-                icon: "clock",
-                color: Color(hex: "#E8D5E0")
-            )
-            statCard(
-                String(localized: "dashboard.hlSubjects"),
-                value: "\(subjects.filter { $0.level == .hl }.count)",
-                icon: "star",
-                color: Color(hex: "#C4A8B8")
-            )
-        }
-    }
-
-    private func statCard(
-        _ title: String,
-        value: String,
-        icon: String,
-        color: Color
-    ) -> some View {
-        CryoCard(manager: tm, style: .status, padding: 16) {
-            HStack(spacing: 12) {
-                Image(systemName: icon)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.white)
-                    .frame(width: 36, height: 36)
-                    .background(
-                        LinearGradient(
-                            colors: [color, color.opacity(0.7)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
+                // Real waveform from the most recent recording
+                if let last = recordings.sorted(by: { $0.date > $1.date }).first,
+                   !last.waveformData.isEmpty {
+                    StaticWaveform(levels: last.waveformData.map(Double.init))
+                } else {
+                    RoundedRectangle(cornerRadius: Radius.card)
+                        .fill(Color.accent.opacity(0.08))
+                        .frame(height: 40)
+                        .overlay(
+                            AstraIconView(.graphicEq, size: 20)
+                                .foregroundStyle(Color.accent.opacity(0.6))
                         )
-                    )
-                    .clipShape(Circle())
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(value)
-                        .font(.system(size: 24, weight: .bold, design: .monospaced))
-                        .foregroundColor(CryoColors.foreground(tm))
-                    Text(title)
-                        .font(.system(size: 11))
-                        .foregroundColor(CryoColors.foregroundMuted(tm))
                 }
 
-                Spacer()
+                HStack(spacing: Spacing.md) {
+                    AstraButton(
+                        title: String(localized: "dashboard.startRecording"),
+                        icon: .mic,
+                        style: .primary
+                    ) {
+                        onNavigate?(.recording)
+                    }
+                    AstraButton(
+                        title: String(localized: "dashboard.generateNotes"),
+                        style: .secondary
+                    ) {
+                        onNavigate?(.notes)
+                    }
+                }
             }
+        }
+    }
+
+    // MARK: - Today Cell
+
+    private var todayCell: some View {
+        AstraCard {
+            VStack(alignment: .leading, spacing: Spacing.md) {
+                SectionHeader(title: String(localized: "dashboard.dueCards"), icon: .schedule)
+
+                HStack(alignment: .firstTextBaseline, spacing: Spacing.xs) {
+                    Text("\(flashcards.filter(\.isDue).count)")
+                        .font(.astraMono(28, .semibold))
+                        .foregroundStyle(.textPrimary)
+                    Text(String(localized: "dashboard.dueCards"))
+                        .font(TypeScale.caption)
+                        .foregroundStyle(.textSecondary)
+                }
+
+                Divider().overlay(Color.hairline)
+
+                VStack(alignment: .leading, spacing: Spacing.sm) {
+                    miniStat(
+                        icon: .style,
+                        value: "\(flashcards.count)",
+                        label: String(localized: "dashboard.flashcards")
+                    )
+                    miniStat(
+                        icon: .star,
+                        value: "\(subjects.filter { $0.level == IBLevel.hl.rawValue }.count)",
+                        label: String(localized: "dashboard.hlSubjects")
+                    )
+                }
+            }
+        }
+    }
+
+    private func miniStat(icon: AstraIcon, value: String, label: String) -> some View {
+        HStack(spacing: Spacing.sm) {
+            AstraIconView(icon, size: 12)
+                .foregroundStyle(Color.accent)
+                .frame(width: 22)
+            Text(value)
+                .font(.astraMono(14, .semibold))
+                .foregroundStyle(.textPrimary)
+            Text(label)
+                .font(TypeScale.caption)
+                .foregroundStyle(.textSecondary)
+            Spacer()
         }
     }
 
     // MARK: - Recent Activity Section
 
     private var recentActivitySection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text(String(localized: "dashboard.recentActivity"))
-                .font(.system(size: 18, weight: .semibold, design: .rounded))
-                .foregroundColor(CryoColors.foreground(tm))
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            SectionHeader(
+                title: String(localized: "dashboard.recentActivity"),
+                icon: .history
+            )
 
             if recordings.isEmpty {
-                CryoCard(manager: tm, style: .standard) {
-                    VStack(spacing: 12) {
-                        Image(systemName: "snowflake")
-                            .font(.system(size: 32))
-                            .foregroundColor(CryoColors.accent(tm).opacity(0.3))
-                        Text(String(localized: "dashboard.noActivity"))
-                            .font(.system(size: 14))
-                            .foregroundColor(CryoColors.foregroundMuted(tm))
-                        Text(String(localized: "dashboard.noActivityHint"))
-                            .font(.system(size: 12))
-                            .foregroundColor(CryoColors.foregroundMuted(tm).opacity(0.6))
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(32)
+                EmptyStateView(
+                    icon: .mic,
+                    title: String(localized: "dashboard.noActivity"),
+                    message: String(localized: "dashboard.noActivityHint"),
+                    ctaTitle: String(localized: "dashboard.startRecording")
+                ) {
+                    onNavigate?(.recording)
                 }
+                .background(Color.surface)
+                .clipShape(RoundedRectangle(cornerRadius: Radius.card))
+                .overlay(
+                    RoundedRectangle(cornerRadius: Radius.card)
+                        .stroke(Color.hairline, lineWidth: 1)
+                )
             } else {
-                ForEach(Array(recordings.sorted(by: { $0.date > $1.date }).prefix(5))) { recording in
-                    CryoCard(manager: tm, style: .standard, padding: 16) {
-                        HStack(spacing: 12) {
-                            Image(systemName: "mic.circle")
-                                .foregroundColor(CryoColors.accent(tm))
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(recording.title)
-                                    .font(.system(size: 14, weight: .medium))
-                                    .foregroundColor(CryoColors.foreground(tm))
-                                Text(recording.displayDate)
-                                    .font(.system(size: 11, design: .monospaced))
-                                    .foregroundColor(CryoColors.foregroundMuted(tm))
-                            }
-                            Spacer()
-                            Text(recording.formattedDuration)
-                                .font(.system(size: 12, design: .monospaced))
-                                .foregroundColor(CryoColors.foregroundMuted(tm))
+                VStack(spacing: Spacing.xs) {
+                    ForEach(Array(recordings.sorted(by: { $0.date > $1.date }).prefix(5))) { recording in
+                        NoteCell(
+                            title: recording.title,
+                            group: subjectGroup(for: recording.subjectName),
+                            subjectIcon: subjectIcon(for: recording.subjectName),
+                            subjectName: recording.subjectName ?? String(localized: "recording.noSubject"),
+                            dateText: recording.date.shortDateString,
+                            durationText: recording.formattedDuration
+                        ) {
+                            onNavigate?(.transcription)
                         }
                     }
+                }
+                .padding(Spacing.sm)
+                .background(Color.surface)
+                .clipShape(RoundedRectangle(cornerRadius: Radius.card))
+                .overlay(
+                    RoundedRectangle(cornerRadius: Radius.card)
+                        .stroke(Color.hairline, lineWidth: 1)
+                )
+            }
+        }
+    }
+
+    // MARK: - Number Column
+
+    private var numberColumn: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            SectionHeader(title: String(localized: "dashboard.subjects"), icon: .menuBook)
+
+            AstraCard {
+                HStack(alignment: .firstTextBaseline, spacing: Spacing.xs) {
+                    Text("\(subjects.count)")
+                        .font(.astraMono(28, .semibold))
+                        .foregroundStyle(.textPrimary)
+                    Text(String(localized: "dashboard.subjects"))
+                        .font(TypeScale.caption)
+                        .foregroundStyle(.textSecondary)
+                    Spacer()
+                }
+            }
+
+            AstraCard {
+                HStack(alignment: .firstTextBaseline, spacing: Spacing.xs) {
+                    Text("\(notes.count)")
+                        .font(.astraMono(28, .semibold))
+                        .foregroundStyle(.textPrimary)
+                    Text(String(localized: "dashboard.notes"))
+                        .font(TypeScale.caption)
+                        .foregroundStyle(.textSecondary)
+                    Spacer()
+                }
+            }
+
+            AstraCard {
+                HStack(alignment: .firstTextBaseline, spacing: Spacing.xs) {
+                    Text("\(recordings.count)")
+                        .font(.astraMono(28, .semibold))
+                        .foregroundStyle(.textPrimary)
+                    Text(String(localized: "dashboard.recordings"))
+                        .font(TypeScale.caption)
+                        .foregroundStyle(.textSecondary)
+                    Spacer()
                 }
             }
         }
     }
 
-    // MARK: - Quick Actions Section
+    // MARK: - IB Progress Strip
 
-    private var quickActionsSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text(String(localized: "dashboard.quickActions"))
-                .font(.system(size: 18, weight: .semibold, design: .rounded))
-                .foregroundColor(CryoColors.foreground(tm))
+    private var ibProgressSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            SectionHeader(title: String(localized: "sidebar.ibCore"), icon: .school)
 
-            HStack(spacing: 12) {
-                CryoButton("\u{1F399}\u{FE0F} \(String(localized: "dashboard.startRecording"))", style: .primary, action: {})
-                CryoButton("\u{1F4DD} \(String(localized: "dashboard.generateNotes"))", style: .secondary, action: {})
-                CryoButton("\u{1F0CF} \(String(localized: "dashboard.reviewCards"))", style: .secondary, action: {})
+            HStack(spacing: Spacing.md) {
+                progressCell(
+                    label: String(localized: "nav.extendedEssay"),
+                    detail: essays.isEmpty
+                        ? "0 / 4000"
+                        : "\(essays.reduce(0) { $0 + $1.wordCount }) / \(essays.first?.maxWordCount ?? 4000)",
+                    progress: essays.first?.progress ?? 0
+                )
+                progressCell(
+                    label: String(localized: "nav.internalAssessment"),
+                    detail: "",
+                    progress: 0
+                )
+                progressCell(
+                    label: String(localized: "nav.tok"),
+                    detail: "",
+                    progress: 0
+                )
             }
         }
+    }
+
+    private func progressCell(label: String, detail: String, progress: Double) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            HStack {
+                Text(label)
+                    .font(TypeScale.subheading)
+                    .foregroundStyle(.textPrimary)
+                Spacer()
+                if !detail.isEmpty {
+                    Text(detail)
+                        .font(.astraMono(11))
+                        .foregroundStyle(.textTertiary)
+                }
+            }
+            ProgressHairline(progress: progress)
+        }
+        .padding(Layout.cardPadding)
+        .background(Color.surface)
+        .clipShape(RoundedRectangle(cornerRadius: Radius.card))
+        .overlay(
+            RoundedRectangle(cornerRadius: Radius.card)
+                .stroke(Color.hairline, lineWidth: 1)
+        )
+    }
+
+    // MARK: - Helpers
+
+    private func subjectGroup(for name: String?) -> Int {
+        guard let name else { return 0 }
+        return subjects.first(where: { $0.name == name })?.ibGroup ?? 0
+    }
+
+    private func subjectIcon(for name: String?) -> AstraIcon {
+        guard let name else { return .graphicEq }
+        return subjects.first(where: { $0.name == name })?.group.astraIcon ?? .graphicEq
     }
 }
