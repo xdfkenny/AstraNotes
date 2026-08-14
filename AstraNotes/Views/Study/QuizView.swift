@@ -1211,7 +1211,7 @@ private var configurationSection: some View {
     }
 
     private func optionLetter(_ index: Int) -> String {
-        String(UnicodeScalar(Character("A").asciiValue! + UInt8(index))!)
+        String(UnicodeScalar(Character("A").asciiValue! + UInt8(index)))
     }
 
     private func answerBackground(for option: String, question: QuizQuestion) -> Color {

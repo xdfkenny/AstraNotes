@@ -225,58 +225,62 @@ struct RecordingView: View {
         }
     }
 
+    private var subjectPicker: some View {
+// Subject picker
+VStack(alignment: .leading, spacing: Spacing.xs) {
+    Text(String(localized: "recording.subject"))
+        .font(TypeScale.caption)
+        .foregroundStyle(.textSecondary)
+
+    Menu {
+        Button(String(localized: "recording.noSubject")) {
+            selectedSubject = String(localized: "recording.noSubject")
+        }
+        Divider()
+        ForEach(subjects) { subject in
+            Button {
+                selectedSubject = subject.name
+            } label: {
+                HStack {
+                    Text(subject.name)
+                    Text("(\(subject.ibLevel.displayName))")
+                        .foregroundStyle(.textTertiary)
+                }
+            }
+        }
+    } label: {
+        HStack(spacing: Spacing.sm) {
+            Text(selectedSubject)
+                .font(TypeScale.body)
+                .foregroundStyle(.textPrimary)
+                .lineLimit(1)
+            Spacer()
+            AstraIconView(.expandMore, size: 10)
+                .foregroundStyle(.textTertiary)
+        }
+        .padding(.horizontal, Spacing.md)
+        .frame(height: 32)
+        .background(Color.surface)
+        .clipShape(RoundedRectangle(cornerRadius: Radius.control))
+        .overlay(
+            RoundedRectangle(cornerRadius: Radius.control)
+                .stroke(Color.hairline, lineWidth: 1)
+        )
+    }
+    #if os(macOS)
+    .menuStyle(.borderlessButton)
+    .menuIndicator(.hidden)
+    #endif
+}
+    }
+
     // MARK: - Inspector Column
 
     private var inspectorColumn: some View {
         VStack(alignment: .leading, spacing: Spacing.lg) {
             SectionHeader(title: String(localized: "recording.lecture"), icon: .info)
 
-            // Subject picker
-            VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text(String(localized: "recording.subject"))
-                    .font(TypeScale.caption)
-                    .foregroundStyle(.textSecondary)
-
-                Menu {
-                    Button(String(localized: "recording.noSubject")) {
-                        selectedSubject = String(localized: "recording.noSubject")
-                    }
-                    Divider()
-                    ForEach(subjects) { subject in
-                        Button {
-                            selectedSubject = subject.name
-                        } label: {
-                            HStack {
-                                Text(subject.name)
-                                Text("(\(subject.level.displayName))")
-                                    .foregroundStyle(.textTertiary)
-                            }
-                        }
-                    }
-                } label: {
-                    HStack(spacing: Spacing.sm) {
-                        Text(selectedSubject)
-                            .font(TypeScale.body)
-                            .foregroundStyle(.textPrimary)
-                            .lineLimit(1)
-                        Spacer()
-                        AstraIconView(.expandMore, size: 10)
-                            .foregroundStyle(.textTertiary)
-                    }
-                    .padding(.horizontal, Spacing.md)
-                    .frame(height: 32)
-                    .background(Color.surface)
-                    .clipShape(RoundedRectangle(cornerRadius: Radius.control))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: Radius.control)
-                            .stroke(Color.hairline, lineWidth: 1)
-                    )
-                }
-                #if os(macOS)
-                .menuStyle(.borderlessButton)
-                .menuIndicator(.hidden)
-                #endif
-            }
+            subjectPicker
 
             // Language
             VStack(alignment: .leading, spacing: Spacing.xs) {

@@ -382,7 +382,7 @@ struct StudyGuideView: View {
         .astraCardStyle()
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.accent.opacity(0.6), lineWidth: note.isFavorite ? 1.5 : 0)
+                .stroke(Color.accent.opacity(0.6), lineWidth: note.isFavorite ? 1.5 : 0.0)
         )
         #if os(macOS)
         .onHover { isHovered in

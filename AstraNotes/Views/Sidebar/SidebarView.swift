@@ -108,7 +108,7 @@ struct SidebarView: View {
             MicroLabel(text: String(localized: "sidebar.study"))
                 .padding(.horizontal, Spacing.lg)
                 .padding(.bottom, Spacing.xs)
-            sidebarItem(.flashcards, icon: .style, countChip: dueCardCount)
+            sidebarItem(.flashcards, icon: .style, countChip: String(dueCardCount))
             sidebarItem(.quiz, icon: .help)
             sidebarItem(.studyGuide, icon: .menuBook)
         }
