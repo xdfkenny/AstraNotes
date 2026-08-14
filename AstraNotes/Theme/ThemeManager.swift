@@ -1,6 +1,8 @@
 import SwiftUI
 #if os(macOS)
 import AppKit
+#else
+import UIKit
 #endif
 
 // MARK: - Theme Mode
@@ -82,7 +84,7 @@ final class ThemeManager {
                 from: [.darkAqua, .aqua]
             ) == .darkAqua
             #else
-            return false
+            return UITraitCollection.current.userInterfaceStyle == .dark
             #endif
         }
     }
@@ -93,7 +95,7 @@ final class ThemeManager {
 // `@Environment(\.themeManager)`.
 
 private struct ThemeManagerKey: EnvironmentKey {
-    nonisolated static let defaultValue = ThemeManager()
+    nonisolated(unsafe) static let defaultValue = ThemeManager()
 }
 
 extension EnvironmentValues {

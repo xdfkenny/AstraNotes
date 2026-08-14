@@ -6,6 +6,7 @@ import Foundation
 // Includes automatic retry with exponential back-off, token usage tracking,
 // and rough cost estimation based on current DeepSeek pricing.
 
+@MainActor
 @Observable
 class DeepSeekService {
 
@@ -56,7 +57,10 @@ class DeepSeekService {
         apiKey: String
     ) async throws -> String {
         let messages = buildMessages(prompt: prompt, systemPrompt: systemPrompt)
-        return try await performRequest(messages: messages, stream: false, apiKey: apiKey)
+        let result = try await performRequest(messages: messages, stream: false, apiKey: apiKey)
+        totalInputTokens += result.inputTokens
+        totalOutputTokens += result.outputTokens
+        return result.content
     }
 
     /// Streams the response token-by-token, updating `streamedContent` on the
@@ -69,11 +73,9 @@ class DeepSeekService {
     ) async {
         let messages = buildMessages(prompt: prompt, systemPrompt: systemPrompt)
 
-        await MainActor.run {
-            state = .generating
-            streamedContent = ""
-            errorMessage = nil
-        }
+        state = .generating
+        streamedContent = ""
+        errorMessage = nil
 
         do {
             let url = URL(string: "\(baseURL)/chat/completions")!
@@ -99,7 +101,10 @@ class DeepSeekService {
                 throw DeepSeekError.serverError
             }
 
-            var buffer = ""
+            var accumulatedContent = ""
+            var capturedInputTokens = 0
+            var capturedOutputTokens = 0
+
             for try await line in bytes.lines {
                 if line.hasPrefix("data: ") {
                     let data = String(line.dropFirst(6))
@@ -111,29 +116,25 @@ class DeepSeekService {
                        let delta = choices.first?["delta"] as? [String: Any],
                        let content = delta["content"] as? String {
 
-                        await MainActor.run {
-                            self.streamedContent += content
-                        }
+                        accumulatedContent += content
 
                         // Track token usage when the server includes it.
                         if let usage = json["usage"] as? [String: Any] {
-                            await MainActor.run {
-                                self.totalInputTokens = usage["prompt_tokens"] as? Int ?? self.totalInputTokens
-                                self.totalOutputTokens = usage["completion_tokens"] as? Int ?? self.totalOutputTokens
-                            }
+                            capturedInputTokens = usage["prompt_tokens"] as? Int ?? capturedInputTokens
+                            capturedOutputTokens = usage["completion_tokens"] as? Int ?? capturedOutputTokens
                         }
                     }
                 }
             }
 
-            await MainActor.run {
-                self.state = .completed
-            }
+            // Update @MainActor state after the async loop completes.
+            self.streamedContent = accumulatedContent
+            self.totalInputTokens = capturedInputTokens
+            self.totalOutputTokens = capturedOutputTokens
+            state = .completed
         } catch {
-            await MainActor.run {
-                self.state = .failed(error: error.localizedDescription)
-                self.errorMessage = error.localizedDescription
-            }
+            state = .failed(error: error.localizedDescription)
+            errorMessage = error.localizedDescription
         }
     }
 
@@ -143,19 +144,25 @@ class DeepSeekService {
         messages: [[String: String]],
         stream: Bool,
         apiKey: String
-    ) async throws -> String {
+    ) async throws -> (content: String, inputTokens: Int, outputTokens: Int) {
+        // Capture config values before entering async context to avoid
+        // Swift 6 "sending self" data-race warnings at suspension points.
+        let requestBaseURL = baseURL
+        let requestTimeout = timeoutInterval
+        let requestMaxRetries = maxRetries
+
         var lastError: Error?
 
-        for attempt in 1...maxRetries {
+        for attempt in 1...requestMaxRetries {
             do {
-                let url = URL(string: "\(baseURL)/chat/completions")!
+                let url = URL(string: "\(requestBaseURL)/chat/completions")!
                 var request = URLRequest(url: url)
                 request.httpMethod = "POST"
-                request.timeoutInterval = timeoutInterval
+                request.timeoutInterval = requestTimeout
                 request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
                 request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
-                var body: [String: Any] = [
+                let body: [String: Any] = [
                     "model": "deepseek-chat",
                     "messages": messages,
                     "stream": stream,
@@ -179,15 +186,15 @@ class DeepSeekService {
                         throw DeepSeekError.parseError
                     }
 
-                    // Accumulate token usage.
+                    // Extract token usage
+                    var inputTokens = 0
+                    var outputTokens = 0
                     if let usage = json["usage"] as? [String: Any] {
-                        await MainActor.run {
-                            self.totalInputTokens += usage["prompt_tokens"] as? Int ?? 0
-                            self.totalOutputTokens += usage["completion_tokens"] as? Int ?? 0
-                        }
+                        inputTokens = usage["prompt_tokens"] as? Int ?? 0
+                        outputTokens = usage["completion_tokens"] as? Int ?? 0
                     }
 
-                    return content
+                    return (content: content, inputTokens: inputTokens, outputTokens: outputTokens)
 
                 case 429:
                     // Rate limited -- back off and retry.
@@ -206,7 +213,7 @@ class DeepSeekService {
                     throw DeepSeekError.httpError(httpResponse.statusCode)
                 }
 
-            } catch let error where attempt < maxRetries {
+            } catch let error where attempt < requestMaxRetries {
                 lastError = error
                 let delay = Double(attempt) * 2.0
                 try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))

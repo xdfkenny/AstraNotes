@@ -64,34 +64,54 @@ final class Flashcard {
 
     // SM-2 Algorithm
     func updateAfterReview(quality: Int) -> FlashcardUpdateResult {
-        // quality: 0-5 (0=no recall, 5=perfect)
-        var newEaseFactor = easeFactor
-        var newInterval = interval
-        var newRepetitions = repetitions
-
-        newEaseFactor = max(1.3, easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)))
-
-        if quality >= 3 {
-            if newRepetitions == 0 {
-                newInterval = 1
-            } else if newRepetitions == 1 {
-                newInterval = 6
-            } else {
-                newInterval = interval * newEaseFactor
-            }
-            newRepetitions += 1
-        } else {
-            newRepetitions = 0
-            newInterval = 1
-        }
-
+        let ef = computeNewEaseFactor(current: easeFactor, quality: quality)
+        let (newInterval, newReps) = computeNewIntervalAndRepetitions(
+            currentInterval: interval,
+            currentRepetitions: repetitions,
+            newEaseFactor: ef,
+            quality: quality
+        )
+        let nextDate = Calendar.current.date(
+            byAdding: .day,
+            value: Int(newInterval),
+            to: Date()
+        ) ?? Date()
         return FlashcardUpdateResult(
-            easeFactor: newEaseFactor,
+            easeFactor: ef,
             interval: newInterval,
-            repetitions: newRepetitions,
-            nextReviewDate: Calendar.current.date(byAdding: .day, value: Int(newInterval), to: Date()) ?? Date()
+            repetitions: newReps,
+            nextReviewDate: nextDate
         )
     }
+}
+
+// MARK: - SM-2 Helper Functions (extracted to avoid type-checker timeouts)
+
+private func computeNewEaseFactor(current: Double, quality: Int) -> Double {
+    let q = Double(5 - quality)
+    let adjustment = 0.1 - q * (0.08 + q * 0.02)
+    return max(1.3, current + adjustment)
+}
+
+private func computeNewIntervalAndRepetitions(
+    currentInterval: Double,
+    currentRepetitions: Int,
+    newEaseFactor: Double,
+    quality: Int
+) -> (interval: Double, repetitions: Int) {
+    guard quality >= 3 else {
+        return (1, 0)
+    }
+    let newReps = currentRepetitions + 1
+    let newInterval: Double
+    if currentRepetitions == 0 {
+        newInterval = 1
+    } else if currentRepetitions == 1 {
+        newInterval = 6
+    } else {
+        newInterval = currentInterval * newEaseFactor
+    }
+    return (newInterval, newReps)
 }
 
 struct FlashcardUpdateResult {

@@ -4,7 +4,7 @@
 #   - push 到 master
 #   - 手动触发 (Actions 页面 → Run workflow)
 #
-# 产出: 构建完成的 AstraNotes.app 压缩包 (AstraNotes-macOS-arm64.zip)
+# 产出: AstraNotes.dmg (含 ad-hoc 签名的 .app，可直接在 M1-M4 Mac 上运行)
 # 文档: BUILD.md
 
 name: Build macOS App
@@ -22,8 +22,8 @@ concurrency:
 
 jobs:
   build:
-    # macos-14 = Apple Silicon (arm64) 公共 runner，与 M4 架构一致
-    runs-on: macos-14
+    # macos-15 = Apple Silicon (arm64) 公共 runner，与 M4 架构一致
+    runs-on: macos-15
     timeout-minutes: 60
 
     steps:
@@ -49,26 +49,39 @@ jobs:
 
       - name: Build (Release)
         run: |
+          set -o pipefail
           xcodebuild \
             -project AstraNotes.xcodeproj \
             -scheme AstraNotes \
+            -destination 'generic/platform=macOS' \
             -configuration Release \
             -derivedDataPath build \
             CODE_SIGN_IDENTITY=- \
             CODE_SIGNING_REQUIRED=NO \
-            build
+            CODE_SIGNING_ALLOWED=NO \
+            | tee build.log
 
-      - name: Package .app
+      - name: Package DMG
         run: |
-          ditto -c -k --sequesterRsrc --keepParent \
-            build/Build/Products/Release/AstraNotes.app \
-            AstraNotes-macOS-arm64.zip
-          ls -lh AstraNotes-macOS-arm64.zip
+          APP=$(find build/Build/Products -name "AstraNotes.app" -type d | head -1)
+          echo "Found app at: $APP"
+          # Ad-hoc sign so the app can launch on Apple Silicon
+          codesign --force --deep --sign - "$APP" || true
+          hdiutil create -volname "AstraNotes" -srcfolder "$APP" -ov -format UDZO AstraNotes.dmg
+          ls -lh AstraNotes.dmg
 
-      - name: Upload artifact
+      - name: Upload DMG artifact
         uses: actions/upload-artifact@v4
         with:
-          name: AstraNotes-macOS-arm64
-          path: AstraNotes-macOS-arm64.zip
+          name: AstraNotes-macOS-dmg
+          path: AstraNotes.dmg
           if-no-files-found: error
           retention-days: 30
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
+          retention-days: 7

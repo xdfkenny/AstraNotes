@@ -18,7 +18,7 @@ GitHub Actions  (macos-14 runner = Apple Silicon arm64，与 M4 同架构)
         │      · 自动添加 WhisperKit 依赖 (SPM, v1.1.0)
         │      · 自动生成 Info.plist（含麦克风权限说明）
         ├─ 4. xcodebuild Release 编译
-        └─ 5. 打包 AstraNotes-macOS-arm64.zip 作为 Actions artifact
+        └─ 5. 打包 AstraNotes.dmg（含 ad-hoc 签名）作为 Actions artifact
 ```
 
 ## 快速开始
@@ -33,7 +33,7 @@ git push -u origin master
 #    看到 "Build macOS App" 正在运行（首次约 10-20 分钟，含 WhisperKit 编译）
 
 # 3. 构建完成后，进入该 workflow run 页面底部
-#    → Artifacts → 下载 AstraNotes-macOS-arm64.zip
+#    → Artifacts → 下载 AstraNotes.dmg
 ```
 
 也可以在 Actions 页面手动触发：**Actions → Build macOS App → Run workflow**。

@@ -7,6 +7,7 @@ import AVFoundation
 
 // MARK: - Audio Service
 
+@MainActor
 @Observable
 final class AudioService {
 
@@ -17,6 +18,7 @@ final class AudioService {
         case recording
         case paused
         case stopped
+        case error
     }
 
     var state: RecordingState = .idle
@@ -42,7 +44,7 @@ final class AudioService {
     private var outputFileURL: URL?
     private var timer: Timer?
     private var silenceTimer: Timer?
-    private var isSilent: Bool = false
+    var isSilent: Bool = false
 
     /// Format converter node that bridges the hardware input format to 16 kHz mono.
     private var converterNode: AVAudioMixerNode?
@@ -73,9 +75,7 @@ final class AudioService {
         self.audioEngine = audioEngine
 
         let inputNode = audioEngine.inputNode
-        guard let inputFormat = inputNode.outputFormat(forBus: 0) else {
-            throw AudioError.deviceNotAvailable
-        }
+        let inputFormat = inputNode.outputFormat(forBus: 0)
 
         // Target format: 16 kHz mono (optimal for Whisper).
         guard let outputFormat = AVAudioFormat(
@@ -123,12 +123,15 @@ final class AudioService {
             }
 
             // ── Main-actor state update ──────────────────────────────────────
-            Task { @MainActor in
-                self.waveformData = samples
-                self.averagePower = avgPower
+            let capturedSamples = samples
+            let capturedPower = avgPower
+            Task { @MainActor [weak self] in
+                guard let self = self else { return }
+                self.waveformData = capturedSamples
+                self.averagePower = capturedPower
 
                 // Silence detection with hysteresis.
-                let currentlySilent = avgPower < self.silenceThreshold
+                let currentlySilent = capturedPower < self.silenceThreshold
                 if currentlySilent != self.isSilent {
                     self.isSilent = currentlySilent
                     self.handleSilenceChange(isSilent: currentlySilent)
@@ -166,10 +169,10 @@ final class AudioService {
             let outputFrameCount = AVAudioFrameCount(
                 Double(inputFrameCount) * outputFormat.sampleRate / buffer.format.sampleRate
             )
-            let convertedBuffer = AVAudioPCMBuffer(
-                format: outputFormat,
+            guard let convertedBuffer = AVAudioPCMBuffer(
+                pcmFormat: outputFormat,
                 frameCapacity: outputFrameCount
-            )
+            ) else { return }
 
             var error: NSError?
             let status = converter.convert(
@@ -177,7 +180,7 @@ final class AudioService {
                 error: &error
             ) { inNumPackets, outStatus in
                 outStatus.pointee = .haveData
-                return inputFrameCount
+                return buffer
             }
 
             if status != .error {
@@ -198,8 +201,12 @@ final class AudioService {
         }
         
         // Request microphone permission on iOS
-        let permissionStatus = await session.requestPermission(for: .record)
-        guard permissionStatus == .granted else {
+        let granted = await withCheckedContinuation { continuation in
+            session.requestRecordPermission { granted in
+                continuation.resume(returning: granted)
+            }
+        }
+        guard granted else {
             errorMessage = String(localized: "error.microphoneDenied")
             state = .error
             return

@@ -5,10 +5,11 @@
 
 import Foundation
 import AVFoundation
-import WhisperKit
+@preconcurrency import WhisperKit
 
 // MARK: - Whisper Service
 
+@MainActor
 @Observable
 final class WhisperService {
 
@@ -49,10 +50,7 @@ final class WhisperService {
 
     /// Whether the model has been downloaded at least once (persisted check).
     var isModelDownloaded: Bool {
-        // WhisperKit stores models in the documents directory.
-        // We use the public API to check if the model is available.
-        let modelPath = WhisperKit.modelPath(for: modelSize, computeUnits: .cpuAndNeuralEngine)
-        return FileManager.default.fileExists(atPath: modelPath.path)
+        transcriber?.modelFolder != nil
     }
 
     // MARK: - Private State
@@ -93,14 +91,11 @@ final class WhisperService {
         do {
             let config = WhisperKitConfig(
                 model: modelSize,
-                computeOptions: .init(
+                computeOptions: ModelComputeOptions(
                     audioEncoderCompute: .cpuAndNeuralEngine,
                     textDecoderCompute: .cpuAndNeuralEngine
                 ),
-                verbose: true,
-                language: nil, // Auto-detect language
-                task: .transcribe,
-                prefill: false
+                verbose: true
             )
 
             transcriber = try await WhisperKit(config)
@@ -115,11 +110,12 @@ final class WhisperService {
     /// Deletes the downloaded model files to free disk space.
     func deleteModel() async throws {
         guard let transcriber = transcriber else { return }
+        let modelFolder = transcriber.modelFolder
         self.transcriber = nil
 
-        let modelPath = WhisperKit.modelPath(for: modelSize, computeUnits: .cpuAndNeuralEngine)
-        if FileManager.default.fileExists(atPath: modelPath.path) {
-            try FileManager.default.removeItem(at: modelPath)
+        if let modelFolder = modelFolder,
+           FileManager.default.fileExists(atPath: modelFolder.path) {
+            try FileManager.default.removeItem(at: modelFolder)
         }
 
         state = .idle
@@ -148,44 +144,54 @@ final class WhisperService {
 
         let transcriptionResult: TranscriptionResult
         do {
-            let whisperResult = try await transcriber.transcribeAudioURL(
-                audioURL,
-                decodeOptions: .init(
-                    language: language,
+            // WhisperKit.transcribe returns its own TranscriptionResult type (open class).
+            // Don't annotate explicitly to avoid module-vs-class name collision.
+            let whisperResults = try await transcriber.transcribe(
+                audioPath: audioURL.path,
+                decodeOptions: DecodingOptions(
                     task: .transcribe,
+                    language: language,
                     wordTimestamps: true
                 )
             )
 
-            // Convert WhisperKit segments to our model.
-            let convertedSegments = whisperResult.allSegments.compactMap { segment -> TranscriptionSegment in
-                TranscriptionSegment(
+            guard let whisperResult = whisperResults.first else {
+                throw WhisperError.transcriptionFailed("No transcription result returned")
+            }
+
+            // Convert WhisperKit segments to our model using for-loops
+            // (type-checks fast; no explicit WhisperKit type names needed).
+            var convertedSegments: [TranscriptionSegment] = []
+            for wkSegment in whisperResult.segments {
+                var convertedWords: [WordTimestamp] = []
+                for wkWord in wkSegment.words ?? [] {
+                    convertedWords.append(WordTimestamp(
+                        word: wkWord.word,
+                        startTime: Double(wkWord.start),
+                        endTime: Double(wkWord.end),
+                        confidence: Double(wkWord.probability)
+                    ))
+                }
+                convertedSegments.append(TranscriptionSegment(
                     speakerID: nil,
-                    text: segment.text.trimmingCharacters(in: .whitespacesAndNewlines),
-                    startTime: segment.start,
-                    endTime: segment.end,
-                    confidence: segment.logProb,
-                    words: segment.words.map { word in
-                        WordTimestamp(
-                            word: word.word,
-                            startTime: word.start,
-                            endTime: word.end,
-                            confidence: word.logProb
-                        )
-                    }
-                )
+                    text: wkSegment.text.trimmingCharacters(in: .whitespacesAndNewlines),
+                    startTime: Double(wkSegment.start),
+                    endTime: Double(wkSegment.end),
+                    confidence: Double(wkSegment.avgLogprob),
+                    words: convertedWords
+                ))
             }
 
             // Calculate overall confidence.
-            let totalLogProb = convertedSegments.map(\.confidence).reduce(0, +)
+            let totalConfidence = convertedSegments.map { $0.confidence }.reduce(0, +)
             let avgConfidence = convertedSegments.isEmpty
                 ? 0
-                : totalLogProb / Double(convertedSegments.count)
+                : totalConfidence / Double(convertedSegments.count)
 
             transcriptionResult = TranscriptionResult(
                 fullText: whisperResult.text,
                 segments: convertedSegments,
-                language: language ?? whisperResult.language ?? "auto",
+                language: language ?? whisperResult.language,
                 confidence: avgConfidence,
                 wordCount: whisperResult.text.split(separator: " ").count
             )
@@ -242,7 +248,7 @@ final class WhisperService {
             )
 
             // Extract chunk to a temporary file.
-            let chunkURL = try extractChunk(
+            let chunkURL = try await extractChunk(
                 from: audioURL,
                 start: startTime,
                 end: endTime
@@ -303,7 +309,7 @@ final class WhisperService {
     // MARK: - Chunk Extraction
 
     /// Extracts a time range from an audio file and writes it to a temporary .m4a file.
-    private func extractChunk(from url: URL, start: Double, end: Double) throws -> URL {
+    private func extractChunk(from url: URL, start: Double, end: Double) async throws -> URL {
         let asset = AVAsset(url: url)
         let outputURL = FileManager.default.temporaryDirectory
             .appendingPathComponent("whisper_chunk_\(Int(start))_\(Int(end)).m4a")
@@ -325,19 +331,18 @@ final class WhisperService {
             end: CMTime(seconds: end, preferredTimescale: 44100)
         )
 
-        exportSession.exportAsynchronously()
-
-        // Busy-wait until export completes (runs on background thread via caller).
-        while exportSession.status == .exporting {
-            try await Task.sleep(nanoseconds: 100_000_000) // 0.1s
+        return try await withCheckedThrowingContinuation { continuation in
+            exportSession.exportAsynchronously {
+                switch exportSession.status {
+                case .completed:
+                    continuation.resume(returning: outputURL)
+                default:
+                    let message = exportSession.error?.localizedDescription ?? "Unknown export error"
+                    print("Chunk export failed: \(message)")
+                    continuation.resume(throwing: WhisperError.chunkExtractionFailed)
+                }
+            }
         }
-
-        guard exportSession.status == .completed else {
-            let message = exportSession.error?.localizedDescription ?? "Unknown export error"
-            throw WhisperError.chunkExtractionFailed
-        }
-
-        return outputURL
     }
 
     // MARK: - Whisper Error

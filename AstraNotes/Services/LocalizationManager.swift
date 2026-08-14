@@ -8,7 +8,7 @@ import SwiftUI
 final class LocalizationManager {
 
     // MARK: - Singleton
-    static let shared = LocalizationManager()
+    nonisolated(unsafe) static let shared = LocalizationManager()
 
     // MARK: - Supported Languages
     static let supportedAppLanguages: [(code: String, name: String)] = [
@@ -50,7 +50,7 @@ final class LocalizationManager {
 
     /// The display name for the current language.
     var currentLanguageDisplayName: String {
-        supportedAppLanguages.first(where: { $0.code == currentLanguage })?.name ?? currentLanguage
+        Self.supportedAppLanguages.first(where: { $0.code == currentLanguage })?.name ?? currentLanguage
     }
 
     /// Returns the native name for a given language code.
@@ -61,7 +61,7 @@ final class LocalizationManager {
 
 // MARK: - Environment Key
 private struct LocalizationManagerKey: EnvironmentKey {
-    nonisolated static let defaultValue = LocalizationManager.shared
+    nonisolated(unsafe) static let defaultValue = LocalizationManager.shared
 }
 
 extension EnvironmentValues {

@@ -221,6 +221,7 @@ struct RecordingView: View {
         case .recording: return audioService.isSilent ? String(localized: "recording.silentAutoPause") : String(localized: "recording.recording")
         case .paused:   return String(localized: "recording.paused")
         case .stopped:  return String(localized: "recording.stopped")
+        case .error:    return String(localized: "recording.error")
         }
     }
 
