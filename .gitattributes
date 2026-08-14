@@ -1,0 +1,10 @@
+# Normalize line endings
+* text=auto
+
+# Swift files
+*.swift text eol=lf
+*.strings text eol=lf
+
+# Xcode project files
+*.pbxproj text eol=lf
+*.plist text eol=lf

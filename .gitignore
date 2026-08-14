@@ -1,0 +1,41 @@
+# Xcode
+build/
+DerivedData/
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+*.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+xcuserdata/
+*.xccheckout
+*.moved-aside
+*.xcuserstate
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Swift Package Manager
+.build/
+Packages/
+Package.pins
+Package.resolved
+
+# CocoaPods
+Pods/
+
+# ZCode
+.zcode/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Thumbnails
+._*
+Thumbs.db
+
+# Files that might contain secrets
+*.pem
+*.key
