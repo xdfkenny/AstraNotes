@@ -598,7 +598,6 @@ struct MarkdownPreview: NSViewRepresentable {
 
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = context.coordinator
-        webView.isOpaque = false
         webView.underPageBackgroundColor = .clear
 
         return webView

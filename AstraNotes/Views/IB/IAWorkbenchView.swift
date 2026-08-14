@@ -652,11 +652,7 @@ struct IAWorkbenchView: View {
 
                 RoundedRectangle(cornerRadius: 4)
                     .fill(
-                        LinearGradient(
-                            colors: [Color.accent, Color.accent],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
+                        Color.accent
                     )
                     .frame(width: geometry.size.width * min(max(progress, 0), 1), height: 6)
             }

@@ -177,11 +177,7 @@ struct CASJournalView: View {
                     .padding(.horizontal, 20)
                     .padding(.vertical, 8)
                     .background(
-                        LinearGradient(
-                            colors: [Color.accent, Color.accent],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
+                        Color.accent
                     )
                     .clipShape(Capsule())
                     .shadow(color: Color.accent.opacity(0.15), radius: 8, x: 0, y: 2)
@@ -256,7 +252,7 @@ struct CASJournalView: View {
 
             // Completed
             VStack(spacing: 12) {
-                Text(completedCount)
+                Text("(completedCount)")
                     .font(.system(size: 36, weight: .bold, design: .rounded))
                     .foregroundColor(Color.semanticSuccess)
 
@@ -294,11 +290,7 @@ struct CASJournalView: View {
                 Circle()
                     .trim(from: 0, to: progress)
                     .stroke(
-                        LinearGradient(
-                            colors: [color, color.opacity(0.6)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        ),
+                        Color.accent,
                         style: StrokeStyle(lineWidth: 6, lineCap: .round)
                     )
                     .frame(width: 80, height: 80)
@@ -354,11 +346,7 @@ struct CASJournalView: View {
                             .padding(.vertical, 6)
                             .background(
                                 selectedCategory == filter
-                                    ? LinearGradient(
-                                        colors: [Color.accent, Color.accent],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
+                                    ? Color.accent
                                     : Color.surface
                             )
                             .clipShape(Capsule())
@@ -463,11 +451,7 @@ struct CASJournalView: View {
                 .padding(.horizontal, 24)
                 .padding(.vertical, 10)
                 .background(
-                    LinearGradient(
-                        colors: [Color.accent, Color.accent],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
+                    Color.accent
                 )
                 .clipShape(Capsule())
                 .shadow(color: Color.accent.opacity(0.15), radius: 8, x: 0, y: 2)
@@ -851,11 +835,7 @@ struct CASJournalView: View {
                     .padding(.horizontal, 16)
                     .padding(.vertical, 7)
                     .background(
-                        LinearGradient(
-                            colors: [Color.accent, Color.accent],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
+                        Color.accent
                     )
                     .clipShape(Capsule())
                 }
@@ -969,11 +949,7 @@ struct CASJournalView: View {
                             .padding(.vertical, 8)
                             .background(
                                 newCategory == category
-                                    ? LinearGradient(
-                                        colors: [Color.accent, Color.accent],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
+                                    ? Color.accent
                                     : Color.surface
                             )
                             .clipShape(Capsule())
@@ -1066,11 +1042,7 @@ struct CASJournalView: View {
                     .padding(.horizontal, 28)
                     .padding(.vertical, 10)
                     .background(
-                        LinearGradient(
-                            colors: [Color.accent, Color.accent],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
+                        Color.accent
                     )
                     .clipShape(Capsule())
                     .shadow(color: Color.accent.opacity(0.15), radius: 10, x: 0, y: 3)
@@ -1194,14 +1166,7 @@ struct CASJournalView: View {
 
                         RoundedRectangle(cornerRadius: 4)
                             .fill(
-                                LinearGradient(
-                                    colors: [
-                                        achievedOutcomeCount == 7 ? Color.semanticSuccess : Color.accent,
-                                        achievedOutcomeCount == 7 ? Color.semanticSuccess.opacity(0.7) : Color.accent
-                                    ],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
+                                Color.accent
                             )
                             .frame(width: geo.size.width * (Double(achievedOutcomeCount) / 7.0), height: 8)
                     }
@@ -1364,7 +1329,7 @@ struct FlowLayout: Layout {
         var maxWidth: CGFloat = 0
 
         for subview in subviews {
-            let size = subview.dimensions(in: .unspecified)
+            let size = subview.sizeThatFits(.unspecified)
             sizes.append(size)
 
             if currentX + size.width > width && currentX > 0 {

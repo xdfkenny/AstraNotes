@@ -128,11 +128,7 @@ struct QuizView: View {
         .padding(.vertical, 7)
         .background(
         selectedSubject == subject
-        ? LinearGradient(
-        colors: [Color.accent, Color.accent],
-        startPoint: .leading,
-        endPoint: .trailing
-        )
+        ? Color.accent
         : Color.surface
         )
         .clipShape(Capsule())
@@ -172,11 +168,7 @@ struct QuizView: View {
         .padding(.vertical, 8)
         .background(
         selectedDifficulty == difficulty
-        ? LinearGradient(
-        colors: [Color.accent, Color.accent],
-        startPoint: .leading,
-        endPoint: .trailing
-        )
+        ? Color.accent
         : Color.surface
         )
         .clipShape(Capsule())
@@ -271,11 +263,7 @@ struct QuizView: View {
         .padding(.vertical, 7)
         .background(
         questionCount == count
-        ? LinearGradient(
-        colors: [Color.accent, Color.accent],
-        startPoint: .leading,
-        endPoint: .trailing
-        )
+        ? Color.accent
         : Color.surface
         )
         .clipShape(Capsule())
@@ -422,11 +410,7 @@ private var configurationSection: some View {
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
             .background(
-                LinearGradient(
-                    colors: [Color.accent, Color.accent],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
+                Color.accent
             )
             .clipShape(Capsule())
             .shadow(color: Color.accent.opacity(0.15), radius: 12, x: 0, y: 4)
@@ -489,11 +473,7 @@ private var configurationSection: some View {
 
                         Capsule()
                             .fill(
-                                LinearGradient(
-                                    colors: [Color.accent, Color.accent],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
+                                Color.accent
                             )
                             .frame(width: geo.size.width * progressFraction, height: 6)
                             .animation(.easeOut(duration: 0.3), value: currentIndex)
@@ -699,11 +679,7 @@ private var configurationSection: some View {
                     .padding(.horizontal, 28)
                     .padding(.vertical, 10)
                     .background(
-                        LinearGradient(
-                            colors: [Color.accent, Color.accent],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
+                        Color.accent
                     )
                     .clipShape(Capsule())
                     .shadow(color: Color.accent.opacity(0.15), radius: 8, x: 0, y: 2)
@@ -747,11 +723,7 @@ private var configurationSection: some View {
                         .padding(.horizontal, 24)
                         .padding(.vertical, 9)
                         .background(
-                            LinearGradient(
-                                colors: [Color.accent, Color.accent],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
+                            Color.accent
                         )
                         .clipShape(Capsule())
                     }
@@ -791,11 +763,7 @@ private var configurationSection: some View {
                             .padding(.horizontal, 28)
                             .padding(.vertical, 10)
                             .background(
-                                LinearGradient(
-                                    colors: [Color.accent, Color.accent],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
+                                Color.accent
                             )
                             .clipShape(Capsule())
                         }
@@ -862,11 +830,7 @@ private var configurationSection: some View {
                         .padding(.horizontal, 24)
                         .padding(.vertical, 9)
                         .background(
-                            LinearGradient(
-                                colors: [Color.accent, Color.accent],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
+                            Color.accent
                         )
                         .clipShape(Capsule())
                     }
@@ -887,11 +851,7 @@ private var configurationSection: some View {
                         .padding(.horizontal, 28)
                         .padding(.vertical, 10)
                         .background(
-                            LinearGradient(
-                                colors: [Color.accent, Color.accent],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
+                            Color.accent
                         )
                         .clipShape(Capsule())
                     }
@@ -960,11 +920,7 @@ private var configurationSection: some View {
                         .padding(.horizontal, 24)
                         .padding(.vertical, 9)
                         .background(
-                            LinearGradient(
-                                colors: [Color.accent, Color.accent],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
+                            Color.accent
                         )
                         .clipShape(Capsule())
                     }
@@ -985,11 +941,7 @@ private var configurationSection: some View {
                         .padding(.horizontal, 24)
                         .padding(.vertical, 9)
                         .background(
-                            LinearGradient(
-                                colors: [Color.accent, Color.accent],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
+                            Color.accent
                         )
                         .clipShape(Capsule())
                     }
@@ -1163,11 +1115,7 @@ private var configurationSection: some View {
                         .padding(.horizontal, 24)
                         .padding(.vertical, 10)
                         .background(
-                            LinearGradient(
-                                colors: [Color.accent, Color.accent],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
+                            Color.accent
                         )
                         .clipShape(Capsule())
                     }
@@ -1263,7 +1211,7 @@ private var configurationSection: some View {
     }
 
     private func optionLetter(_ index: Int) -> String {
-        String(UnicodeScalar("A".unicodeScalarValue! + index)!)
+        String(UnicodeScalar(Character("A").asciiValue! + UInt8(index))!)
     }
 
     private func answerBackground(for option: String, question: QuizQuestion) -> Color {

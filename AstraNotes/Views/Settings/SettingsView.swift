@@ -137,7 +137,7 @@ struct SettingsView: View {
                     VStack(alignment: .leading, spacing: Spacing.sm) {
                         settingsRow(String(localized: "settings.language")) {
                             Picker("", selection: appLanguageBinding) {
-                                ForEach(LocalizationManager.shared.supportedAppLanguages, id: \.code) { lang in
+                                ForEach(LocalizationManager.supportedAppLanguages, id: \.code) { lang in
                                     Text(String(localized: "lang.\(lang.code)")).tag(lang.code)
                                 }
                             }
@@ -154,7 +154,7 @@ struct SettingsView: View {
                     settingsRow(String(localized: "settings.outputLanguage")) {
                         Picker("", selection: noteOutputLanguageBinding) {
                             Text(String(localized: "settings.outputLanguageAuto")).tag("auto")
-                            ForEach(LocalizationManager.shared.supportedAppLanguages, id: \.code) { lang in
+                            ForEach(LocalizationManager.supportedAppLanguages, id: \.code) { lang in
                                 Text(String(localized: "lang.\(lang.code)")).tag(lang.code)
                             }
                         }

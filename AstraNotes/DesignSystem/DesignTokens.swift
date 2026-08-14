@@ -69,8 +69,6 @@ extension ShapeStyle where Self == Color {
     static var textPrimary: Color { .textPrimary }
     static var textSecondary: Color { .textSecondary }
     static var textTertiary: Color { .textTertiary }
-    static var accent: Color { .accent }
-    static var hairline: Color { .hairline }
 }
 
 // MARK: - Typography Tokens

@@ -307,11 +307,7 @@ struct FlashcardReviewView: View {
 
                     Capsule()
                         .fill(
-                            LinearGradient(
-                                colors: [Color.accent, Color.accent],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
+                            Color.accent
                         )
                         .frame(width: geo.size.width * sessionProgress, height: 6)
                         .animation(.easeOut(duration: 0.3), value: sessionTotal)
@@ -374,11 +370,7 @@ struct FlashcardReviewView: View {
                             .padding(.horizontal, 28)
                             .padding(.vertical, 10)
                             .background(
-                                LinearGradient(
-                                    colors: [Color.accent, Color.accent],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
+                                Color.accent
                             )
                             .clipShape(Capsule())
                             .shadow(color: Color.accent.opacity(0.15), radius: 10, x: 0, y: 3)
@@ -779,11 +771,7 @@ struct FlashcardReviewView: View {
                 .padding(.horizontal, 24)
                 .padding(.vertical, 10)
                 .background(
-                    LinearGradient(
-                        colors: [Color.accent, Color.accent],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
+                    Color.accent
                 )
                 .clipShape(Capsule())
                 .buttonStyle(.plain)

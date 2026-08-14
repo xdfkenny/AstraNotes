@@ -380,6 +380,10 @@ struct RecordingView: View {
                 saveRecordingSession(url: url)
                 showSaveConfirmation = true
             }
+
+        case .error:
+            // Transient error state (e.g. mic permission denied); nothing to stop.
+            break
         }
     }
 

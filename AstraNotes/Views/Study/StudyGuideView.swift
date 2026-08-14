@@ -230,11 +230,7 @@ struct StudyGuideView: View {
                 .padding(.vertical, 6)
                 .background(
                     isActive
-                        ? LinearGradient(
-                            colors: [Color.accent, Color.accent],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
+                        ? Color.accent
                         : Color.surface
                 )
                 .clipShape(Capsule())
@@ -657,7 +653,7 @@ struct StudyGuideView: View {
     }
 
     private func reviewChecklistRow(_ note: GeneratedNote) -> some View {
-        let checked = checklists[note.id, default: Set<Int>]()
+        let checked = checklists[note.id, default: Set<Int>()]
         let items = checklistItems
         let completedCount = items.filter { checked.contains($0.id) }.count
 

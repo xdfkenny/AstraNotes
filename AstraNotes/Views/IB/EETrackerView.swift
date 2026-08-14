@@ -768,22 +768,14 @@ struct EETrackerView: View {
                 // Fill with ice-blue gradient
                 RoundedRectangle(cornerRadius: 4)
                     .fill(
-                        LinearGradient(
-                            colors: [Color.accent, Color.accent],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
+                        Color.accent
                     )
                     .frame(width: geometry.size.width * min(max(progress, 0), 1), height: 8)
 
                 // Glow overlay
                 RoundedRectangle(cornerRadius: 4)
                     .fill(
-                        LinearGradient(
-                            colors: [Color.accent.opacity(0.8).opacity(0.6), Color.accent.opacity(0.3)],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
+                        Color.accent
                     )
                     .frame(width: geometry.size.width * min(max(progress, 0), 1), height: 4)
             }
