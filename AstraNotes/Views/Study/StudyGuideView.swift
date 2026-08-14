@@ -381,8 +381,7 @@ struct StudyGuideView: View {
         .padding(20)
         .astraCardStyle()
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.accent.opacity(0.6), lineWidth: note.isFavorite ? 1.5 : 0.0)
+            topicCardBorder(for: note)
         )
         #if os(macOS)
         .onHover { isHovered in
@@ -391,6 +390,12 @@ struct StudyGuideView: View {
             }
         }
         #endif
+    }
+
+    /// Favorite state border, isolated from the card body for the type-checker.
+    private func topicCardBorder(for note: GeneratedNote) -> some View {
+        RoundedRectangle(cornerRadius: 16)
+            .stroke(Color.accent.opacity(0.6), lineWidth: note.isFavorite ? 1.5 : 0.0)
     }
 
     private func contentPreview(_ content: String) -> String {
@@ -846,7 +851,7 @@ struct StudyGuideView: View {
 
             for line in conceptLines {
                 let cleaned = line.trimmed
-                    .replacingOccurrences(of: /^[-*]\s+/, with: "", options: .regularExpression)
+                    .replacingOccurrences(of: "^[-*]\s+", with: "", options: .regularExpression)
                     .replacingOccurrences(of: #"[\*_]{1,2}"#, with: "", options: .regularExpression)
 
                 if !formulas.contains(where: { $0.content == cleaned }) && !cleaned.isBlank {
